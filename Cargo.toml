@@ -1,0 +1,21 @@
+[workspace]
+
+resolver = "2"
+
+members = [
+    "crates/game",
+    "crates/simple-2d-camera",
+    "crates/gamejam-platform-controller"
+]
+
+[workspace.dependencies]
+avian2d = { version = "0.2.1", features = ["default"] }
+bevy = "0.15.1"
+bevy_asset_loader = "0.22.0"
+bevy_asset_loader_derive = "0.22.0"
+bevy_ecs_ldtk = { version = "0.11.0" }
+bevy_trauma_shake = "0.4.0"
+
+# Set the default for dependencies.
+[profile.dev.package."*"]
+opt-level = 2
