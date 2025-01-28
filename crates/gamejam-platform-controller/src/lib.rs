@@ -104,7 +104,7 @@ struct PlayerSpawnEntityBundle {
 #[derive(Default, Component)]
 #[require(
     CollisionLayers(|| CollisionLayers::new(0b01000, LayerMask::ALL)),
-    Collider(|| Collider::circle(32.)),
+    Collider(|| Collider::circle(16.)),
 )]
 struct Thing;
 

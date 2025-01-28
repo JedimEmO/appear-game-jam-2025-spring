@@ -9,6 +9,7 @@ use crate::{MovementAction, PlayerAnimation};
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_trauma_shake::Shake;
 
 pub fn player_control_system(
     mut commands: Commands,
@@ -29,6 +30,7 @@ pub fn player_control_system(
         ),
         With<Player>,
     >,
+    mut camera_query: Query<&mut Shake, With<Camera2d>>,
     spatial_query: SpatialQuery,
 ) {
     let delta_t = time.delta_secs_f64().adjust_precision();
@@ -70,6 +72,11 @@ pub fn player_control_system(
         } else {
             commands.entity(entity).insert(Moving);
         }
+
+        let Ok(mut camera_shake) = camera_query.get_single_mut() else {
+            info!("No camera shake found");
+            return;
+        };
 
         for movement_action in movement_events.read() {
             match movement_action {
@@ -114,9 +121,11 @@ pub fn player_control_system(
                         &player_transform,
                         &spatial_query,
                         false,
+                        &mut camera_shake
                     );
                 }
                 MovementAction::PogoAttack => {
+
                     do_player_attack(
                         &mut commands,
                         &time,
@@ -127,6 +136,7 @@ pub fn player_control_system(
                         &player_transform,
                         &spatial_query,
                         true,
+                        &mut camera_shake
                     );
                 }
             }
@@ -172,6 +182,7 @@ fn do_player_attack(
     player_transform: &Transform,
     spatial_query: &SpatialQuery,
     is_pogo: bool,
+    camera_shake: &mut Shake
 ) {
     let now = time.elapsed_secs_f64();
 
@@ -194,15 +205,15 @@ fn do_player_attack(
         let hits = spatial_query.ray_hits(
             player_transform.translation.truncate(),
             Dir2::NEG_Y,
-            50.,
+            30.,
             1,
             false,
             &SpatialQueryFilter::from_mask(0b01000),
         );
 
         if !hits.is_empty() {
+            camera_shake.add_trauma(0.2);
             let kickback = Vec2::Y;
-
             linear_velocity.y += kickback.y * POGO_HIT_KICKBACK_ACCELERATION;
         }
     }
