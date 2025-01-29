@@ -10,12 +10,12 @@ opt-level = 3
 
 [features]
 avian-debug = []
+inspector = []
 
 [dependencies]
 avian2d.workspace = true
 bevy.workspace = true
-bevy_asset_loader.workspace = true
-bevy_asset_loader_derive.workspace = true
+bevy-inspector-egui.workspace = true
 bevy_ecs_ldtk.workspace = true
 simple-2d-camera = { path = "../simple-2d-camera" }
 gamejam-platform-controller = { path = "../gamejam-platform-controller" }

@@ -1,8 +1,8 @@
 use crate::player_components::{Attacking, Grounded, JumpState, Player};
-use crate::PlayerAnimation;
 use avian2d::prelude::{LinearVelocity, ShapeHits, SpatialQuery, SpatialQueryFilter};
 use bevy::math::Dir2;
 use bevy::prelude::{Commands, Entity, Query, Res, Time, Transform, With};
+use crate::graphics::animation_system::SpriteAnimation;
 
 pub fn grounded_system(
     mut commands: Commands,
@@ -13,7 +13,7 @@ pub fn grounded_system(
             &ShapeHits,
             &mut JumpState,
             &LinearVelocity,
-            &mut PlayerAnimation,
+            &mut SpriteAnimation,
             &Transform,
             Option<&Attacking>,
         ),
@@ -37,7 +37,7 @@ pub fn grounded_system(
             jump_state_data.last_grounded_time = Some(now);
 
             if attacking.is_none() {
-                animation.animation_row = 0;
+                animation.animation_start_index = 0;
             }
 
             if velocity.y >= 0. {
@@ -64,7 +64,7 @@ pub fn grounded_system(
 
             commands.entity(entity).remove::<Grounded>();
             if attacking.is_none() {
-                animation.animation_row = 3;
+                animation.animation_start_index = 3 * 4;
             }
         }
     }

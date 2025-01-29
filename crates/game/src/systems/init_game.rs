@@ -2,6 +2,7 @@ use avian2d::prelude::*;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use gamejam_platform_controller::{GameStates, PlayerPlugin, PlayerSpawnSettings};
 
 pub struct SimplePlatformGame;
@@ -21,6 +22,9 @@ impl Plugin for SimplePlatformGame {
         .add_systems(Startup, start_simple_platform_game)
         .add_systems(Update, (wall_spawn_system).run_if(in_state(GameStates::GameLoop)))
         .insert_resource(Gravity(Vec2::new(0., -9.81 * 32.)));
+
+        #[cfg(feature = "inspector")]
+        app.add_plugins(WorldInspectorPlugin::new());
 
         #[cfg(feature = "avian-debug")]
         app.add_plugins(PhysicsDebugPlugin::default());

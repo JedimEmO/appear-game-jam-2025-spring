@@ -1,0 +1,96 @@
+use bevy::prelude::*;
+use std::time::Duration;
+
+#[derive(Component, Default, Debug)]
+pub struct SpriteAnimation {
+    pub timer: Timer,
+    pub animation_start_index: usize,
+    pub animation_frame: usize,
+    pub animation_frame_count: usize,
+    pub repeat: bool,
+    pub despawn_finished: bool
+}
+
+impl SpriteAnimation {
+    pub fn play_animation(
+        &mut self,
+        animation_index: usize,
+        frame_count: usize,
+        duration: Duration,
+        repeating: bool,
+    ) {
+        let tick_duration = duration / frame_count as u32;
+
+        self.animation_start_index = animation_index;
+        self.animation_frame = 0;
+        self.timer = Timer::new(tick_duration, TimerMode::Repeating);
+        self.animation_frame_count = frame_count;
+        self.repeat = repeating;
+    }
+
+    pub fn finished(&self) -> bool {
+        self.animation_frame == self.animation_frame_count
+    }
+}
+
+pub fn animated_sprite_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut sprite: Query<(Entity, &mut Sprite, &mut SpriteAnimation)>,
+) {
+    for (entity, mut sprite, mut animation) in sprite.iter_mut() {
+        animation.timer.tick(time.delta());
+
+        if animation.timer.finished() {
+            animation.animation_frame += 1;
+
+            if animation.animation_frame >= animation.animation_frame_count {
+                if animation.repeat {
+                    animation.animation_frame = 0;
+                } else {
+                    if animation.despawn_finished {
+                        commands.entity(entity).despawn();
+                    }
+                    
+                    return;
+                }
+            }
+        }
+
+        let Some(sprite_atlas) = sprite.texture_atlas.as_mut() else {
+            return;
+        };
+
+        sprite_atlas.index = animation.animation_start_index + animation.animation_frame;
+    }
+}
+
+#[derive(Default, Clone, Copy)]
+pub struct SpriteSettings {
+    pub repeating: bool,
+    pub flip_x: bool,
+    pub flip_y: bool,
+    pub despawn_finished: bool
+}
+
+pub fn spawn_animated_sprite_for_entity(
+    commands: &mut EntityCommands,
+    image: Handle<Image>,
+    layout: Handle<TextureAtlasLayout>,
+    animation_index: usize,
+    frame_count: usize,
+    duration: Duration,
+    settings: SpriteSettings
+) {
+    let mut animation = SpriteAnimation::default();
+
+    animation.despawn_finished = settings.despawn_finished;
+
+    animation.play_animation(animation_index, frame_count, duration, settings.repeating);
+
+    let mut sprite = Sprite::from_atlas_image(image, TextureAtlas::from(layout.clone()));
+
+    sprite.flip_x = settings.flip_x;
+
+    commands.insert((sprite, animation));
+}

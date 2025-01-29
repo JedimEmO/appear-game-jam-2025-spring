@@ -1,6 +1,9 @@
-use bevy::prelude::{Added, Commands, NextState, Query, Res, ResMut, Sprite, TextureAtlas, Timer, TimerMode, Transform};
-use crate::{GameStates, PlayerAnimation, PlayerAssets, PlayerSpawnEntity, PlayerSpawnSettings};
+use crate::graphics::animation_system::{spawn_animated_sprite_for_entity, SpriteSettings};
 use crate::player_components::Player;
+use crate::{GameStates, PlayerAssets, PlayerSpawnEntity, PlayerSpawnSettings};
+use bevy::prelude::{Added, Commands, NextState, Query, Res, ResMut, Transform};
+use std::time::Duration;
+use bevy::utils::default;
 
 pub fn spawn_player_system(
     mut commands: Commands,
@@ -8,31 +11,38 @@ pub fn spawn_player_system(
     player_spawn_settings: Res<PlayerSpawnSettings>,
     mut next_state: ResMut<NextState<GameStates>>,
 ) {
-    commands.spawn((
+    let mut entity = commands.spawn((
         Player,
         Transform::from_xyz(
             player_spawn_settings.position.x,
             player_spawn_settings.position.y,
             0.5,
         ),
-        Sprite::from_atlas_image(
-            player_assets.player.clone(),
-            TextureAtlas::from(player_assets.player_layout.clone()),
-        ),
-        PlayerAnimation {
-            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
-            animation_row: 0,
-            animation_count: 0,
-        },
     ));
+
+    spawn_animated_sprite_for_entity(
+        &mut entity,
+        player_assets.player.clone(),
+        player_assets.player_layout.clone(),
+        0,
+        4,
+        Duration::from_millis(1000),
+        SpriteSettings {
+            repeating: true,
+            ..default()
+        }
+    );
 
     next_state.set(GameStates::GameLoop);
 }
 
-pub fn update_player_spawn(mut player_spawn_info: ResMut<PlayerSpawnSettings>, query: Query<&Transform, Added<PlayerSpawnEntity>>) {
+pub fn update_player_spawn(
+    mut player_spawn_info: ResMut<PlayerSpawnSettings>,
+    query: Query<&Transform, Added<PlayerSpawnEntity>>,
+) {
     let Ok(transform) = query.get_single() else {
-        return
+        return;
     };
-    
+
     player_spawn_info.position = transform.translation.truncate();
 }

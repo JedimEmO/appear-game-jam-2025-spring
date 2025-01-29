@@ -1,14 +1,18 @@
+use crate::graphics::animation_system::animated_sprite_system;
 use crate::input_systems::gamepad_input::gamepad_input_system;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
 use crate::player_systems::grounded_system::grounded_system;
 use crate::player_systems::movement_dampening_system::movement_dampening_system;
+use crate::player_systems::player_attack_system::player_attack_start_system;
 use crate::player_systems::player_control_system::player_control_system;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use player_systems::player_spawn_system;
+use crate::player_systems::player_spawn_system::spawn_player_system;
 
+pub mod graphics;
 mod input_systems;
 pub mod player_components;
 mod player_const_rules;
@@ -35,23 +39,29 @@ impl Plugin for PlayerPlugin {
             )
             .add_systems(
                 OnEnter(GameStates::SpawnPlayer),
-                player_spawn_system::spawn_player_system,
+                spawn_player_system,
             )
-            .add_event::<MovementAction>()
+            .add_event::<PlayerInputAction>()
             .add_systems(Update, player_spawn_system::update_player_spawn)
             .add_systems(
                 Update,
                 (
                     grounded_system,
-                    keyboard_input_system,
-                    gamepad_input_system,
                     player_control_system,
                     movement_dampening_system,
-                    animate_sprite_system,
-                    spawn_thing_system
                 )
                     .run_if(in_state(GameStates::GameLoop))
                     .chain(),
+            )
+            .add_systems(
+                Update,
+                (
+                    animated_sprite_system,
+                    spawn_thing_system,
+                    keyboard_input_system,
+                    gamepad_input_system,
+                    player_attack_start_system,
+                ).run_if(in_state(GameStates::GameLoop)),
             );
 
         setup_ldtk_entities(app);
@@ -75,6 +85,11 @@ pub struct PlayerAssets {
     #[asset(image(sampler(filter = nearest)))]
     #[asset(path = "sprites/guy.png")]
     player: Handle<Image>,
+    #[asset(texture_atlas_layout(tile_size_x = 64, tile_size_y = 64, columns = 5, rows = 2))]
+    player_attack_layout: Handle<TextureAtlasLayout>,
+    #[asset(image(sampler(filter = nearest)))]
+    #[asset(path = "sprites/attack.png")]
+    player_attack: Handle<Image>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -84,13 +99,6 @@ pub struct ThingAssets {
     #[asset(image(sampler(filter = nearest)))]
     #[asset(path = "sprites/thing.png")]
     things: Handle<Image>,
-}
-
-#[derive(Component)]
-pub struct PlayerAnimation {
-    timer: Timer,
-    animation_row: usize,
-    animation_count: usize,
 }
 
 #[derive(Default, Component)]
@@ -126,24 +134,16 @@ fn spawn_thing_system(
     }
 }
 
-fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut PlayerAnimation, &mut Sprite)>) {
-    for (mut timer, mut sprite) in &mut query {
-        timer.timer.tick(time.delta());
-
-        if timer.timer.finished() {
-            if let Some(atlas) = &mut sprite.texture_atlas {
-                timer.animation_count = (timer.animation_count + 1) % 4;
-                atlas.index = timer.animation_row * 4 + timer.animation_count;
-            }
-        }
-    }
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum AttackDirection {
+    Down,
+    Sideways,
 }
 
 #[derive(Event)]
-pub enum MovementAction {
+pub enum PlayerInputAction {
     Horizontal(Vec2),
     Jump,
     JumpAbort,
-    Attack,
-    PogoAttack,
+    Attack(AttackDirection),
 }

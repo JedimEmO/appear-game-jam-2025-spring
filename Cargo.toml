@@ -14,6 +14,7 @@ bevy = "0.15.1"
 bevy_asset_loader = "0.22.0"
 bevy_asset_loader_derive = "0.22.0"
 bevy_ecs_ldtk = { version = "0.11.0" }
+bevy-inspector-egui = "0.29.1"
 bevy_trauma_shake = "0.4.0"
 
 # Set the default for dependencies.

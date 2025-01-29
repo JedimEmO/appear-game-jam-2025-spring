@@ -1,20 +1,22 @@
+use crate::graphics::animation_system::SpriteAnimation;
 use crate::player_components::{
-    Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker,
+    Attacking, Direction, Grounded, JumpState, Moving, Player, PlayerActionTracker,
+    PlayerMovementData,
 };
 use crate::player_const_rules::{
     ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
-    PLAYER_ATTACK_DELAY_SECONDS, POGO_HIT_KICKBACK_ACCELERATION,
+    PLAYER_ATTACK_DELAY_SECONDS,
 };
-use crate::{MovementAction, PlayerAnimation};
+use crate::PlayerInputAction;
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_trauma_shake::Shake;
+use std::time::Duration;
 
 pub fn player_control_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut movement_events: EventReader<MovementAction>,
+    mut movement_events: EventReader<PlayerInputAction>,
     mut player_velocity: Query<
         (
             Entity,
@@ -22,16 +24,14 @@ pub fn player_control_system(
             Option<&Grounded>,
             &mut JumpState,
             &mut GravityScale,
-            &mut PlayerAnimation,
+            &mut SpriteAnimation,
             &mut Sprite,
             Option<&Attacking>,
             &mut PlayerActionTracker,
-            &Transform,
+            &mut PlayerMovementData,
         ),
         With<Player>,
     >,
-    mut camera_query: Query<&mut Shake, With<Camera2d>>,
-    spatial_query: SpatialQuery,
 ) {
     let delta_t = time.delta_secs_f64().adjust_precision();
 
@@ -45,7 +45,7 @@ pub fn player_control_system(
         mut sprite,
         attacking,
         mut player_actions,
-        player_transform,
+        mut movement_data,
     ) in player_velocity.iter_mut()
     {
         if !grounded.is_some() {
@@ -57,9 +57,8 @@ pub fn player_control_system(
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
 
         if let Some(_attacking) = attacking {
-            if animation.animation_count == 3 {
-                animation.timer = Timer::from_seconds(0.1, TimerMode::Repeating);
-                animation.animation_row = 0;
+            if animation.finished() {
+                animation.play_animation(0, 4, Duration::from_millis(1000), true);
                 commands.entity(entity).remove::<Attacking>();
             }
 
@@ -73,16 +72,11 @@ pub fn player_control_system(
             commands.entity(entity).insert(Moving);
         }
 
-        let Ok(mut camera_shake) = camera_query.get_single_mut() else {
-            info!("No camera shake found");
-            return;
-        };
-
         for movement_action in movement_events.read() {
             match movement_action {
-                MovementAction::Horizontal(dir) => {
+                PlayerInputAction::Horizontal(dir) => {
                     if grounded.is_some() {
-                        animation.animation_row = 1;
+                        animation.play_animation(4, 4, Duration::from_millis(1000), true);
                     }
 
                     let reverse_factor = if linear_velocity.x.signum() != dir.x.signum() {
@@ -95,9 +89,10 @@ pub fn player_control_system(
                     linear_velocity.y += dir.y * ACCELERATION * delta_t * reverse_factor;
 
                     linear_velocity.x = linear_velocity.x.clamp(-MAX_SPEED, MAX_SPEED);
-                    sprite.flip_x = dir.x < 0.;
+                    movement_data.horizontal_direction = dir.x < 0.;
+                    sprite.flip_x = movement_data.horizontal_direction;
                 }
-                MovementAction::Jump => {
+                PlayerInputAction::Jump => {
                     do_jump(
                         &time,
                         &mut linear_velocity,
@@ -106,38 +101,25 @@ pub fn player_control_system(
                         &mut gravity_scale,
                     );
                 }
-                MovementAction::JumpAbort => {
+                PlayerInputAction::JumpAbort => {
                     gravity_scale.0 = FALL_GRAVITY;
                     linear_velocity.y = 0.;
                 }
-                MovementAction::Attack => {
-                    do_player_attack(
-                        &mut commands,
-                        &time,
-                        entity,
-                        &mut linear_velocity,
-                        &mut animation,
-                        &mut player_actions,
-                        &player_transform,
-                        &spatial_query,
-                        false,
-                        &mut camera_shake
-                    );
-                }
-                MovementAction::PogoAttack => {
+                PlayerInputAction::Attack(direction) => {
+                    let now = time.elapsed_secs_f64();
 
-                    do_player_attack(
-                        &mut commands,
-                        &time,
-                        entity,
-                        &mut linear_velocity,
-                        &mut animation,
-                        &mut player_actions,
-                        &player_transform,
-                        &spatial_query,
-                        true,
-                        &mut camera_shake
-                    );
+                    if now - player_actions.last_attack_at.unwrap_or(0.)
+                        < PLAYER_ATTACK_DELAY_SECONDS
+                    {
+                        return;
+                    }
+
+                    player_actions.last_attack_at = Some(now);
+
+                    commands.entity(entity).insert(Attacking {
+                        attack_started_at: now,
+                        direction: *direction,
+                    });
                 }
             }
         }
@@ -170,51 +152,4 @@ fn do_jump(
     }
 
     jump_state.used += 1;
-}
-
-fn do_player_attack(
-    commands: &mut Commands,
-    time: &Res<Time>,
-    entity: Entity,
-    linear_velocity: &mut Mut<LinearVelocity>,
-    animation: &mut Mut<PlayerAnimation>,
-    player_actions: &mut Mut<PlayerActionTracker>,
-    player_transform: &Transform,
-    spatial_query: &SpatialQuery,
-    is_pogo: bool,
-    camera_shake: &mut Shake
-) {
-    let now = time.elapsed_secs_f64();
-
-    if now - player_actions.last_attack_at.unwrap_or(0.) < PLAYER_ATTACK_DELAY_SECONDS {
-        return;
-    }
-
-    player_actions.last_attack_at = Some(now);
-
-    animation.animation_row = if is_pogo { 5 } else { 4 };
-    animation.animation_count = 0;
-    animation.timer = Timer::from_seconds(0.030, TimerMode::Repeating);
-
-    commands.entity(entity).insert(Attacking {
-        attack_started_at: now,
-    });
-
-    if is_pogo {
-        // Process pogo
-        let hits = spatial_query.ray_hits(
-            player_transform.translation.truncate(),
-            Dir2::NEG_Y,
-            30.,
-            1,
-            false,
-            &SpatialQueryFilter::from_mask(0b01000),
-        );
-
-        if !hits.is_empty() {
-            camera_shake.add_trauma(0.2);
-            let kickback = Vec2::Y;
-            linear_velocity.y += kickback.y * POGO_HIT_KICKBACK_ACCELERATION;
-        }
-    }
 }

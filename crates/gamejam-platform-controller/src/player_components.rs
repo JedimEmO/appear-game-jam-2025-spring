@@ -1,7 +1,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use simple_2d_camera::PixelCameraTracked;
-
+use crate::AttackDirection;
 use crate::player_const_rules::*;
 
 #[derive(Component)]
@@ -19,23 +19,41 @@ use crate::player_const_rules::*;
     JumpState,
     PixelCameraTracked,
     Friction(|| Friction::new(0.)),
-    PlayerActionTracker
+    PlayerActionTracker,
+    PlayerMovementData
 )]
 pub struct Player;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Grounded;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct AttachedToWall;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Moving;
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Direction {
+    Left,
+    Right,
+    Up,
+    Down,
+}
 
 #[derive(Component)]
 pub struct Attacking {
     pub attack_started_at: f64,
+    pub direction: AttackDirection,
 }
+
+#[derive(Component, Default)]
+pub struct PlayerMovementData {
+    pub horizontal_direction: bool
+}
+
+#[derive(Component, Default)]
+pub struct AttackSprite;
 
 #[derive(Component, Default)]
 pub struct PlayerActionTracker {

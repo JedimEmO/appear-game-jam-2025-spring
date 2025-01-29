@@ -6,6 +6,6 @@ pub const MAX_JUMP_ACCELERATION_TIME: f64 = 0.25;
 pub const ACCELERATION: f32 = 1500.;
 pub const JUMP_SPEED: f32 = 350.;
 pub const X_DAMPENING_FACTOR: f32 = 15.;
-pub const FALL_GRAVITY: f32 = 8.0;
+pub const FALL_GRAVITY: f32 = 6.0;
 pub const PLAYER_ATTACK_DELAY_SECONDS: f64 = 0.3;
 pub const POGO_HIT_KICKBACK_ACCELERATION: f32 = 2500.;
