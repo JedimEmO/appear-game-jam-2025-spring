@@ -42,6 +42,9 @@ pub enum Direction {
 }
 
 #[derive(Component)]
+pub struct Pogoing;
+
+#[derive(Component)]
 pub struct Attacking {
     pub attack_started_at: f64,
     pub direction: AttackDirection,

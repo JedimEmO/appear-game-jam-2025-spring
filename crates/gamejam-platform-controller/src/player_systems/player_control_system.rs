@@ -1,8 +1,5 @@
 use crate::graphics::animation_system::SpriteAnimation;
-use crate::player_components::{
-    Attacking, Direction, Grounded, JumpState, Moving, Player, PlayerActionTracker,
-    PlayerMovementData,
-};
+use crate::player_components::{Attacking, Direction, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData, Pogoing};
 use crate::player_const_rules::{
     ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
     PLAYER_ATTACK_DELAY_SECONDS,
@@ -60,6 +57,7 @@ pub fn player_control_system(
             if animation.finished() {
                 animation.play_animation(0, 4, Duration::from_millis(1000), true);
                 commands.entity(entity).remove::<Attacking>();
+                commands.entity(entity).remove::<Pogoing>();
             }
 
             continue;

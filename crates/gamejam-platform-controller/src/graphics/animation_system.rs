@@ -4,9 +4,9 @@ use std::time::Duration;
 #[derive(Component, Default, Debug)]
 pub struct SpriteAnimation {
     pub timer: Timer,
-    pub animation_start_index: usize,
-    pub animation_frame: usize,
-    pub animation_frame_count: usize,
+    pub animation_start_index: u32,
+    pub animation_frame: u32,
+    pub animation_frame_count: u32,
     pub repeat: bool,
     pub despawn_finished: bool
 }
@@ -14,12 +14,12 @@ pub struct SpriteAnimation {
 impl SpriteAnimation {
     pub fn play_animation(
         &mut self,
-        animation_index: usize,
-        frame_count: usize,
+        animation_index: u32,
+        frame_count: u32,
         duration: Duration,
         repeating: bool,
     ) {
-        let tick_duration = duration / frame_count as u32;
+        let tick_duration = duration / frame_count;
 
         self.animation_start_index = animation_index;
         self.animation_frame = 0;
@@ -61,7 +61,7 @@ pub fn animated_sprite_system(
             return;
         };
 
-        sprite_atlas.index = animation.animation_start_index + animation.animation_frame;
+        sprite_atlas.index = (animation.animation_start_index + animation.animation_frame) as usize;
     }
 }
 
@@ -77,8 +77,8 @@ pub fn spawn_animated_sprite_for_entity(
     commands: &mut EntityCommands,
     image: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
-    animation_index: usize,
-    frame_count: usize,
+    animation_index: u32,
+    frame_count: u32,
     duration: Duration,
     settings: SpriteSettings
 ) {

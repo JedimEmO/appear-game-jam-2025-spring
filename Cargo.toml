@@ -9,13 +9,16 @@ members = [
 ]
 
 [workspace.dependencies]
+anyhow = "1.0.95"
 avian2d = { version = "0.2.1", features = ["default"] }
 bevy = "0.15.1"
 bevy_asset_loader = "0.22.0"
 bevy_asset_loader_derive = "0.22.0"
+bevy_common_assets = { version = "0.12.0", features = ["toml"] }
 bevy_ecs_ldtk = { version = "0.11.0" }
 bevy-inspector-egui = "0.29.1"
 bevy_trauma_shake = "0.4.0"
+serde = "1.0.217"
 
 # Set the default for dependencies.
 [profile.dev.package."*"]

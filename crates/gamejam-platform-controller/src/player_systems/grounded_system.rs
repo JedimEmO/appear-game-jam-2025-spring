@@ -1,7 +1,9 @@
 use crate::player_components::{Attacking, Grounded, JumpState, Player};
 use avian2d::prelude::{LinearVelocity, ShapeHits, SpatialQuery, SpatialQueryFilter};
 use bevy::math::Dir2;
-use bevy::prelude::{Commands, Entity, Query, Res, Time, Transform, With};
+use bevy::prelude::{Camera2d, Commands, Entity, Query, Res, Time, Transform, With};
+use bevy_trauma_shake::Shake;
+use simple_2d_camera::CameraShake;
 use crate::graphics::animation_system::SpriteAnimation;
 
 pub fn grounded_system(
@@ -19,6 +21,7 @@ pub fn grounded_system(
         ),
         With<Player>,
     >,
+    mut camera_shake: Query<&mut Shake, With<Camera2d>>,
     spatial_query: SpatialQuery,
 ) {
     for (entity, hits, mut jump_state_data, velocity, mut animation, player_transform, attacking) in
@@ -34,6 +37,12 @@ pub fn grounded_system(
         let now = time.elapsed_secs_f64();
 
         if is_grounded {
+            if now - jump_state_data.last_grounded_time.unwrap_or(0.) >= 1. {
+                if let Ok(mut shake) = camera_shake.get_single_mut() {
+                    shake.add_trauma(0.3);
+                }
+            }
+
             jump_state_data.last_grounded_time = Some(now);
 
             if attacking.is_none() {

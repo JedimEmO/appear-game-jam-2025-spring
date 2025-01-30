@@ -16,7 +16,7 @@ pub fn spawn_player_system(
         Transform::from_xyz(
             player_spawn_settings.position.x,
             player_spawn_settings.position.y,
-            0.5,
+            1.,
         ),
     ));
 

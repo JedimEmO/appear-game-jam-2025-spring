@@ -1,16 +1,19 @@
+use std::time::Duration;
 use crate::graphics::animation_system::animated_sprite_system;
+use crate::graphics::sprite_collection::{setup_sprite_load_system, spawn_sprite_collection_system, AnimatedSpriteFile, SpriteCollection};
 use crate::input_systems::gamepad_input::gamepad_input_system;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
 use crate::player_systems::grounded_system::grounded_system;
 use crate::player_systems::movement_dampening_system::movement_dampening_system;
-use crate::player_systems::player_attack_system::player_attack_start_system;
+use crate::player_systems::player_attack_system::{player_attack_start_system, player_pogo_system};
 use crate::player_systems::player_control_system::player_control_system;
+use crate::player_systems::player_spawn_system::spawn_player_system;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
 use player_systems::player_spawn_system;
-use crate::player_systems::player_spawn_system::spawn_player_system;
 
 pub mod graphics;
 mod input_systems;
@@ -21,6 +24,7 @@ pub mod player_systems;
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
     #[default]
+    LoadingSprites,
     Loading,
     SpawnPlayer,
     GameLoop,
@@ -31,16 +35,21 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameStates>()
+            .add_systems(Startup, setup_sprite_load_system)
+            .add_plugins(TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
+                "sprites.toml",
+            ]))
+            .add_systems(
+                Update,
+                spawn_sprite_collection_system.run_if(in_state(GameStates::LoadingSprites)),
+            )
             .add_loading_state(
                 LoadingState::new(GameStates::Loading)
                     .continue_to_state(GameStates::SpawnPlayer)
                     .load_collection::<PlayerAssets>()
                     .load_collection::<ThingAssets>(),
             )
-            .add_systems(
-                OnEnter(GameStates::SpawnPlayer),
-                spawn_player_system,
-            )
+            .add_systems(OnEnter(GameStates::SpawnPlayer), spawn_player_system)
             .add_event::<PlayerInputAction>()
             .add_systems(Update, player_spawn_system::update_player_spawn)
             .add_systems(
@@ -58,10 +67,13 @@ impl Plugin for PlayerPlugin {
                 (
                     animated_sprite_system,
                     spawn_thing_system,
+                    spawn_terminal_system,
                     keyboard_input_system,
                     gamepad_input_system,
                     player_attack_start_system,
-                ).run_if(in_state(GameStates::GameLoop)),
+                    player_pogo_system
+                )
+                    .run_if(in_state(GameStates::GameLoop)),
             );
 
         setup_ldtk_entities(app);
@@ -70,7 +82,8 @@ impl Plugin for PlayerPlugin {
 
 fn setup_ldtk_entities(app: &mut App) {
     app.register_ldtk_entity::<PlayerSpawnEntityBundle>("PlayerSpawn");
-    app.register_ldtk_entity::<ThingBundle>("Branch");
+    app.register_ldtk_entity_for_layer::<ThingBundle>("Things","Branch");
+    app.register_ldtk_entity_for_layer::<TerminalBundle>("Things","Terminal");
 }
 
 #[derive(Resource, Default)]
@@ -121,6 +134,14 @@ struct ThingBundle {
     player_spawn: Thing,
 }
 
+#[derive(Default, Component)]
+struct Terminal;
+
+#[derive(Bundle, LdtkEntity, Default)]
+struct TerminalBundle {
+    terminal: Terminal
+}
+
 fn spawn_thing_system(
     mut commands: Commands,
     assets: Res<ThingAssets>,
@@ -133,6 +154,26 @@ fn spawn_thing_system(
         ));
     }
 }
+
+fn spawn_terminal_system(
+    mut commands: Commands,
+    assets: Res<SpriteCollection>,
+    mut query: Query<(Entity, &mut Transform), Added<Terminal>>,
+) {
+    for (entity, mut transform) in query.iter_mut() {
+        transform.translation.z = 0.;
+
+        commands.entity(entity).insert(assets.create_sprite_animation_bundle(
+            "terminal",
+            "idle",
+            Duration::from_secs(1),
+            true,
+            false,
+            false
+        ).unwrap());
+    }
+}
+
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum AttackDirection {

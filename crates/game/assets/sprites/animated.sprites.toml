@@ -1,0 +1,26 @@
+[sprites.terminal]
+sprite_sheet_file_name = "sprites/terminal.png"
+image_width = 32
+image_height = 32
+[sprites.terminal.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+
+
+
+[sprites.player_attack]
+sprite_sheet_file_name = "sprites/attack.png"
+image_width = 64
+image_height = 64
+
+[sprites.player_attack.animations.down]
+row = 0
+frame_start_index = 0
+frame_count = 5
+
+[sprites.player_attack.animations.horizontal]
+row = 1
+frame_start_index = 0
+frame_count = 5
