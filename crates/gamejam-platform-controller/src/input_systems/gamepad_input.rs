@@ -1,5 +1,6 @@
-use crate::{AttackDirection, PlayerInputAction};
+use crate::AttackDirection;
 use bevy::prelude::*;
+use crate::input_systems::PlayerInputAction;
 
 pub fn gamepad_input_system(
     mut event_sender: EventWriter<PlayerInputAction>,
@@ -15,7 +16,11 @@ pub fn gamepad_input_system(
     } else if gamepad.just_pressed(GamepadButton::West) {
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Sideways));
     }
-
+    
+    if gamepad.just_pressed(GamepadButton::North) {
+        event_sender.send(PlayerInputAction::Interact);
+    }
+    
     if gamepad.pressed(GamepadButton::DPadRight) {
         direction.x = 1.;
     } else if gamepad.pressed(GamepadButton::DPadLeft) {

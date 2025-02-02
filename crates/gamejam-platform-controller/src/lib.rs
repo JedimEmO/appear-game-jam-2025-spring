@@ -13,13 +13,19 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
+use input_systems::PlayerInputAction;
 use player_systems::player_spawn_system;
+use crate::ldtk_entities::GameLdtkEntitiesPlugin;
+use crate::ldtk_entities::interactable::Interactable;
+use crate::ui::game_ui::setup_game_ui;
 
 pub mod graphics;
 mod input_systems;
 pub mod player_components;
 mod player_const_rules;
 pub mod player_systems;
+pub mod ldtk_entities;
+pub mod ui;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
@@ -35,6 +41,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameStates>()
+            .add_plugins(GameLdtkEntitiesPlugin)
             .add_systems(Startup, setup_sprite_load_system)
             .add_plugins(TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
                 "sprites.toml",
@@ -49,7 +56,7 @@ impl Plugin for PlayerPlugin {
                     .load_collection::<PlayerAssets>()
                     .load_collection::<ThingAssets>(),
             )
-            .add_systems(OnEnter(GameStates::SpawnPlayer), spawn_player_system)
+            .add_systems(OnEnter(GameStates::SpawnPlayer), (spawn_player_system, setup_game_ui))
             .add_event::<PlayerInputAction>()
             .add_systems(Update, player_spawn_system::update_player_spawn)
             .add_systems(
@@ -66,8 +73,6 @@ impl Plugin for PlayerPlugin {
                 Update,
                 (
                     animated_sprite_system,
-                    spawn_thing_system,
-                    spawn_terminal_system,
                     keyboard_input_system,
                     gamepad_input_system,
                     player_attack_start_system,
@@ -75,15 +80,7 @@ impl Plugin for PlayerPlugin {
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             );
-
-        setup_ldtk_entities(app);
     }
-}
-
-fn setup_ldtk_entities(app: &mut App) {
-    app.register_ldtk_entity::<PlayerSpawnEntityBundle>("PlayerSpawn");
-    app.register_ldtk_entity_for_layer::<ThingBundle>("Things","Branch");
-    app.register_ldtk_entity_for_layer::<TerminalBundle>("Things","Terminal");
 }
 
 #[derive(Resource, Default)]
@@ -170,7 +167,9 @@ fn spawn_terminal_system(
             true,
             false,
             false
-        ).unwrap());
+        ).unwrap()).insert(Interactable {
+            action_hint: "press <north> to read terminal".to_string()
+        });
     }
 }
 
@@ -181,10 +180,3 @@ pub enum AttackDirection {
     Sideways,
 }
 
-#[derive(Event)]
-pub enum PlayerInputAction {
-    Horizontal(Vec2),
-    Jump,
-    JumpAbort,
-    Attack(AttackDirection),
-}

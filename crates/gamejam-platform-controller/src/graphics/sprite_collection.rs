@@ -31,8 +31,15 @@ impl SpriteCollection {
         despawn_finished: bool,
         flip_x: bool,
     ) -> Option<(Sprite, SpriteAnimation)> {
-        let sprite_info = self.sprites.get(sprite_name)?;
-        let animation = sprite_info.animations.get(animation_name)?;
+        let Some(sprite_info) = self.sprites.get(sprite_name) else {
+            error!("Sprite not found: {}", sprite_name);
+            return None;
+        };
+
+        let Some(animation) = sprite_info.animations.get(animation_name) else {
+            error!("Animation not found: {}", animation_name);
+            return None;
+        };
 
         let mut sprite = Sprite::from_atlas_image(
             sprite_info.image.clone(),

@@ -1,22 +1,27 @@
 use crate::graphics::animation_system::{spawn_animated_sprite_for_entity, SpriteSettings};
 use crate::player_components::Player;
 use crate::{GameStates, PlayerAssets, PlayerSpawnEntity, PlayerSpawnSettings};
-use bevy::prelude::{Added, Commands, NextState, Query, Res, ResMut, Transform};
-use std::time::Duration;
+use bevy::prelude::{Added, Camera2d, Commands, NextState, Query, Res, ResMut, Transform, With};
 use bevy::utils::default;
+use std::time::Duration;
 
 pub fn spawn_player_system(
     mut commands: Commands,
     player_assets: Res<PlayerAssets>,
     player_spawn_settings: Res<PlayerSpawnSettings>,
+    mut camera: Query<&mut Transform, With<Camera2d>>,
     mut next_state: ResMut<NextState<GameStates>>,
 ) {
+    let mut camera = camera.single_mut();
+    camera.translation.x = player_spawn_settings.position.x;
+    camera.translation.y = player_spawn_settings.position.y;
+
     let mut entity = commands.spawn((
         Player,
         Transform::from_xyz(
             player_spawn_settings.position.x,
             player_spawn_settings.position.y,
-            1.,
+            2.,
         ),
     ));
 
@@ -30,7 +35,7 @@ pub fn spawn_player_system(
         SpriteSettings {
             repeating: true,
             ..default()
-        }
+        },
     );
 
     next_state.set(GameStates::GameLoop);

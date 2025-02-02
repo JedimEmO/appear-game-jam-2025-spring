@@ -11,6 +11,9 @@ pub struct SpriteAnimation {
     pub despawn_finished: bool
 }
 
+#[derive(Component)]
+pub struct SpriteAnimationCompleted;
+
 impl SpriteAnimation {
     pub fn play_animation(
         &mut self,
@@ -50,6 +53,8 @@ pub fn animated_sprite_system(
                 } else {
                     if animation.despawn_finished {
                         commands.entity(entity).despawn();
+                    } else {
+                        commands.entity(entity).insert(SpriteAnimationCompleted);
                     }
                     
                     return;

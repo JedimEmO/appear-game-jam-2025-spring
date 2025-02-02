@@ -24,3 +24,28 @@ frame_count = 5
 row = 1
 frame_start_index = 0
 frame_count = 5
+
+
+
+
+
+
+[sprites.chest_simple]
+sprite_sheet_file_name = "sprites/chest_simple.png"
+image_width = 16
+image_height = 16
+
+[sprites.chest_simple.animations.locked]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.chest_simple.animations.opening]
+row = 1
+frame_start_index = 0
+frame_count = 6
+
+[sprites.chest_simple.animations.open]
+row = 1
+frame_start_index = 5
+frame_count = 1

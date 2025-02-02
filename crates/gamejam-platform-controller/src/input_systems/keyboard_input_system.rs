@@ -1,10 +1,8 @@
-use crate::{AttackDirection, PlayerInputAction};
+use crate::AttackDirection;
 use bevy::input::ButtonInput;
-use bevy::log::info;
 use bevy::math::Vec2;
 use bevy::prelude::{EventWriter, KeyCode, Res};
-use crate::player_components::Direction;
-
+use crate::input_systems::PlayerInputAction;
 pub fn keyboard_input_system(
     mut event_sender: EventWriter<PlayerInputAction>,
     key_input: Res<ButtonInput<KeyCode>>,
@@ -22,6 +20,10 @@ pub fn keyboard_input_system(
     } else if key_input.pressed(KeyCode::KeyA) || key_input.pressed(KeyCode::ArrowLeft) {
         direction.x = -1.;
     }
+    
+    if key_input.just_pressed(KeyCode::KeyE) {
+        event_sender.send(PlayerInputAction::Interact);
+    } 
 
     if direction.length() > 0.1 {
         event_sender.send(PlayerInputAction::Horizontal(direction));

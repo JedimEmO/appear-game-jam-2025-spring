@@ -4,11 +4,12 @@ use crate::player_const_rules::{
     ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
     PLAYER_ATTACK_DELAY_SECONDS,
 };
-use crate::PlayerInputAction;
+use crate::input_systems::PlayerInputAction;
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use std::time::Duration;
+use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 
 pub fn player_control_system(
     mut commands: Commands,
@@ -29,6 +30,7 @@ pub fn player_control_system(
         ),
         With<Player>,
     >,
+    interactables: Query<Entity, With<InteractableInRange>>
 ) {
     let delta_t = time.delta_secs_f64().adjust_precision();
 
@@ -100,8 +102,10 @@ pub fn player_control_system(
                     );
                 }
                 PlayerInputAction::JumpAbort => {
-                    gravity_scale.0 = FALL_GRAVITY;
-                    linear_velocity.y = 0.;
+                    if linear_velocity.y > 0.5 {
+                        gravity_scale.0 = FALL_GRAVITY;
+                        linear_velocity.y = 0.;
+                    }
                 }
                 PlayerInputAction::Attack(direction) => {
                     let now = time.elapsed_secs_f64();
@@ -118,6 +122,11 @@ pub fn player_control_system(
                         attack_started_at: now,
                         direction: *direction,
                     });
+                }
+                PlayerInputAction::Interact => {
+                    if let Ok(interactable_entity) = interactables.get_single() {
+                        commands.entity(interactable_entity).insert(Interacted);
+                    }
                 }
             }
         }

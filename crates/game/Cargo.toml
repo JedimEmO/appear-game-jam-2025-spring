@@ -3,14 +3,11 @@ name = "gamejam"
 version = "0.1.0"
 edition = "2021"
 
-
-# Enable a large amount of optimization in the dev profile for dependencies.
-[profile.dev.package."*"]
-opt-level = 3
-
 [features]
+default = ["fps"]
 avian-debug = []
 inspector = []
+fps = ["bevy/bevy_dev_tools"]
 
 [dependencies]
 avian2d.workspace = true
