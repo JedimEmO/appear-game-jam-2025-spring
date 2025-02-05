@@ -73,7 +73,7 @@ fn camera_track_system(
 
         if dy.abs() >= 100. {
             camera.translation.y += dy.signum() * CAMERA_TRACK_SPEED_FAST * time.delta_secs();
-        } else if dy.abs() >= 30. {
+        } else if dy.abs() >= 64. {
             camera.translation.y += dy.signum() * CAMERA_TRACK_SPEED * time.delta_secs();
         }
     }
