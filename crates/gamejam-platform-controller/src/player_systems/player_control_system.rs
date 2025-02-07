@@ -76,7 +76,9 @@ pub fn player_control_system(
             match movement_action {
                 PlayerInputAction::Horizontal(dir) => {
                     if grounded.is_some() {
-                        animation.play_animation(4, 4, Duration::from_millis(1000), true);
+                        if animation.animation_start_index != 4 {
+                            animation.play_animation(4, 4, Duration::from_millis(500), true);
+                        }
                     }
 
                     let reverse_factor = if linear_velocity.x.signum() != dir.x.signum() {
