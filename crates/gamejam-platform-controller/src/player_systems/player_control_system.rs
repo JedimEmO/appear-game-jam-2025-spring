@@ -21,7 +21,6 @@ pub fn player_control_system(
             &mut LinearVelocity,
             Option<&Grounded>,
             &mut JumpState,
-            &mut GravityScale,
             &mut SpriteAnimation,
             &mut Sprite,
             Option<&Attacking>,
@@ -39,7 +38,6 @@ pub fn player_control_system(
         mut linear_velocity,
         grounded,
         mut jump_state,
-        mut gravity_scale,
         mut animation,
         mut sprite,
         attacking,
@@ -47,12 +45,6 @@ pub fn player_control_system(
         mut movement_data,
     ) in player_velocity.iter_mut()
     {
-        if !grounded.is_some() {
-            gravity_scale.0 = FALL_GRAVITY;
-        } else {
-            gravity_scale.0 = 1.0;
-        }
-
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
 
         if let Some(_attacking) = attacking {
@@ -100,12 +92,10 @@ pub fn player_control_system(
                         &mut linear_velocity,
                         grounded,
                         &mut jump_state,
-                        &mut gravity_scale,
                     );
                 }
                 PlayerInputAction::JumpAbort => {
                     if linear_velocity.y > 0.5 {
-                        gravity_scale.0 = FALL_GRAVITY;
                         linear_velocity.y = 0.;
                     }
                 }
@@ -139,8 +129,7 @@ fn do_jump(
     time: &Res<Time>,
     linear_velocity: &mut Mut<LinearVelocity>,
     grounded: Option<&Grounded>,
-    jump_state: &mut Mut<JumpState>,
-    gravity_scale: &mut Mut<GravityScale>,
+    jump_state: &mut Mut<JumpState>
 ) {
     let now = time.elapsed_secs_f64();
     let left_ground_at = jump_state.left_ground_at;
@@ -153,11 +142,9 @@ fn do_jump(
         jump_state.used = 1;
         jump_state.left_ground_at = Some(now);
         linear_velocity.y = JUMP_SPEED;
-        gravity_scale.0 = 1.;
     } else if left_ground_at.is_some() && now - left_ground_at.unwrap() < MAX_JUMP_ACCELERATION_TIME
     {
         linear_velocity.y = JUMP_SPEED;
-        gravity_scale.0 = 1.;
     }
 
     jump_state.used += 1;

@@ -60,7 +60,22 @@ sprite_sheet_file_name = "sprites/enemies/the_what.png"
 image_width = 32
 image_height = 32
 
-[sprites.what_sprite.animations.idle]
+[sprites.what_sprite.animations.run]
 row = 0
 frame_start_index = 0
 frame_count = 4
+
+[sprites.what_sprite.animations.idle]
+row = 1
+frame_start_index = 0
+frame_count = 4
+
+[sprites.what_sprite.animations.death]
+row = 2
+frame_start_index = 0
+frame_count = 5
+
+[sprites.what_sprite.animations.dead]
+row = 2
+frame_start_index = 4
+frame_count = 1

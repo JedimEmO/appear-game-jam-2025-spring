@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-
+use crate::enemies::{Enemy, EnemyStateMachine, HitPoints};
 
 /// An attackable entity (reacts to attacks)
 #[derive(Component, Default)]
@@ -19,8 +19,22 @@ impl Plugin for AttackablePlugin {
 
 pub fn attackable_attacked_observer(
     trigger: Trigger<OnAdd, Attacked>,
+    time: Res<Time>,
     mut commands: Commands,
-    attackables: Query<(Entity, &Attackable)>
+    mut attackables: Query<(Entity, &Attackable, Option<&mut Enemy>, Option<&mut HitPoints>)>
 ) {
     commands.entity(trigger.entity()).remove::<Attacked>();
+    
+    for (entity, attackable, mut enemy, mut hp) in attackables.iter_mut() {
+        if let Some(mut hp) = hp {
+            hp.hp = hp.hp.saturating_sub(10);
+        }
+        
+        if let Some(mut enemy) = enemy {
+            enemy.state_machine = EnemyStateMachine::Staggered {
+                staggered_at: time.elapsed_secs(),
+                stagger_for: 0.5
+            };
+        }
+    }
 }

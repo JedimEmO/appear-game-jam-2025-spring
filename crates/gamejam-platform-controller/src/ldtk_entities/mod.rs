@@ -11,7 +11,7 @@ use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
 use crate::enemies::attackable::Attackable;
-use crate::enemies::enemy::Enemy;
+use crate::enemies::Enemy;
 
 pub mod chest;
 pub mod interactable;

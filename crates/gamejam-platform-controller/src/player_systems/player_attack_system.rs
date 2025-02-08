@@ -1,7 +1,5 @@
-use crate::enemies::attackable::Attackable;
-use crate::graphics::animation_system::{
-    spawn_animated_sprite_for_entity, SpriteAnimation, SpriteSettings,
-};
+use crate::enemies::attackable::{Attackable, Attacked};
+use crate::graphics::animation_system::SpriteAnimation;
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::player_components::{Attacking, JumpState, Player, PlayerMovementData, Pogoing};
 use crate::player_const_rules::{PLAYER_ATTACK_DURATION, POGO_HIT_KICKBACK_ACCELERATION};
@@ -10,7 +8,6 @@ use avian2d::position::Position;
 use avian2d::prelude::{Collider, LinearVelocity, SpatialQuery, SpatialQueryFilter};
 use bevy::prelude::*;
 use bevy_trauma_shake::Shake;
-use std::ops::Add;
 use std::time::Duration;
 
 pub fn player_attack_start_system(
@@ -88,7 +85,7 @@ pub fn player_attack_start_system(
     let mut did_attack_trauma = false;
 
     // Process hits
-    for (_attacked_entity, attacked_transform, attacked_collider, mut attacked_linear_velocity) in
+    for (attacked_entity, attacked_transform, attacked_collider, mut attacked_linear_velocity) in
         attackables.iter_mut()
     {
         let attack_ray_direction = if is_pogo {
@@ -117,9 +114,10 @@ pub fn player_attack_start_system(
             did_attack_trauma = true;
         }
 
-        attacked_linear_velocity.x += attack_ray_direction.x * 200.;
-        attacked_linear_velocity.y += 100.;
+        attacked_linear_velocity.x = attack_ray_direction.x * 150.;
+        attacked_linear_velocity.y += 200.;
 
+        commands.entity(attacked_entity).insert(Attacked);
         if is_pogo {
             apply_pogo(
                 &mut commands,
@@ -188,5 +186,5 @@ fn apply_pogo(
 
     camera_shake.add_trauma(0.2);
     let kickback = Vec2::Y;
-    velocity.y += kickback.y * POGO_HIT_KICKBACK_ACCELERATION;
+    velocity.y = kickback.y * POGO_HIT_KICKBACK_ACCELERATION;
 }

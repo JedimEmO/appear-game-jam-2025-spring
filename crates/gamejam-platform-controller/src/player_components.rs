@@ -12,7 +12,7 @@ use crate::player_const_rules::*;
     CollisionMargin(|| CollisionMargin::from(COLLISION_MARGIN)),
     CollisionLayers(|| CollisionLayers::new(0b00001, 0b00101)),
     ExternalForce(|| ExternalForce::default().with_persistence(false)),
-    GravityScale,
+    GravityScale(|| GravityScale::from(FALL_GRAVITY)),
     ShapeCaster(|| ShapeCaster::new(Collider::rectangle(4., 4.), Vec2::ZERO, 0., Dir2::NEG_Y).with_max_distance(40.).with_max_hits(5).with_query_filter(SpatialQueryFilter::from_mask(0b00100))),
     LockedAxes(|| LockedAxes::ROTATION_LOCKED),
     MovementDampeningFactor(|| MovementDampeningFactor(X_DAMPENING_FACTOR)),

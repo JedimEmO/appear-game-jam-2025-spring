@@ -5,7 +5,7 @@ use bevy::prelude::{Camera2d, Commands, Entity, Query, Res, Time, Transform, Wit
 use bevy_trauma_shake::Shake;
 use crate::graphics::animation_system::SpriteAnimation;
 
-pub fn grounded_system(
+pub fn grounded_player_system(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
@@ -37,7 +37,7 @@ pub fn grounded_system(
         let now = time.elapsed_secs_f64();
 
         if is_grounded {
-            if now - jump_state_data.last_grounded_time.unwrap_or(0.) >= 1. {
+            if now - jump_state_data.last_grounded_time.unwrap_or(0.) >= 1.5 {
                 if let Ok(mut shake) = camera_shake.get_single_mut() {
                     shake.add_trauma(0.3);
                 }

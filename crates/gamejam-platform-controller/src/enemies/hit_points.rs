@@ -1,0 +1,12 @@
+use bevy::prelude::*;
+use crate::enemies::{Dying, HitPoints};
+use crate::enemies::attackable::Attackable;
+use crate::player_components::Player;
+
+pub fn hit_points_system(mut commands: Commands, entities: Query<(Entity, &HitPoints), Without<Player>>) {
+    for (entity, hp) in entities.iter() {
+        if hp.hp == 0 {
+            commands.entity(entity).insert(Dying).remove::<HitPoints>().remove::<Attackable>();
+        }
+    }
+}

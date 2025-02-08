@@ -3,7 +3,7 @@ use crate::graphics::animation_system::animated_sprite_system;
 use crate::graphics::sprite_collection::{setup_sprite_load_system, spawn_sprite_collection_system, AnimatedSpriteFile, SpriteCollection};
 use crate::input_systems::gamepad_input::gamepad_input_system;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
-use crate::player_systems::grounded_system::grounded_system;
+use crate::player_systems::grounded_system::grounded_player_system;
 use crate::player_systems::movement_dampening_system::movement_dampening_system;
 use crate::player_systems::player_attack_system::{player_attack_start_system, player_pogo_system};
 use crate::player_systems::player_control_system::player_control_system;
@@ -43,6 +43,10 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameStates>()
+            .insert_resource(LdtkSettings {
+                level_background: LevelBackground::Nonexistent,
+                ..default()
+            })
             .add_plugins(GameLdtkEntitiesPlugin)
             .add_plugins(EnemyPlugin)
             .add_systems(Startup, setup_sprite_load_system)
@@ -65,7 +69,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 Update,
                 (
-                    grounded_system,
+                    grounded_player_system,
                     player_control_system,
                     movement_dampening_system,
                 )

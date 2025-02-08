@@ -57,6 +57,7 @@ impl SpriteCollection {
             animation_frame_count: animation.frame_count,
             repeat,
             despawn_finished,
+            animation_name: animation_name.to_string(),
         };
 
         Some((sprite, animation))
