@@ -15,6 +15,7 @@ use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
 use input_systems::PlayerInputAction;
 use player_systems::player_spawn_system;
+use crate::enemies::EnemyPlugin;
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
 use crate::ldtk_entities::interactable::Interactable;
 use crate::ui::game_ui::setup_game_ui;
@@ -26,6 +27,7 @@ mod player_const_rules;
 pub mod player_systems;
 pub mod ldtk_entities;
 pub mod ui;
+pub mod enemies;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
@@ -42,6 +44,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameStates>()
             .add_plugins(GameLdtkEntitiesPlugin)
+            .add_plugins(EnemyPlugin)
             .add_systems(Startup, setup_sprite_load_system)
             .add_plugins(TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
                 "sprites.toml",

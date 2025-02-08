@@ -14,7 +14,7 @@ pub fn movement_dampening_system(
     for (mut velocity, dampening, grounded, moving) in &mut query {
         if grounded.is_some() && moving.is_none() {
             velocity.x = 0.;
-        } else {
+        } else if moving.is_none() {
             velocity.x *= 1. - dampening.0 * 0.15 * time.delta_secs();
         }
     }

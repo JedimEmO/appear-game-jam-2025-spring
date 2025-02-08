@@ -49,3 +49,18 @@ frame_count = 6
 row = 1
 frame_start_index = 5
 frame_count = 1
+
+
+
+
+# Enemies
+
+[sprites.what_sprite]
+sprite_sheet_file_name = "sprites/enemies/the_what.png"
+image_width = 32
+image_height = 32
+
+[sprites.what_sprite.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4

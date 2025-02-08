@@ -10,6 +10,8 @@ use bevy::reflect::List;
 use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
+use crate::enemies::attackable::Attackable;
+use crate::enemies::enemy::Enemy;
 
 pub mod chest;
 pub mod interactable;
@@ -55,6 +57,10 @@ pub fn handle_ldtk_entities_spawn(
                 };
 
                 commands.entity(entity).insert(chest);
+            }
+            "Enemy" => {
+                info!("Enemy spawned");
+                commands.entity(entity).insert(Enemy::default());
             }
             _ => {}
         }
