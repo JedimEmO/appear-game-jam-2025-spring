@@ -27,7 +27,7 @@ pub fn player_attack_start_system(
         (With<Player>, Added<Attacking>),
     >,
     mut attackables: Query<
-        (Entity, &Transform, &Collider, &mut LinearVelocity),
+        (Entity, &Transform, &Collider, Option<&mut LinearVelocity>),
         (With<Attackable>, Without<Player>),
     >,
     mut camera_shake: Query<&mut Shake, With<Camera2d>>,
@@ -114,8 +114,10 @@ pub fn player_attack_start_system(
             did_attack_trauma = true;
         }
 
-        attacked_linear_velocity.x = attack_ray_direction.x * 150.;
-        attacked_linear_velocity.y += 200.;
+        if let Some(mut attacked_linear_velocity) = attacked_linear_velocity {
+            attacked_linear_velocity.x = attack_ray_direction.x * 150.;
+            attacked_linear_velocity.y += 200.;
+        }
 
         commands.entity(attacked_entity).insert(Attacked);
         if is_pogo {

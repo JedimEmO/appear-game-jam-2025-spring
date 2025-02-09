@@ -1,5 +1,12 @@
-use crate::ldtk_entities::chest::{chest_animation_completed_observer, chest_opening_added_observer, spawn_chest_system, Chest, ChestType};
+use std::time::Duration;
+use crate::enemies::attackable::Attackable;
+use crate::enemies::Enemy;
+use crate::ldtk_entities::chest::{
+    chest_animation_completed_observer, chest_opening_added_observer, spawn_chest_system, Chest,
+    ChestType,
+};
 use crate::ldtk_entities::interactable::interactable_player_system;
+use crate::ldtk_entities::rubble::{rubble_dead_observer, rubble_dying_observer, spawn_rubble_system, Rubble};
 use crate::{
     spawn_terminal_system, spawn_thing_system, GameStates, PlayerSpawnEntityBundle, TerminalBundle,
     ThingBundle,
@@ -10,11 +17,10 @@ use bevy::reflect::List;
 use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
-use crate::enemies::attackable::Attackable;
-use crate::enemies::Enemy;
 
 pub mod chest;
 pub mod interactable;
+mod rubble;
 
 pub struct GameLdtkEntitiesPlugin;
 
@@ -36,8 +42,11 @@ impl Plugin for GameLdtkEntitiesPlugin {
             (interactable_player_system).run_if(in_state(GameStates::GameLoop)),
         );
 
-        app.add_observer(chest_opening_added_observer);
-        app.add_observer(chest_animation_completed_observer);
+        app.add_observer(chest_opening_added_observer)
+            .add_observer(spawn_rubble_system)
+            .add_observer(rubble_dying_observer)
+            .add_observer(rubble_dead_observer)
+            .add_observer(chest_animation_completed_observer);
 
         setup_ldtk_entities(app);
     }
@@ -49,7 +58,7 @@ pub fn handle_ldtk_entities_spawn(
 ) {
     for (entity, entity_instance) in entities.iter() {
         match entity_instance.identifier.as_str() {
-            "Chest" => {
+            "chest" => {
                 let Ok(chest) = Chest::try_from(entity_instance).inspect_err(|e| {
                     error!("failed to extract chest from entity {e}");
                 }) else {
@@ -58,19 +67,37 @@ pub fn handle_ldtk_entities_spawn(
 
                 commands.entity(entity).insert(chest);
             }
-            "Enemy" => {
+            "enemy" => {
                 info!("Enemy spawned");
                 commands.entity(entity).insert(Enemy::default());
             }
-            _ => {}
+            "rubble" => {
+                info!("Rubble spawned");
+                let collider = get_ldtk_bool_field("collider", &entity_instance).expect("missing collider for rubble");
+                let idle_millis = get_ldtk_integer_field("idle_animation_millis", &entity_instance).expect("missing idle_animation_millis for rubble");
+                let death_animation_millis = get_ldtk_integer_field("death_animation_millis", &entity_instance).expect("missing death_animation_millis for rubble");
+                let dead_animation_millis = get_ldtk_integer_field("dead_animation_millis", &entity_instance).expect("missing dead_animation_millis for rubble");
+                let sprite_name = get_ldtk_enum_field::<String>("rubble_type", &entity_instance).expect("missing rubble_type for rubble").expect("");
+
+                commands.entity(entity).insert(Rubble {
+                    collider,
+                    sprite_name,
+                    idle_duration: Duration::from_millis(idle_millis as u64),
+                    death_duration: Duration::from_millis(death_animation_millis as u64),
+                    dead_duration: Duration::from_millis(dead_animation_millis as u64),
+                });
+            }
+            _ => {
+                info!("Attempting to spawn unknown entity {:?}", entity_instance)
+            }
         }
     }
 }
 
 pub fn setup_ldtk_entities(app: &mut App) {
-    app.register_ldtk_entity::<PlayerSpawnEntityBundle>("PlayerSpawn");
-    app.register_ldtk_entity_for_layer::<ThingBundle>("Things", "Branch");
-    app.register_ldtk_entity_for_layer::<TerminalBundle>("Things", "Terminal");
+    app.register_ldtk_entity::<PlayerSpawnEntityBundle>("playerspawn");
+    app.register_ldtk_entity_for_layer::<ThingBundle>("things", "branch");
+    app.register_ldtk_entity_for_layer::<TerminalBundle>("things", "terminal");
 }
 
 pub fn get_ldtk_enum_field<T: TryFrom<String>>(
@@ -96,8 +123,62 @@ pub fn try_from_ldtk_enum_field<T: TryFrom<String>>(field: &FieldInstance) -> an
             };
 
             T::try_from(value.clone())
-                .map_err(|_| anyhow!("failed to convert string into enum value"))
+                .map_err(|_| anyhow!("failed to convert string into enum value {value}"))
         }
         _ => Err(anyhow!("not an enum")),
     }
+}
+
+pub fn get_ldtk_bool_field(
+    key: &str,
+    entity_instance: &EntityInstance,
+) -> Option<bool> {
+    for field in &entity_instance.field_instances {
+        if field.identifier != key {
+            continue;
+        }
+
+        return match field.value {
+            FieldValue::Bool(v) => Some(v),
+            _ => None
+        }
+    }
+
+    None
+}
+
+pub fn get_ldtk_integer_field(
+    key: &str,
+    entity_instance: &EntityInstance,
+) -> Option<i32> {
+    for field in &entity_instance.field_instances {
+        if field.identifier != key {
+            continue;
+        }
+
+        return match field.value {
+            FieldValue::Int(v) => v,
+            _ => None
+        }
+    }
+
+    None
+}
+
+pub fn get_ldtk_string_field(
+    key: &str,
+    entity_instance: &EntityInstance,
+) -> Option<String> {
+    for field in &entity_instance.field_instances {
+        if field.identifier != key {
+            continue;
+        }
+
+        return match &field.value {
+            FieldValue::String(v) => v.clone(),
+            _ => None
+        }
+    }
+
+    None
 }

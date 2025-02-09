@@ -17,8 +17,8 @@ impl TryFrom<String> for ChestType {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
-            "ChestSmall" => Ok(ChestType::Small),
-            "ChestLarge" => Ok(ChestType::Large),
+            "chest_small" => Ok(ChestType::Small),
+            "chest_large" => Ok(ChestType::Large),
             _ => Err(format!("Invalid chest type: {}", value)),
         }
     }
@@ -37,8 +37,8 @@ impl TryFrom<&EntityInstance> for Chest {
 
     fn try_from(entity_instance: &EntityInstance) -> Result<Self, Self::Error> {
         Ok(Self {
-            chest_type: get_ldtk_enum_field("ChestType", entity_instance)?
-                .ok_or(anyhow!("ChestType field not found"))?,
+            chest_type: get_ldtk_enum_field("chest_type", entity_instance)?
+                .ok_or(anyhow!("chest_type field not found"))?,
         })
     }
 }

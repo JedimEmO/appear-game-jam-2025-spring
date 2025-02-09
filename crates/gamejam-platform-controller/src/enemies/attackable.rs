@@ -26,6 +26,10 @@ pub fn attackable_attacked_observer(
     commands.entity(trigger.entity()).remove::<Attacked>();
     
     for (entity, attackable, mut enemy, mut hp) in attackables.iter_mut() {
+        if entity != trigger.entity() {
+            continue;
+        }
+        
         if let Some(mut hp) = hp {
             hp.hp = hp.hp.saturating_sub(10);
         }

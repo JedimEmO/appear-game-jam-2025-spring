@@ -97,7 +97,7 @@ pub struct PlayerSpawnSettings {
 
 #[derive(AssetCollection, Resource)]
 pub struct PlayerAssets {
-    #[asset(texture_atlas_layout(tile_size_x = 32, tile_size_y = 32, columns = 4, rows = 6))]
+    #[asset(texture_atlas_layout(tile_size_x = 32, tile_size_y = 32, columns = 4, rows = 6, padding_x = 2, padding_y = 2))]
     player_layout: Handle<TextureAtlasLayout>,
     #[asset(image(sampler(filter = nearest)))]
     #[asset(path = "sprites/guy.png")]
@@ -148,14 +148,18 @@ struct TerminalBundle {
 
 fn spawn_thing_system(
     mut commands: Commands,
-    assets: Res<ThingAssets>,
+    assets: Res<SpriteCollection>,
     query: Query<Entity, Added<Thing>>,
 ) {
     for entity in query.iter() {
-        commands.entity(entity).insert(Sprite::from_atlas_image(
-            assets.things.clone(),
-            TextureAtlas::from(assets.things_layout.clone()),
-        ));
+        commands.entity(entity).insert(assets.create_sprite_animation_bundle(
+            "bounce_fly",
+            "idle",
+            Duration::from_secs(1),
+            true,
+            false,
+            false
+        ).expect("missing bounce fly idle animation"));
     }
 }
 

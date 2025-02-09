@@ -54,11 +54,10 @@ pub fn animated_sprite_system(
                 } else {
                     if animation.despawn_finished {
                         commands.entity(entity).despawn();
+                        return;
                     } else {
                         commands.entity(entity).insert(SpriteAnimationCompleted);
                     }
-                    
-                    return;
                 }
             }
         }
@@ -67,7 +66,8 @@ pub fn animated_sprite_system(
             return;
         };
 
-        sprite_atlas.index = (animation.animation_start_index + animation.animation_frame) as usize;
+        let frame_index = animation.animation_frame.min(animation.animation_frame_count - 1);
+        sprite_atlas.index = (animation.animation_start_index + frame_index) as usize;
     }
 }
 
@@ -95,7 +95,9 @@ pub fn spawn_animated_sprite_for_entity(
     animation.play_animation(animation_index, frame_count, duration, settings.repeating);
 
     let mut sprite = Sprite::from_atlas_image(image, TextureAtlas::from(layout.clone()));
-
+    
+    let sprite_atlas = sprite.texture_atlas.as_mut().unwrap();
+    sprite_atlas.index = animation.animation_start_index as usize;
     sprite.flip_x = settings.flip_x;
 
     commands.insert((sprite, animation));

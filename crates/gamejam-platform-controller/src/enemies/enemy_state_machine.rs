@@ -35,7 +35,7 @@ pub fn enemy_state_machine_system(
         let distance_to_player = player_transform
             .translation
             .distance(enemy_transform.translation);
-
+        let vertical_distance_to_player = (player_transform.translation.y - enemy_transform.translation.y).abs();
 
         if sprite_animation.animation_name == "death" && sprite_animation.finished() {
             enemy.state_machine = EnemyStateMachine::Dead;
@@ -57,7 +57,7 @@ pub fn enemy_state_machine_system(
             EnemyStateMachine::Idle => {
                 commands.entity(entity).remove::<Moving>();
 
-                if distance_to_player > 200. {
+                if distance_to_player > 200. || vertical_distance_to_player > 32. {
                     continue;
                 }
 

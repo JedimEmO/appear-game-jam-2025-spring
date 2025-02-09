@@ -59,7 +59,7 @@ fn camera_track_system(
     tracked: Query<(&Transform, &LinearVelocity), (With<PixelCameraTracked>, Without<Camera>)>,
 ) {
     let mut camera = camera.single_mut();
-
+    
     for (transform, velocity) in tracked.iter() {
         let track_point = calculate_camera_track_point(transform, velocity);
         let dx = track_point.x - camera.translation.x;
@@ -79,8 +79,10 @@ fn camera_track_system(
     }
 }
 
-fn start_camera_system(mut commands: Commands, camera_resolution: Res<PixelCameraResolution>) {
-    commands.spawn((
+fn start_camera_system(mut commands: Commands, camera_resolution: Res<PixelCameraResolution>, asset_server: Res<AssetServer>) {
+    let sprite = Sprite::from_image(asset_server.load("sprites/scenery/nexus_bg.png"));
+    
+    let camera_id = commands.spawn((
         Camera2d,
         OrthographicProjection {
             scaling_mode: ScalingMode::Fixed {
@@ -91,8 +93,11 @@ fn start_camera_system(mut commands: Commands, camera_resolution: Res<PixelCamer
             far: 1000.,
             ..OrthographicProjection::default_2d()
         },
-        Shake::default()
-    ));
+        Shake::default(),
+    )).id();
+    
+    let mut camera_child = commands.spawn((sprite, Transform::from_xyz(0., 0., -100.)));
+    camera_child.set_parent(camera_id);
 }
 
 fn calculate_camera_track_point(transform: &Transform, velocity: &LinearVelocity) -> Vec2 {

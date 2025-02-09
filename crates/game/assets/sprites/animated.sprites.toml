@@ -79,3 +79,85 @@ frame_count = 5
 row = 2
 frame_start_index = 4
 frame_count = 1
+
+
+# Neutrals
+
+
+[sprites.bounce_fly]
+sprite_sheet_file_name = "sprites/enemies/bounce_fly.png"
+image_width = 32
+image_height = 32
+
+[sprites.bounce_fly.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+
+
+
+
+
+# Rubble
+
+[sprites.rubble_rock_wall]
+sprite_sheet_file_name = "sprites/scenery/rock_wall.png"
+image_width = 32
+image_height = 32
+
+[sprites.rubble_rock_wall.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.rubble_rock_wall.animations.death]
+row = 1
+frame_start_index = 0
+frame_count = 4
+
+[sprites.rubble_rock_wall.animations.dead]
+row = 1
+frame_start_index = 3
+frame_count = 1
+
+
+[sprites.sign_diag_up]
+sprite_sheet_file_name = "sprites/scenery/sign_diag_up.png"
+image_width = 32
+image_height = 32
+
+[sprites.sign_diag_up.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.sign_diag_up.animations.death]
+row = 1
+frame_start_index = 0
+frame_count = 6
+
+[sprites.sign_diag_up.animations.dead]
+row = 1
+frame_start_index = 5
+frame_count = 1
+
+[sprites.reeds]
+sprite_sheet_file_name = "sprites/scenery/reeds.png"
+image_width = 32
+image_height = 32
+
+[sprites.reeds.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+[sprites.reeds.animations.death]
+row = 1
+frame_start_index = 0
+frame_count = 8
+
+[sprites.reeds.animations.dead]
+row = 1
+frame_start_index = 7
+frame_count = 1

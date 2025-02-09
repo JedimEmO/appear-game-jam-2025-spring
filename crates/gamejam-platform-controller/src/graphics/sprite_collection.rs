@@ -45,6 +45,7 @@ impl SpriteCollection {
             sprite_info.image.clone(),
             TextureAtlas::from(sprite_info.layout.clone()),
         );
+        
         sprite.flip_x = flip_x;
 
         let animation = SpriteAnimation {
@@ -59,6 +60,8 @@ impl SpriteCollection {
             despawn_finished,
             animation_name: animation_name.to_string(),
         };
+
+        sprite.texture_atlas.as_mut().unwrap().index = animation.animation_start_index as usize;
 
         Some((sprite, animation))
     }
@@ -93,7 +96,7 @@ pub fn spawn_sprite_collection_system(
                 UVec2::new(sprite.image_width as u32, sprite.image_height as u32),
                 max_frames,
                 max_row + 1,
-                None,
+                Some(UVec2::new(2, 2)),
                 None,
             );
             let layout = asset_server.add(layout);

@@ -49,7 +49,7 @@ pub struct Sleeping;
 #[require(
     Attackable,
     RigidBody(|| RigidBody::Dynamic),
-    CollisionLayers(|| CollisionLayers::new(0b00001, 0b00100)),
+    CollisionLayers(|| CollisionLayers::new(0b00101, 0b00100)),
     CollisionMargin(|| CollisionMargin::from(COLLISION_MARGIN)),
     Friction(|| Friction::new(0.)),
     LockedAxes(|| LockedAxes::ROTATION_LOCKED),
