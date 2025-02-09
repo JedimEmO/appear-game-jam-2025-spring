@@ -161,3 +161,47 @@ frame_count = 8
 row = 1
 frame_start_index = 7
 frame_count = 1
+
+
+
+
+
+
+
+
+
+
+# Items
+
+
+[sprites.item_heart]
+sprite_sheet_file_name = "sprites/items/heart.png"
+image_width = 32
+image_height = 32
+
+[sprites.item_heart.animations.full]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.item_heart.animations.half]
+row = 1
+frame_start_index = 0
+frame_count = 1
+
+[sprites.item_heart.animations.empty]
+row = 2
+frame_start_index = 0
+frame_count = 1
+
+# UI
+
+[sprites.ui_healthbar]
+sprite_sheet_file_name = "ui/healthbar.png"
+image_width = 256
+image_height = 64
+
+[sprites.ui_healthbar.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1

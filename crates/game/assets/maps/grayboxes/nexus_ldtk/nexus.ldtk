@@ -15350,22 +15350,6 @@
 							"__worldY": 64
 						},
 						{
-							"__identifier": "branch",
-							"__grid": [38,46],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#D77643",
-							"iid": "60ae1a30-c210-11ef-9949-11e9d7eb710b",
-							"width": 16,
-							"height": 16,
-							"defUid": 97,
-							"px": [608,736],
-							"fieldInstances": [],
-							"__worldX": 32,
-							"__worldY": 208
-						},
-						{
 							"__identifier": "terminal",
 							"__grid": [53,50],
 							"__pivot": [0,0],

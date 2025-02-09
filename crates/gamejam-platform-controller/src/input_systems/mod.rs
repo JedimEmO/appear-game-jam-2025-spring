@@ -11,5 +11,6 @@ pub enum PlayerInputAction {
     Jump,
     JumpAbort,
     Attack(AttackDirection),
-    Interact
+    Interact,
+    ReloadLevel
 }

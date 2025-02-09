@@ -1,5 +1,5 @@
 use crate::graphics::animation_system::{spawn_animated_sprite_for_entity, SpriteSettings};
-use crate::player_components::Player;
+use crate::player_components::{Player, PlayerStatsMutable};
 use crate::{GameStates, PlayerAssets, PlayerSpawnEntity, PlayerSpawnSettings};
 use bevy::prelude::{Added, Camera2d, Commands, NextState, Query, Res, ResMut, Transform, With};
 use bevy::utils::default;
@@ -50,4 +50,8 @@ pub fn update_player_spawn(
     };
 
     player_spawn_info.position = transform.translation.truncate();
+}
+
+pub fn spawn_player_ui_proxy_system(mut commands: Commands) {
+    commands.spawn(PlayerStatsMutable::default());
 }

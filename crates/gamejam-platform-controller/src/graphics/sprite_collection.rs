@@ -9,6 +9,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 use std::time::Duration;
 
+#[derive(Clone)]
 pub struct AnimatedSprite {
     pub image: Handle<Image>,
     pub layout: Handle<TextureAtlasLayout>,
@@ -16,7 +17,7 @@ pub struct AnimatedSprite {
     pub row_width: u32
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Clone)]
 pub struct SpriteCollection {
     pub sprites: BTreeMap<String, AnimatedSprite>,
 }
@@ -46,6 +47,50 @@ impl SpriteCollection {
             TextureAtlas::from(sprite_info.layout.clone()),
         );
         
+        sprite.flip_x = flip_x;
+
+        let animation = SpriteAnimation {
+            timer: Timer::new(
+                duration / animation.frame_count,
+                TimerMode::Repeating,
+            ),
+            animation_start_index: animation.row * sprite_info.row_width + animation.frame_start_index,
+            animation_frame: 0,
+            animation_frame_count: animation.frame_count,
+            repeat,
+            despawn_finished,
+            animation_name: animation_name.to_string(),
+        };
+
+        sprite.texture_atlas.as_mut().unwrap().index = animation.animation_start_index as usize;
+
+        Some((sprite, animation))
+    }
+
+    pub fn create_ui_node_animation_bundle(
+        &self,
+        sprite_name: &str,
+        animation_name: &str,
+        duration: Duration,
+        repeat: bool,
+        despawn_finished: bool,
+        flip_x: bool,
+    ) -> Option<(ImageNode, SpriteAnimation)> {
+        let Some(sprite_info) = self.sprites.get(sprite_name) else {
+            error!("Sprite not found: {}", sprite_name);
+            return None;
+        };
+
+        let Some(animation) = sprite_info.animations.get(animation_name) else {
+            error!("Animation not found: {}", animation_name);
+            return None;
+        };
+
+        let mut sprite = ImageNode::from_atlas_image(
+            sprite_info.image.clone(),
+            TextureAtlas::from(sprite_info.layout.clone()),
+        );
+
         sprite.flip_x = flip_x;
 
         let animation = SpriteAnimation {
@@ -119,7 +164,7 @@ pub fn spawn_sprite_collection_system(
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Copy, Clone)]
 pub struct AnimationInfo {
     pub row: u32,
     pub frame_start_index: u32,

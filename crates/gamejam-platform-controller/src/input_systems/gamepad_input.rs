@@ -38,4 +38,10 @@ pub fn gamepad_input_system(
     if gamepad.just_released(GamepadButton::South) {
         event_sender.send(PlayerInputAction::JumpAbort);
     }
+
+    // Debug
+
+    if gamepad.pressed(GamepadButton::LeftTrigger2) {
+        event_sender.send(PlayerInputAction::ReloadLevel);
+    }
 }

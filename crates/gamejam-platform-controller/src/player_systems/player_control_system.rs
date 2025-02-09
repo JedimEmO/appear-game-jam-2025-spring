@@ -9,6 +9,7 @@ use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use std::time::Duration;
+use bevy_ecs_ldtk::{LevelIid, LevelSelection, Respawn};
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 
 pub fn player_control_system(
@@ -29,6 +30,7 @@ pub fn player_control_system(
         ),
         With<Player>,
     >,
+    level: Query<(Entity,&LevelIid)>,
     interactables: Query<Entity, With<InteractableInRange>>
 ) {
     let delta_t = time.delta_secs_f64().adjust_precision();
@@ -119,6 +121,10 @@ pub fn player_control_system(
                     if let Ok(interactable_entity) = interactables.get_single() {
                         commands.entity(interactable_entity).insert(Interacted);
                     }
+                }
+                PlayerInputAction::ReloadLevel => {
+                    let (level, _) = level.single();
+                    commands.entity(level).insert(Respawn);
                 }
             }
         }

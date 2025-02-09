@@ -6,6 +6,7 @@ use anyhow::anyhow;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
+use crate::player_components::{Player, PlayerStats};
 
 pub enum ChestType {
     Small,
@@ -110,6 +111,7 @@ pub fn chest_animation_completed_observer(
     mut commands: Commands,
     assets: Res<SpriteCollection>,
     query: Query<Entity, With<Chest>>,
+    mut player_health: Query<&mut PlayerStats, With<Player>>,
 ) {
     let Some(mut entity) = commands.get_entity(trigger.entity()) else {
         return;
@@ -118,6 +120,9 @@ pub fn chest_animation_completed_observer(
     if !query.contains(trigger.entity()) {
         return;
     };
+
+    let mut player_stats = player_health.single_mut();
+    player_stats.max_health += 2;
 
     entity
         .remove::<Sprite>()

@@ -11,7 +11,7 @@ pub fn keyboard_input_system(
 
     if key_input.pressed(KeyCode::ArrowDown) && key_input.just_pressed(KeyCode::KeyF) {
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Down));
-    } else if key_input.pressed(KeyCode::KeyF) {
+    } else if key_input.just_pressed(KeyCode::KeyF) {
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Sideways));
     }
 

@@ -7,17 +7,19 @@ use crate::player_systems::grounded_system::grounded_player_system;
 use crate::player_systems::movement_dampening_system::movement_dampening_system;
 use crate::player_systems::player_attack_system::{player_attack_start_system, player_pogo_system};
 use crate::player_systems::player_control_system::player_control_system;
-use crate::player_systems::player_spawn_system::spawn_player_system;
+use crate::player_systems::player_spawn_system::{spawn_player_system, spawn_player_ui_proxy_system};
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
+use haalka::HaalkaPlugin;
 use input_systems::PlayerInputAction;
 use player_systems::player_spawn_system;
 use crate::enemies::EnemyPlugin;
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
 use crate::ldtk_entities::interactable::Interactable;
+use crate::player_systems::player_health::player_health_sync_system;
 use crate::ui::game_ui::setup_game_ui;
 
 pub mod graphics;
@@ -49,7 +51,8 @@ impl Plugin for PlayerPlugin {
             })
             .add_plugins(GameLdtkEntitiesPlugin)
             .add_plugins(EnemyPlugin)
-            .add_systems(Startup, setup_sprite_load_system)
+            .add_plugins(HaalkaPlugin)
+            .add_systems(Startup, (setup_sprite_load_system, spawn_player_ui_proxy_system))
             .add_plugins(TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
                 "sprites.toml",
             ]))
@@ -83,7 +86,8 @@ impl Plugin for PlayerPlugin {
                     keyboard_input_system,
                     gamepad_input_system,
                     player_attack_start_system,
-                    player_pogo_system
+                    player_pogo_system,
+                    player_health_sync_system
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             );

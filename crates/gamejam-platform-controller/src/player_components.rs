@@ -1,7 +1,9 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use haalka::prelude::Mutable;
 use simple_2d_camera::PixelCameraTracked;
 use crate::AttackDirection;
+use crate::enemies::HitPoints;
 use crate::player_const_rules::*;
 
 #[derive(Component)]
@@ -20,7 +22,9 @@ use crate::player_const_rules::*;
     PixelCameraTracked,
     Friction(|| Friction::new(0.)),
     PlayerActionTracker,
-    PlayerMovementData
+    PlayerMovementData,
+    PlayerStats,
+    HitPoints(|| HitPoints { hp: 3 })
 )]
 pub struct Player;
 
@@ -72,3 +76,23 @@ pub struct JumpState {
 
 #[derive(Component)]
 pub struct MovementDampeningFactor(pub f32);
+
+#[derive(Component)]
+pub struct PlayerStats {
+    pub max_health: u32
+}
+
+impl Default for PlayerStats {
+    fn default() -> Self {
+        Self {
+            max_health: 6
+        }
+    }
+}
+
+// UI sync
+#[derive(Component, Default, Clone)]
+pub struct PlayerStatsMutable {
+    pub hp: Mutable<u32>,
+    pub max_hp: Mutable<u32>
+}
