@@ -15,7 +15,7 @@ pub fn setup_game_ui(
         (a.clone(), b.single().clone())
     };
 
-    let PlayerStatsMutable { hp, max_hp } = player_health;
+    let PlayerStatsMutable { hp, max_hp, hearts } = player_health;
     let sprite_collection = assets.clone();
 
     let health_signal = map_ref! {
@@ -68,35 +68,21 @@ pub fn setup_game_ui(
         )
         .expect("failed to open ui_healthbar");
 
-    let hearts_signal_vec = health_signal
-        .dedupe()
-        .map(|(hp, max_hp)| {
-            let full_hearts = hp / 2;
-            let half_hearts = hp % 2;
-            let empty_hearts = (max_hp - hp) / 2;
-
-            let mut hearts = vec![];
-
-            for _ in 0..full_hearts {
-                hearts.push(2);
+    let hearts_signal_vec = hearts.signal_vec_cloned().map(move |v| {
+        El::<ImageNode>::new().image_node_signal(v.signal().dedupe().map({
+            let full_heart = full_heart.clone();
+            let half_heart = half_heart.clone();
+            let empty_heart = empty_heart.clone();
+            
+            move |heart_value| {
+                match heart_value {
+                    2 => full_heart.clone(),
+                    1 => half_heart.clone(),
+                    _ => empty_heart.clone()
+                }
             }
-
-            for _ in 0..half_hearts {
-                hearts.push(1);
-            }
-
-            for _ in 0..empty_hearts {
-                hearts.push(0);
-            }
-
-            hearts
-        })
-        .to_signal_vec()
-        .map(move |heart| match heart {
-            0 => El::<ImageNode>::new().image_node(empty_heart.clone()),
-            1 => El::<ImageNode>::new().image_node(half_heart.clone()),
-            _ => El::<ImageNode>::new().image_node(full_heart.clone()),
-        });
+        }))
+    });
 
     let health_bar = El::<ImageNode>::new()
         .image_node(health_bar_backdrop)
@@ -104,7 +90,7 @@ pub fn setup_game_ui(
         .height(Val::Px(64.))
         .align_content(Align::new().center_y())
         .child(
-            Row::<ImageNode>::new()
+            Row::<Node>::new()
                 .with_node(|mut n| n.padding.left = Val::Px(15.))
                 .items_signal_vec(hearts_signal_vec),
         );

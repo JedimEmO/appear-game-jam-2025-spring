@@ -1,6 +1,6 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use haalka::prelude::Mutable;
+use haalka::prelude::{Mutable, MutableVec};
 use simple_2d_camera::PixelCameraTracked;
 use crate::AttackDirection;
 use crate::enemies::HitPoints;
@@ -94,5 +94,6 @@ impl Default for PlayerStats {
 #[derive(Component, Default, Clone)]
 pub struct PlayerStatsMutable {
     pub hp: Mutable<u32>,
-    pub max_hp: Mutable<u32>
+    pub max_hp: Mutable<u32>,
+    pub hearts: MutableVec<Mutable<u32>>
 }
