@@ -94,6 +94,7 @@ fn start_camera_system(mut commands: Commands, camera_resolution: Res<PixelCamer
             ..OrthographicProjection::default_2d()
         },
         Shake::default(),
+        IsDefaultUiCamera
     )).id();
     
     let mut camera_child = commands.spawn((sprite, Transform::from_xyz(0., 0., -100.)));
