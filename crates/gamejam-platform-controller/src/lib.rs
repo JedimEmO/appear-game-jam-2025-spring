@@ -68,7 +68,6 @@ impl Plugin for PlayerPlugin {
             )
             .add_systems(OnEnter(GameStates::SpawnPlayer), (spawn_player_system, setup_game_ui))
             .add_event::<PlayerInputAction>()
-            .add_systems(Update, player_spawn_system::update_player_spawn)
             .add_systems(
                 Update,
                 (
@@ -122,13 +121,6 @@ pub struct ThingAssets {
     things: Handle<Image>,
 }
 
-#[derive(Default, Component)]
-pub struct PlayerSpawnEntity;
-
-#[derive(Bundle, LdtkEntity, Default)]
-struct PlayerSpawnEntityBundle {
-    player_spawn: PlayerSpawnEntity,
-}
 
 #[derive(Default, Component)]
 #[require(

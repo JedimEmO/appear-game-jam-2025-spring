@@ -1,4 +1,3 @@
-use std::time::Duration;
 use crate::enemies::attackable::Attackable;
 use crate::enemies::Enemy;
 use crate::ldtk_entities::chest::{
@@ -6,21 +5,28 @@ use crate::ldtk_entities::chest::{
     ChestType,
 };
 use crate::ldtk_entities::interactable::interactable_player_system;
-use crate::ldtk_entities::rubble::{rubble_dead_observer, rubble_dying_observer, spawn_rubble_system, Rubble};
-use crate::{
-    spawn_terminal_system, spawn_thing_system, GameStates, PlayerSpawnEntityBundle, TerminalBundle,
-    ThingBundle,
+use crate::ldtk_entities::level_transition::{
+    level_transition_system, spawn_level_transition_observer, LevelTransition,
 };
+use crate::ldtk_entities::player_collidable_entity::{player_collidable_system, PlayerCollidable};
+use crate::ldtk_entities::player_spawn::{move_player_to_spawn, PlayerSpawnEntity};
+use crate::ldtk_entities::rubble::{
+    rubble_dead_observer, rubble_dying_observer, spawn_rubble_system, Rubble,
+};
+use crate::{spawn_terminal_system, spawn_thing_system, GameStates, TerminalBundle, ThingBundle};
 use anyhow::anyhow;
 use bevy::prelude::*;
-use bevy::reflect::List;
 use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
+use std::time::Duration;
 
 pub mod chest;
 pub mod interactable;
-mod rubble;
+pub mod level_transition;
+pub mod player_collidable_entity;
+pub mod player_spawn;
+pub mod rubble;
 
 pub struct GameLdtkEntitiesPlugin;
 
@@ -29,10 +35,13 @@ impl Plugin for GameLdtkEntitiesPlugin {
         app.add_systems(
             Update,
             (
+                player_collidable_system,
                 spawn_thing_system,
                 spawn_terminal_system,
                 spawn_chest_system,
+                level_transition_system,
                 handle_ldtk_entities_spawn,
+                move_player_to_spawn
             )
                 .run_if(in_state(GameStates::GameLoop)),
         );
@@ -46,6 +55,7 @@ impl Plugin for GameLdtkEntitiesPlugin {
             .add_observer(spawn_rubble_system)
             .add_observer(rubble_dying_observer)
             .add_observer(rubble_dead_observer)
+            .add_observer(spawn_level_transition_observer)
             .add_observer(chest_animation_completed_observer);
 
         setup_ldtk_entities(app);
@@ -73,11 +83,19 @@ pub fn handle_ldtk_entities_spawn(
             }
             "rubble" => {
                 info!("Rubble spawned");
-                let collider = get_ldtk_bool_field("collider", &entity_instance).expect("missing collider for rubble");
-                let idle_millis = get_ldtk_integer_field("idle_animation_millis", &entity_instance).expect("missing idle_animation_millis for rubble");
-                let death_animation_millis = get_ldtk_integer_field("death_animation_millis", &entity_instance).expect("missing death_animation_millis for rubble");
-                let dead_animation_millis = get_ldtk_integer_field("dead_animation_millis", &entity_instance).expect("missing dead_animation_millis for rubble");
-                let sprite_name = get_ldtk_enum_field::<String>("rubble_type", &entity_instance).expect("missing rubble_type for rubble").expect("");
+                let collider = get_ldtk_bool_field("collider", &entity_instance)
+                    .expect("missing collider for rubble");
+                let idle_millis = get_ldtk_integer_field("idle_animation_millis", &entity_instance)
+                    .expect("missing idle_animation_millis for rubble");
+                let death_animation_millis =
+                    get_ldtk_integer_field("death_animation_millis", &entity_instance)
+                        .expect("missing death_animation_millis for rubble");
+                let dead_animation_millis =
+                    get_ldtk_integer_field("dead_animation_millis", &entity_instance)
+                        .expect("missing dead_animation_millis for rubble");
+                let sprite_name = get_ldtk_enum_field::<String>("rubble_type", &entity_instance)
+                    .expect("missing rubble_type for rubble")
+                    .expect("");
 
                 commands.entity(entity).insert(Rubble {
                     collider,
@@ -87,6 +105,30 @@ pub fn handle_ldtk_entities_spawn(
                     dead_duration: Duration::from_millis(dead_animation_millis as u64),
                 });
             }
+            "level_transition" => {
+                info!("level transition spawned");
+                let target_level_index =
+                    get_ldtk_integer_field("target_level_index", &entity_instance)
+                        .expect("missing target_level_index for level transition");
+                let target_spawn = get_ldtk_string_field("target_spawn", &entity_instance)
+                    .expect("missing target_spawn for level transition");
+
+                commands.entity(entity).insert((
+                    LevelTransition {
+                        target_level_index,
+                        target_player_spawn_name: target_spawn,
+                    },
+                    PlayerCollidable,
+                ));
+            }
+            "playerspawn" => {
+                let spawn_name = get_ldtk_string_field("name", &entity_instance)
+                    .expect("missing name for player spawn");
+
+                commands
+                    .entity(entity)
+                    .insert(PlayerSpawnEntity { spawn_name });
+            }
             _ => {
                 info!("Attempting to spawn unknown entity {:?}", entity_instance)
             }
@@ -95,7 +137,6 @@ pub fn handle_ldtk_entities_spawn(
 }
 
 pub fn setup_ldtk_entities(app: &mut App) {
-    app.register_ldtk_entity::<PlayerSpawnEntityBundle>("playerspawn");
     app.register_ldtk_entity_for_layer::<ThingBundle>("things", "branch");
     app.register_ldtk_entity_for_layer::<TerminalBundle>("things", "terminal");
 }
@@ -129,10 +170,7 @@ pub fn try_from_ldtk_enum_field<T: TryFrom<String>>(field: &FieldInstance) -> an
     }
 }
 
-pub fn get_ldtk_bool_field(
-    key: &str,
-    entity_instance: &EntityInstance,
-) -> Option<bool> {
+pub fn get_ldtk_bool_field(key: &str, entity_instance: &EntityInstance) -> Option<bool> {
     for field in &entity_instance.field_instances {
         if field.identifier != key {
             continue;
@@ -140,17 +178,14 @@ pub fn get_ldtk_bool_field(
 
         return match field.value {
             FieldValue::Bool(v) => Some(v),
-            _ => None
-        }
+            _ => None,
+        };
     }
 
     None
 }
 
-pub fn get_ldtk_integer_field(
-    key: &str,
-    entity_instance: &EntityInstance,
-) -> Option<i32> {
+pub fn get_ldtk_integer_field(key: &str, entity_instance: &EntityInstance) -> Option<i32> {
     for field in &entity_instance.field_instances {
         if field.identifier != key {
             continue;
@@ -158,17 +193,14 @@ pub fn get_ldtk_integer_field(
 
         return match field.value {
             FieldValue::Int(v) => v,
-            _ => None
-        }
+            _ => None,
+        };
     }
 
     None
 }
 
-pub fn get_ldtk_string_field(
-    key: &str,
-    entity_instance: &EntityInstance,
-) -> Option<String> {
+pub fn get_ldtk_string_field(key: &str, entity_instance: &EntityInstance) -> Option<String> {
     for field in &entity_instance.field_instances {
         if field.identifier != key {
             continue;
@@ -176,8 +208,8 @@ pub fn get_ldtk_string_field(
 
         return match &field.value {
             FieldValue::String(v) => v.clone(),
-            _ => None
-        }
+            _ => None,
+        };
     }
 
     None
