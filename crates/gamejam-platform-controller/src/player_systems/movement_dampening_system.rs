@@ -15,7 +15,7 @@ pub fn movement_dampening_system(
         if grounded.is_some() && moving.is_none() {
             velocity.x = 0.;
         } else if moving.is_none() {
-            velocity.x *= 1. - dampening.0 * 0.15 * time.delta_secs();
+            velocity.x *= 1. - dampening.0 * 0.35 * time.delta_secs();
         }
     }
 }

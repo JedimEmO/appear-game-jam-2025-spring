@@ -43,7 +43,9 @@ pub fn grounded_player_system(
                 }
             }
 
+
             jump_state_data.last_grounded_time = Some(now);
+            jump_state_data.jump_start_requested_at = None;
 
             if attacking.is_none() && moving.is_none() {
                 animation.animation_start_index = 0;

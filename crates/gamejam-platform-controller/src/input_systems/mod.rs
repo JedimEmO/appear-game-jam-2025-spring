@@ -9,6 +9,7 @@ pub mod keyboard_input_system;
 pub enum PlayerInputAction {
     Horizontal(Vec2),
     Jump,
+    JumpStart,
     JumpAbort,
     Attack(AttackDirection),
     Interact,

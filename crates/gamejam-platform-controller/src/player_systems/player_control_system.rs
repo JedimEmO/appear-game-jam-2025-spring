@@ -1,16 +1,19 @@
 use crate::graphics::animation_system::SpriteAnimation;
-use crate::player_components::{Attacking, Direction, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData, Pogoing};
+use crate::input_systems::PlayerInputAction;
+use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
+use crate::player_components::{
+    Attacking, Direction, Grounded, JumpState, Moving, Player, PlayerActionTracker,
+    PlayerMovementData, Pogoing,
+};
 use crate::player_const_rules::{
     ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
     PLAYER_ATTACK_DELAY_SECONDS,
 };
-use crate::input_systems::PlayerInputAction;
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use std::time::Duration;
 use bevy_ecs_ldtk::{LevelIid, LevelSelection, Respawn};
-use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
+use std::time::Duration;
 
 pub fn player_control_system(
     mut commands: Commands,
@@ -30,8 +33,8 @@ pub fn player_control_system(
         ),
         With<Player>,
     >,
-    level: Query<(Entity,&LevelIid)>,
-    interactables: Query<Entity, With<InteractableInRange>>
+    level: Query<(Entity, &LevelIid)>,
+    interactables: Query<Entity, With<InteractableInRange>>,
 ) {
     let delta_t = time.delta_secs_f64().adjust_precision();
 
@@ -59,16 +62,12 @@ pub fn player_control_system(
             continue;
         }
 
-        if movement_events.is_empty() {
-            commands.entity(entity).remove::<Moving>();
-            continue;
-        } else {
-            commands.entity(entity).insert(Moving);
-        }
+        let mut still_moving = false;
 
         for movement_action in movement_events.read() {
             match movement_action {
                 PlayerInputAction::Horizontal(dir) => {
+                    still_moving = true;
                     if grounded.is_some() {
                         if animation.animation_start_index != 4 {
                             animation.play_animation(4, 4, Duration::from_millis(500), true);
@@ -89,12 +88,14 @@ pub fn player_control_system(
                     sprite.flip_x = movement_data.horizontal_direction;
                 }
                 PlayerInputAction::Jump => {
-                    do_jump(
-                        &time,
-                        &mut linear_velocity,
-                        grounded,
-                        &mut jump_state,
-                    );
+                    do_jump(&time, &mut linear_velocity, grounded, &mut jump_state);
+                }
+                PlayerInputAction::JumpStart => {
+                    if jump_state.jump_start_requested_at.is_none() {
+                        jump_state.jump_start_requested_at = Some(time.elapsed_secs());
+                    }
+
+                    do_jump(&time, &mut linear_velocity, grounded, &mut jump_state);
                 }
                 PlayerInputAction::JumpAbort => {
                     if linear_velocity.y > 0.5 {
@@ -128,6 +129,12 @@ pub fn player_control_system(
                 }
             }
         }
+
+        if still_moving {
+            commands.entity(entity).insert(Moving);
+        } else {
+            commands.entity(entity).remove::<Moving>();
+        }
     }
 }
 
@@ -135,7 +142,7 @@ fn do_jump(
     time: &Res<Time>,
     linear_velocity: &mut Mut<LinearVelocity>,
     grounded: Option<&Grounded>,
-    jump_state: &mut Mut<JumpState>
+    jump_state: &mut Mut<JumpState>,
 ) {
     let now = time.elapsed_secs_f64();
     let left_ground_at = jump_state.left_ground_at;
@@ -144,14 +151,19 @@ fn do_jump(
     let coyote_time_delta = now - jump_state.last_grounded_time.unwrap_or(0.);
     let can_coyote_jump = coyote_time_delta <= 0.2;
 
-    if is_grounded || can_coyote_jump && jump_state.used == 0 {
+    let start = match jump_state.jump_start_requested_at {
+        Some(time_requested) => time.elapsed_secs() - time_requested < 0.3,
+        _ => false
+    };
+
+    if start && (is_grounded || can_coyote_jump && jump_state.used == 0) {
         jump_state.used = 1;
         jump_state.left_ground_at = Some(now);
         linear_velocity.y = JUMP_SPEED;
+        jump_state.used += 1;
+        jump_state.jump_start_requested_at = None;
     } else if left_ground_at.is_some() && now - left_ground_at.unwrap() < MAX_JUMP_ACCELERATION_TIME
     {
         linear_velocity.y = JUMP_SPEED;
     }
-
-    jump_state.used += 1;
 }

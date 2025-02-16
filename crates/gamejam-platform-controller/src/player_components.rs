@@ -72,6 +72,7 @@ pub struct JumpState {
     pub used: u8,
     pub left_ground_at: Option<f64>,
     pub last_grounded_time: Option<f64>,
+    pub jump_start_requested_at: Option<f32>
 }
 
 #[derive(Component)]
