@@ -2,6 +2,7 @@ use avian2d::prelude::*;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+#[cfg(feature = "bevy-inspector-egui")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use gamejam_platform_controller::{GameStates, PlayerPlugin, PlayerSpawnSettings};
 

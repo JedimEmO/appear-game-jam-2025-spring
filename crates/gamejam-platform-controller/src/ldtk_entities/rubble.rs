@@ -14,7 +14,7 @@ pub struct Rubble {
     pub sprite_name: String,
     pub idle_duration: Duration,
     pub death_duration: Duration,
-    pub dead_duration: Duration
+    pub dead_duration: Duration,
 }
 
 pub fn spawn_rubble_system(
@@ -28,29 +28,32 @@ pub fn spawn_rubble_system(
 
         let mut entity = commands.entity(entity);
 
-        entity
-            .insert(
-                assets
-                    .create_sprite_animation_bundle(
-                        &rubble.sprite_name,
-                        "idle",
-                        rubble.idle_duration,
-                        true,
-                        false,
-                        false,
-                    )
-                    .unwrap(),
+        let (sprite, animation) = assets
+            .create_sprite_animation_bundle(
+                &rubble.sprite_name,
+                "idle",
+                rubble.idle_duration,
+                true,
+                false,
+                false,
             )
-            .insert((RigidBody::Static, Collider::rectangle(8., 32.), HitPoints { hp: 1 }, Attackable));
+            .unwrap();
+
+        let (width, height) = (animation.sprite_size.x, animation.sprite_size.y);
+
+        entity.insert((
+            sprite,
+            animation,
+            RigidBody::Static,
+            Collider::rectangle(width as f32, height as f32),
+            HitPoints { hp: 1 },
+            Attackable,
+        ));
 
         if rubble.collider {
-            entity.insert((
-                CollisionLayers::new(0b00100, 0b00101),
-            ));
+            entity.insert((CollisionLayers::new(0b00100, 0b00101),));
         } else {
-            entity.insert((
-                CollisionLayers::new(0b00000, 0b00000),
-            ));
+            entity.insert((CollisionLayers::new(0b00000, 0b00000),));
         }
     }
 }
@@ -59,7 +62,10 @@ pub fn rubble_dying_observer(
     trigger: Trigger<OnAdd, Dying>,
     mut commands: Commands,
     assets: Res<SpriteCollection>,
-    mut enemies: Query<(Entity, &mut Sprite, &mut SpriteAnimation, &Rubble), (With<Rubble>, Added<Dying>)>,
+    mut enemies: Query<
+        (Entity, &mut Sprite, &mut SpriteAnimation, &Rubble),
+        (With<Rubble>, Added<Dying>),
+    >,
 ) {
     for (entity, mut sprite, mut animation, rubble) in enemies.iter_mut() {
         if entity == trigger.entity() {

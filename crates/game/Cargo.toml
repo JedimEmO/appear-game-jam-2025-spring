@@ -6,13 +6,13 @@ edition = "2021"
 [features]
 default = ["fps"]
 avian-debug = []
-inspector = []
+inspector = ["bevy-inspector-egui"]
 fps = ["bevy/bevy_dev_tools"]
 
 [dependencies]
 avian2d.workspace = true
 bevy.workspace = true
-bevy-inspector-egui.workspace = true
+bevy-inspector-egui = { workspace = true, optional = true}
 bevy_ecs_ldtk.workspace = true
 simple-2d-camera = { path = "../simple-2d-camera" }
 gamejam-platform-controller = { path = "../gamejam-platform-controller" }

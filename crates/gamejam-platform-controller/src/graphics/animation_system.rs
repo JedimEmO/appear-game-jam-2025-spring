@@ -9,7 +9,8 @@ pub struct SpriteAnimation {
     pub animation_frame_count: u32,
     pub repeat: bool,
     pub despawn_finished: bool,
-    pub animation_name: String
+    pub animation_name: String,
+    pub sprite_size: UVec2
 }
 
 #[derive(Component)]

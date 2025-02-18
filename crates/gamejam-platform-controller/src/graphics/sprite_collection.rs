@@ -14,7 +14,8 @@ pub struct AnimatedSprite {
     pub image: Handle<Image>,
     pub layout: Handle<TextureAtlasLayout>,
     pub animations: BTreeMap<String, AnimationInfo>,
-    pub row_width: u32
+    pub row_width: u32,
+    pub sprite_size: UVec2
 }
 
 #[derive(Resource, Default, Clone)]
@@ -60,6 +61,7 @@ impl SpriteCollection {
             repeat,
             despawn_finished,
             animation_name: animation_name.to_string(),
+            sprite_size: sprite_info.sprite_size
         };
 
         sprite.texture_atlas.as_mut().unwrap().index = animation.animation_start_index as usize;
@@ -104,6 +106,7 @@ impl SpriteCollection {
             repeat,
             despawn_finished,
             animation_name: animation_name.to_string(),
+            sprite_size: sprite_info.sprite_size,
         };
 
         sprite.texture_atlas.as_mut().unwrap().index = animation.animation_start_index as usize;
@@ -154,7 +157,8 @@ pub fn spawn_sprite_collection_system(
                     image,
                     layout,
                     animations: sprite.animations,
-                    row_width: max_frames
+                    row_width: max_frames,
+                    sprite_size: UVec2::new(sprite.image_width as u32, sprite.image_height as u32)
                 },
             );
         }
