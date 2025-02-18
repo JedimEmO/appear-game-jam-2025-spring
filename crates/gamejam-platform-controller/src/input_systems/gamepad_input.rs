@@ -17,7 +17,7 @@ pub fn gamepad_input_system(
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Sideways));
     }
     
-    if gamepad.just_pressed(GamepadButton::North) {
+    if gamepad.just_pressed(GamepadButton::DPadUp) {
         event_sender.send(PlayerInputAction::Interact);
     }
     

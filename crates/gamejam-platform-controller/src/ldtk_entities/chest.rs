@@ -67,7 +67,7 @@ pub fn spawn_chest_system(
                     .unwrap(),
             )
             .insert(Interactable {
-                action_hint: "Press <north> to Open".to_string(),
+                action_hint: "Press <up> to Open".to_string(),
             });
     }
 }

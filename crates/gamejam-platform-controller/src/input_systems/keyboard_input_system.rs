@@ -21,7 +21,7 @@ pub fn keyboard_input_system(
         direction.x = -1.;
     }
     
-    if key_input.just_pressed(KeyCode::KeyE) {
+    if key_input.just_pressed(KeyCode::ArrowUp) {
         event_sender.send(PlayerInputAction::Interact);
     } 
 
@@ -29,7 +29,9 @@ pub fn keyboard_input_system(
         event_sender.send(PlayerInputAction::Horizontal(direction));
     }
 
-    if key_input.pressed(KeyCode::Space) {
+    if key_input.just_pressed(KeyCode::Space) {
+        event_sender.send(PlayerInputAction::JumpStart);
+    } else if key_input.pressed(KeyCode::Space) {
         event_sender.send(PlayerInputAction::Jump);
     }
 

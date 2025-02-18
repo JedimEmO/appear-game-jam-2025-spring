@@ -183,7 +183,7 @@ fn spawn_terminal_system(
             false,
             false
         ).unwrap()).insert(Interactable {
-            action_hint: "press <north> to read terminal".to_string()
+            action_hint: "press <up> to read terminal".to_string()
         });
     }
 }
