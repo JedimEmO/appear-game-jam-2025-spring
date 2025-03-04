@@ -18,7 +18,7 @@ pub struct GameEntityDefinition {
     pub distance_based_animations: Option<BTreeMap<String, AnimationDescription>>
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct AnimationDescription {
     pub sprite_name: String,
     pub animation_name: String,

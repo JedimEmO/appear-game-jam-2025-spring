@@ -20,6 +20,7 @@ use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
+use crate::game_entities::file_formats::game_entity_definitions::{GameEntityDefinitionFile, GameEntityDefinitionFileHandle};
 use crate::ldtk_entities::game_entity::{game_entity_try_from_entity_instance, player_distance_animation};
 
 pub mod chest;
@@ -63,6 +64,8 @@ impl Plugin for GameLdtkEntitiesPlugin {
 
 pub fn handle_ldtk_entities_spawn(
     mut commands: Commands,
+    entity_db: Res<Assets<GameEntityDefinitionFile>>,
+    entity_db_handle: Res<GameEntityDefinitionFileHandle>,
     entities: Query<(Entity, &EntityInstance, &Transform), Added<EntityInstance>>,
 ) {
     for (entity, entity_instance, transform) in entities.iter() {
@@ -106,7 +109,7 @@ pub fn handle_ldtk_entities_spawn(
             }
             "game_entity" => {
                 info!("Game entity spawned");
-                let Some(bundle) = game_entity_try_from_entity_instance(entity_instance, *transform) else {
+                let Some(bundle) = game_entity_try_from_entity_instance(&entity_db, &entity_db_handle, entity_instance, *transform) else {
                     continue;
                 };
 

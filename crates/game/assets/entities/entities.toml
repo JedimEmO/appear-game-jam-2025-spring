@@ -1,4 +1,5 @@
 [entities.house_1]
+id = "house_1"
 tags = [ "house" ]
 
 [entities.house_1.idle_animation]
@@ -6,7 +7,21 @@ sprite_name = "house_1"
 animation_name = "idle"
 duration_millis = 1000
 
-[entities.house_1.distance_based_animations.1000]
+[entities.house_1.distance_based_animations.50]
 sprite_name = "house_1"
-animation_name = "glow"
+animation_name = "glowing"
 duration_millis = 1000
+
+[entities.lamp_post]
+id = "lamp_post"
+tags = [ "decorative" ]
+
+[entities.lamp_post.idle_animation]
+sprite_name = "lamp_post"
+animation_name = "idle"
+duration_millis = 1000
+
+[entities.lamp_post.distance_based_animations.70]
+sprite_name = "lamp_post"
+animation_name = "swinging"
+duration_millis = 700

@@ -1,4 +1,6 @@
-use std::cmp::Ordering;
+use crate::game_entities::file_formats::game_entity_definitions::{
+    AnimationDescription, GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
+};
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::{
     get_ldtk_enum_field, get_ldtk_integer_field, get_ldtk_string_array_field, get_ldtk_string_field,
@@ -7,41 +9,52 @@ use crate::player_components::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use serde::Deserialize;
+use std::cmp::Ordering;
+use std::collections::BTreeMap;
 use std::time::Duration;
 
 pub fn game_entity_try_from_entity_instance(
+    entity_db: &Res<Assets<GameEntityDefinitionFile>>,
+    entity_db_handle: &Res<GameEntityDefinitionFileHandle>,
     entity_instance: &EntityInstance,
-    mut transform: Transform
+    mut transform: Transform,
 ) -> Option<impl Bundle> {
     if entity_instance.identifier != "game_entity" {
         return None;
     }
 
-    let idle_duration = get_ldtk_integer_field("idle_duration", &entity_instance)
-        .expect("missing idle_duration for rubble");
-    let sprite_name = get_ldtk_string_field("idle_sprite", &entity_instance)
-        .expect("missing sprite_name for rubble");
+    let db = entity_db
+        .get(&entity_db_handle.0)
+        .expect("missing entity db file");
 
-    let animation_name = get_ldtk_string_field("idle_animation", &entity_instance)
-        .expect("missing idle_animation for rubble");
+    let prototype_name = get_ldtk_string_field("prototype_name", &entity_instance)
+        .expect("missing prototype_name for game entity");
 
-    let json = get_ldtk_string_field("distance_animations", &entity_instance)?;
-    let distance_animations: PlayerDistanceAnimations = serde_json::from_str(&json).unwrap();
-
+    let prototype = db
+        .entities
+        .get(&prototype_name)
+        .expect(&format!("missing entity prototype {prototype_name}"));
+    
     transform.scale = Vec3::splat(1.);
 
     Some((
         transform,
         GameEntity {
-            idle_animation: AnimationDescription {
-                distance: 0,
-                sprite_name,
-                animation_name: animation_name.clone(),
-                duration_millis: idle_duration as u64,
-            },
-            current_animation: "".to_string(),
+            idle_animation: prototype
+                .idle_animation
+                .as_ref()
+                .expect("missing idle animation")
+                .clone(),
+            current_animation: prototype
+                .idle_animation
+                .as_ref()
+                .expect("missing idle animation")
+                .animation_name
+                .clone(),
         },
-        distance_animations,
+        PlayerDistanceAnimations { distance_animations: prototype.distance_based_animations.as_ref().unwrap().iter().map(|(k, v)| {
+            (k.parse::<u32>().unwrap(), v.clone())
+        }).collect() },
     ))
 }
 
@@ -57,15 +70,7 @@ pub struct GameEntity {
 
 #[derive(Component, Deserialize)]
 pub struct PlayerDistanceAnimations {
-    pub distance_animations: Vec<AnimationDescription>,
-}
-
-#[derive(Deserialize)]
-pub struct AnimationDescription {
-    pub distance: u32,
-    pub sprite_name: String,
-    pub animation_name: String,
-    pub duration_millis: u64,
+    pub distance_animations: BTreeMap<u32, AnimationDescription>,
 }
 
 pub fn player_distance_animation(
@@ -91,8 +96,8 @@ pub fn player_distance_animation(
 
         let mut min_matched_distance: Option<&AnimationDescription> = None;
 
-        for anim in distance_animations.distance_animations.iter() {
-            if (distance_to_player as u32) > anim.distance {
+        for (distance, anim) in distance_animations.distance_animations.iter() {
+            if (distance_to_player as u32) > *distance {
                 continue;
             }
 
