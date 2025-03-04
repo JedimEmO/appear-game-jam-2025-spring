@@ -63,8 +63,6 @@ pub fn spawn_level_transition_observer(
     >,
 ) {
     for (entity, mut transform, entity_instance, transition) in query.iter_mut() {
-        transform.translation.z = 0.;
-
         let mut entity = commands.entity(entity);
 
         entity.insert(Collider::rectangle(

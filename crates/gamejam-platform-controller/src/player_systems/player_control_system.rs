@@ -47,7 +47,7 @@ pub fn player_control_system(
         mut sprite,
         attacking,
         mut player_actions,
-        mut movement_data,
+        mut movement_data
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
@@ -100,6 +100,7 @@ pub fn player_control_system(
                 PlayerInputAction::JumpAbort => {
                     if linear_velocity.y > 0.5 {
                         linear_velocity.y = 0.;
+                        jump_state.abort_jump();
                     }
                 }
                 PlayerInputAction::Attack(direction) => {
@@ -142,14 +143,14 @@ fn do_jump(
     time: &Res<Time>,
     linear_velocity: &mut Mut<LinearVelocity>,
     grounded: Option<&Grounded>,
-    jump_state: &mut Mut<JumpState>,
+    jump_state: &mut Mut<JumpState>
 ) {
     let now = time.elapsed_secs_f64();
     let left_ground_at = jump_state.left_ground_at;
     let is_grounded = grounded.is_some();
 
     let coyote_time_delta = now - jump_state.last_grounded_time.unwrap_or(0.);
-    let can_coyote_jump = coyote_time_delta <= 0.2;
+    let can_coyote_jump = coyote_time_delta <= 0.1;
 
     let start = match jump_state.jump_start_requested_at {
         Some(time_requested) => time.elapsed_secs() - time_requested < 0.3,

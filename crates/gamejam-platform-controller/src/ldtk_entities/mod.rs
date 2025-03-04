@@ -20,6 +20,7 @@ use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
+use crate::ldtk_entities::game_entity::{game_entity_try_from_entity_instance, player_distance_animation};
 
 pub mod chest;
 pub mod interactable;
@@ -27,6 +28,7 @@ pub mod level_transition;
 pub mod player_collidable_entity;
 pub mod player_spawn;
 pub mod rubble;
+pub mod game_entity;
 
 pub struct GameLdtkEntitiesPlugin;
 
@@ -41,14 +43,11 @@ impl Plugin for GameLdtkEntitiesPlugin {
                 spawn_chest_system,
                 level_transition_system,
                 handle_ldtk_entities_spawn,
-                move_player_to_spawn
+                move_player_to_spawn,
+                interactable_player_system,
+                player_distance_animation
             )
                 .run_if(in_state(GameStates::GameLoop)),
-        );
-
-        app.add_systems(
-            Update,
-            (interactable_player_system).run_if(in_state(GameStates::GameLoop)),
         );
 
         app.add_observer(chest_opening_added_observer)
@@ -64,9 +63,9 @@ impl Plugin for GameLdtkEntitiesPlugin {
 
 pub fn handle_ldtk_entities_spawn(
     mut commands: Commands,
-    entities: Query<(Entity, &EntityInstance), Added<EntityInstance>>,
+    entities: Query<(Entity, &EntityInstance, &Transform), Added<EntityInstance>>,
 ) {
-    for (entity, entity_instance) in entities.iter() {
+    for (entity, entity_instance, transform) in entities.iter() {
         match entity_instance.identifier.as_str() {
             "chest" => {
                 let Ok(chest) = Chest::try_from(entity_instance).inspect_err(|e| {
@@ -104,6 +103,14 @@ pub fn handle_ldtk_entities_spawn(
                     death_duration: Duration::from_millis(death_animation_millis as u64),
                     dead_duration: Duration::from_millis(dead_animation_millis as u64),
                 });
+            }
+            "game_entity" => {
+                info!("Game entity spawned");
+                let Some(bundle) = game_entity_try_from_entity_instance(entity_instance, *transform) else {
+                    continue;
+                };
+
+                commands.entity(entity).insert(bundle);
             }
             "level_transition" => {
                 info!("level transition spawned");
@@ -208,6 +215,21 @@ pub fn get_ldtk_string_field(key: &str, entity_instance: &EntityInstance) -> Opt
 
         return match &field.value {
             FieldValue::String(v) => v.clone(),
+            _ => None,
+        };
+    }
+
+    None
+}
+pub fn get_ldtk_string_array_field(key: &str, entity_instance: &EntityInstance) -> Option<Vec<String>> {
+    for field in &entity_instance.field_instances {
+        if field.identifier != key {
+            continue;
+        }
+        info!("found field {field:?}");
+
+        return match &field.value {
+            FieldValue::Strings(v) => Some(v.iter().map(|v| v.clone().unwrap_or("".to_string()).clone()).collect()),
             _ => None,
         };
     }

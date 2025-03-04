@@ -115,11 +115,6 @@ impl SpriteCollection {
     }
 }
 
-pub fn setup_sprite_load_system(mut commands: Commands, assets: ResMut<AssetServer>) {
-    let animated_sprite_file = assets.load::<AnimatedSpriteFile>("sprites/animated.sprites.toml");
-    commands.insert_resource(AnimatedSpriteFileHandle(animated_sprite_file));
-}
-
 pub fn spawn_sprite_collection_system(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
@@ -189,4 +184,4 @@ pub struct AnimatedSpriteFile {
 }
 
 #[derive(Resource)]
-pub struct AnimatedSpriteFileHandle(Handle<AnimatedSpriteFile>);
+pub struct AnimatedSpriteFileHandle(pub Handle<AnimatedSpriteFile>);

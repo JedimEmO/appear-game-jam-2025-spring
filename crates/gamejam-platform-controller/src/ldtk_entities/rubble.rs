@@ -24,8 +24,6 @@ pub fn spawn_rubble_system(
     mut query: Query<(Entity, &mut Transform, &EntityInstance, &Rubble), Added<Rubble>>,
 ) {
     for (entity, mut transform, entity_instance, rubble) in query.iter_mut() {
-        transform.translation.z = 0.;
-
         let mut entity = commands.entity(entity);
 
         let (sprite, animation) = assets

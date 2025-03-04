@@ -1,6 +1,6 @@
 use std::time::Duration;
 use crate::graphics::animation_system::animated_sprite_system;
-use crate::graphics::sprite_collection::{setup_sprite_load_system, spawn_sprite_collection_system, AnimatedSpriteFile, SpriteCollection};
+use crate::graphics::sprite_collection::{spawn_sprite_collection_system, AnimatedSpriteFile, SpriteCollection};
 use crate::input_systems::gamepad_input::gamepad_input_system;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
 use crate::player_systems::grounded_system::grounded_player_system;
@@ -13,10 +13,12 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_framepace::{FramepaceSettings, Limiter};
 use haalka::HaalkaPlugin;
 use input_systems::PlayerInputAction;
-use player_systems::player_spawn_system;
 use crate::enemies::EnemyPlugin;
+use crate::game_entities::file_formats::game_entity_definitions::GameEntityDefinitionFile;
+use crate::game_resources::load_resources;
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
 use crate::ldtk_entities::interactable::Interactable;
 use crate::player_systems::player_health::player_health_sync_system;
@@ -30,6 +32,8 @@ pub mod player_systems;
 pub mod ldtk_entities;
 pub mod ui;
 pub mod enemies;
+pub mod game_entities;
+pub mod game_resources;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
@@ -44,7 +48,10 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<GameStates>()
+        app
+            .insert_resource(FramepaceSettings::default().with_limiter(Limiter::from_framerate(60.)))
+            .add_plugins(bevy_framepace::FramepacePlugin)
+            .init_state::<GameStates>()
             .insert_resource(LdtkSettings {
                 level_background: LevelBackground::Nonexistent,
                 ..default()
@@ -52,10 +59,12 @@ impl Plugin for PlayerPlugin {
             .add_plugins(GameLdtkEntitiesPlugin)
             .add_plugins(EnemyPlugin)
             .add_plugins(HaalkaPlugin)
-            .add_systems(Startup, (setup_sprite_load_system, spawn_player_ui_proxy_system))
-            .add_plugins(TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
+            .add_systems(Startup, (load_resources, spawn_player_ui_proxy_system))
+            .add_plugins((TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
                 "sprites.toml",
-            ]))
+            ]), TomlAssetPlugin::<GameEntityDefinitionFile>::new(&[
+                "entities.toml",
+            ])))
             .add_systems(
                 Update,
                 spawn_sprite_collection_system.run_if(in_state(GameStates::LoadingSprites)),
@@ -165,8 +174,6 @@ fn spawn_terminal_system(
     mut query: Query<(Entity, &mut Transform), Added<Terminal>>,
 ) {
     for (entity, mut transform) in query.iter_mut() {
-        transform.translation.z = 0.;
-
         commands.entity(entity).insert(assets.create_sprite_animation_bundle(
             "terminal",
             "idle",

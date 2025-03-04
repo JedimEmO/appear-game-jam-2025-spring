@@ -29,7 +29,8 @@ pub fn move_player_to_spawn(
     for (transform, spawn) in spawn_query.iter() {
         if spawn.spawn_name == request.spawn_name {
             info!("Moving player to spawn {}", spawn.spawn_name);
-            player_transform.translation = transform.translation;
+            player_transform.translation.x = transform.translation.x;
+            player_transform.translation.y = transform.translation.y;
             camera_transform.translation.x = player_transform.translation.x;
             camera_transform.translation.y = player_transform.translation.y;
 

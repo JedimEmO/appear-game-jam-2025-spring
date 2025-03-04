@@ -205,3 +205,54 @@ image_height = 64
 row = 0
 frame_start_index = 0
 frame_count = 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Scenery
+
+# UI
+
+[sprites.house_1]
+sprite_sheet_file_name = "sprites/scenery/house_1.png"
+image_width = 128
+image_height = 128
+
+[sprites.house_1.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+[sprites.house_1.animations.glowing]
+row = 1
+frame_start_index = 0
+frame_count = 4
+
+[sprites.lamp_post]
+sprite_sheet_file_name = "sprites/scenery/lamp_post.png"
+image_width = 24
+image_height = 48
+
+[sprites.lamp_post.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 3
+
+[sprites.lamp_post.animations.swinging]
+row = 1
+frame_start_index = 0
+frame_count = 4

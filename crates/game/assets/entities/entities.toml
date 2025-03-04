@@ -1,0 +1,12 @@
+[entities.house_1]
+tags = [ "house" ]
+
+[entities.house_1.idle_animation]
+sprite_name = "house_1"
+animation_name = "idle"
+duration_millis = 1000
+
+[entities.house_1.distance_based_animations.1000]
+sprite_name = "house_1"
+animation_name = "glow"
+duration_millis = 1000

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
 use avian2d::collision::Collider;
-use crate::enemies::{Dying, Enemy, EnemyStateMachine, HitPoints};
+use crate::enemies::{Enemy,HitPoints};
 
 pub fn spawn_enemy_observer(
     trigger: Trigger<OnAdd, Enemy>,
@@ -11,7 +11,7 @@ pub fn spawn_enemy_observer(
     assets: Res<SpriteCollection>,
     mut query: Query<(Entity, &mut Transform, &EntityInstance), Added<Enemy>>,
 ) {
-    for (entity, mut transform, entity_instance) in query.iter_mut() {
+    for (entity, mut transform, _entity_instance) in query.iter_mut() {
         if entity == trigger.entity() {
             transform.translation.z = 1.;
 

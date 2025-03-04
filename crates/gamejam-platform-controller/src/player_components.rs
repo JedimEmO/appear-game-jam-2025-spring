@@ -8,7 +8,7 @@ use crate::player_const_rules::*;
 
 #[derive(Component)]
 #[require(
-    Transform(|| Transform::from_xyz(32., 0., 0.)),
+    Transform(|| Transform::from_xyz(32., 0., 4.)),
     RigidBody(|| RigidBody::Dynamic),
     Collider(|| Collider::rectangle(7., 30.)),
     CollisionMargin(|| CollisionMargin::from(COLLISION_MARGIN)),
@@ -73,6 +73,13 @@ pub struct JumpState {
     pub left_ground_at: Option<f64>,
     pub last_grounded_time: Option<f64>,
     pub jump_start_requested_at: Option<f32>
+}
+
+impl JumpState {
+    pub fn abort_jump(&mut self) {
+        self.left_ground_at = Some(0.);
+        self.used = 0;
+    }
 }
 
 #[derive(Component)]

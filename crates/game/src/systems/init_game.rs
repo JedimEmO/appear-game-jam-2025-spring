@@ -92,7 +92,7 @@ fn wall_spawn_system(
                     let mut collider = commands.spawn((
                         Transform::from_xyz(16. * (strip_start_x.unwrap().x as f32 + width / 2.), 16. * pos.y as f32 + 8., 0.),
                         Collider::rectangle(width * 16., 16.),
-                        CollisionLayers::new(0b00100, 0b00101),
+                        CollisionLayers::new(0b00100, 0b01101),
                         CollidingEntities::default(),
                         RigidBody::Static,
                         Friction::new(0.),

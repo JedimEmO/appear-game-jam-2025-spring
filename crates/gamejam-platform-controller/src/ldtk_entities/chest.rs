@@ -50,8 +50,6 @@ pub fn spawn_chest_system(
     mut query: Query<(Entity, &mut Transform, &EntityInstance), Added<Chest>>,
 ) {
     for (entity, mut transform, entity_instance) in query.iter_mut() {
-        transform.translation.z = 0.;
-
         commands
             .entity(entity)
             .insert(
