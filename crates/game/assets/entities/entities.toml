@@ -1,6 +1,7 @@
 [entities.house_1]
 id = "house_1"
 tags = [ "house" ]
+script_path = "scripts/test_entity_script.wasm"
 
 [entities.house_1.idle_animation]
 sprite_name = "house_1"

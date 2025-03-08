@@ -157,7 +157,7 @@ pub fn spawn_sprite_collection_system(
                 },
             );
         }
-
+        
         commands.insert_resource(sprite_collection);
         next_state.set(GameStates::Loading);
     }

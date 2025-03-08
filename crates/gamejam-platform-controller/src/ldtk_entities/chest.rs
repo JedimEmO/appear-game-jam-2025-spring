@@ -1,11 +1,12 @@
 use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationCompleted};
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::get_ldtk_enum_field;
-use crate::ldtk_entities::interactable::{Interactable, InteractableInRange, Interacted};
+use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use anyhow::anyhow;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
+use gamejam_bevy_components::Interactable;
 use crate::player_components::{Player, PlayerStats};
 
 pub enum ChestType {
@@ -66,6 +67,7 @@ pub fn spawn_chest_system(
             )
             .insert(Interactable {
                 action_hint: "Press <up> to Open".to_string(),
+                range: 20.0,
             });
     }
 }

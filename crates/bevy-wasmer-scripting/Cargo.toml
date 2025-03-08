@@ -1,0 +1,9 @@
+[package]
+name = "bevy_wasmer_scripting"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy.workspace = true
+wasmtime.workspace = true
+wit-component = "0.227.1"

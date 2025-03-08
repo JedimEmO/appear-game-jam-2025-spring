@@ -15,13 +15,16 @@ use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_framepace::{FramepaceSettings, Limiter};
 use haalka::HaalkaPlugin;
+use bevy_wasmer_scripting::wasm_script_asset::{WasmScriptModuleBytes, WasmScriptModuleBytesLoader};
+use bevy_wasmer_scripting::WasmtimeScriptPlugin;
 use input_systems::PlayerInputAction;
 use crate::enemies::EnemyPlugin;
 use crate::game_entities::file_formats::game_entity_definitions::GameEntityDefinitionFile;
-use crate::game_resources::load_resources;
+use crate::game_resources::{load_resources, load_scripts_system};
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
-use crate::ldtk_entities::interactable::Interactable;
+use gamejam_bevy_components::Interactable;
 use crate::player_systems::player_health::player_health_sync_system;
+use crate::scripting::scripted_game_entity::wasmwat_system;
 use crate::ui::game_ui::setup_game_ui;
 
 pub mod graphics;
@@ -34,11 +37,13 @@ pub mod ui;
 pub mod enemies;
 pub mod game_entities;
 pub mod game_resources;
+pub mod scripting;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
-    #[default]
     LoadingSprites,
+    #[default]
+    LoadingScripts,
     Loading,
     SpawnPlayer,
     GameLoop,
@@ -57,15 +62,21 @@ impl Plugin for PlayerPlugin {
                 ..default()
             })
             .add_plugins(GameLdtkEntitiesPlugin)
+            .add_plugins(WasmtimeScriptPlugin)
             .add_plugins(EnemyPlugin)
             .add_plugins(HaalkaPlugin)
             .add_systems(Startup, (load_resources, spawn_player_ui_proxy_system))
+            .init_asset::<WasmScriptModuleBytes>()
+            .init_asset_loader::<WasmScriptModuleBytesLoader>()
             .add_plugins((TomlAssetPlugin::<AnimatedSpriteFile>::new(&[
                 "sprites.toml",
             ]), TomlAssetPlugin::<GameEntityDefinitionFile>::new(&[
                 "entities.toml",
             ])))
             .add_systems(
+                Update,
+                load_scripts_system.run_if(in_state(GameStates::LoadingScripts)),
+            ).add_systems(
                 Update,
                 spawn_sprite_collection_system.run_if(in_state(GameStates::LoadingSprites)),
             )
@@ -95,7 +106,8 @@ impl Plugin for PlayerPlugin {
                     gamepad_input_system,
                     player_attack_start_system,
                     player_pogo_system,
-                    player_health_sync_system
+                    player_health_sync_system,
+                    wasmwat_system
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             );
@@ -182,7 +194,8 @@ fn spawn_terminal_system(
             false,
             false
         ).unwrap()).insert(Interactable {
-            action_hint: "press <up> to read terminal".to_string()
+            action_hint: "press <up> to read terminal".to_string(),
+            range: 10.0,
         });
     }
 }

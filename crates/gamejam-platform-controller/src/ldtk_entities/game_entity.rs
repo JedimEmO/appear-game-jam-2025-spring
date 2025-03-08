@@ -2,14 +2,14 @@ use crate::game_entities::file_formats::game_entity_definitions::{
     AnimationDescription, GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
 };
 use crate::graphics::sprite_collection::SpriteCollection;
-use crate::ldtk_entities::{
-    get_ldtk_enum_field, get_ldtk_integer_field, get_ldtk_string_array_field, get_ldtk_string_field,
-};
+use crate::ldtk_entities::get_ldtk_string_field;
 use crate::player_components::Player;
+use crate::scripting::scripted_game_entity::{create_entity_script, EntityScript};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
+use bevy_wasmer_scripting::scripted_entity::WasmEngine;
+use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
 use serde::Deserialize;
-use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::time::Duration;
 
@@ -17,8 +17,11 @@ pub fn game_entity_try_from_entity_instance(
     entity_db: &Res<Assets<GameEntityDefinitionFile>>,
     entity_db_handle: &Res<GameEntityDefinitionFileHandle>,
     entity_instance: &EntityInstance,
+    engine: &Res<WasmEngine>,
+    asset_server: &Res<AssetServer>,
+    wasm_scripts: &mut ResMut<Assets<WasmScriptModuleBytes>>,
     mut transform: Transform,
-) -> Option<impl Bundle> {
+) -> Option<(impl Bundle, Option<EntityScript>)> {
     if entity_instance.identifier != "game_entity" {
         return None;
     }
@@ -34,27 +37,41 @@ pub fn game_entity_try_from_entity_instance(
         .entities
         .get(&prototype_name)
         .expect(&format!("missing entity prototype {prototype_name}"));
-    
+
+    let script = prototype
+        .script_path
+        .as_ref()
+        .map(|path| create_entity_script(path, &engine, &asset_server, wasm_scripts.as_mut()));
+
     transform.scale = Vec3::splat(1.);
 
     Some((
-        transform,
-        GameEntity {
-            idle_animation: prototype
-                .idle_animation
-                .as_ref()
-                .expect("missing idle animation")
-                .clone(),
-            current_animation: prototype
-                .idle_animation
-                .as_ref()
-                .expect("missing idle animation")
-                .animation_name
-                .clone(),
-        },
-        PlayerDistanceAnimations { distance_animations: prototype.distance_based_animations.as_ref().unwrap().iter().map(|(k, v)| {
-            (k.parse::<u32>().unwrap(), v.clone())
-        }).collect() },
+        (
+            transform,
+            GameEntity {
+                idle_animation: prototype
+                    .idle_animation
+                    .as_ref()
+                    .expect("missing idle animation")
+                    .clone(),
+                current_animation: prototype
+                    .idle_animation
+                    .as_ref()
+                    .expect("missing idle animation")
+                    .animation_name
+                    .clone(),
+            },
+            PlayerDistanceAnimations {
+                distance_animations: prototype
+                    .distance_based_animations
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|(k, v)| (k.parse::<u32>().unwrap(), v.clone()))
+                    .collect(),
+            },
+        ),
+        script,
     ))
 }
 

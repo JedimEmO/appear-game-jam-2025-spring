@@ -1,0 +1,11 @@
+package gamejam:game;
+
+world game-entity {
+    import game-host;
+    // Event listeneres (optionally called based on the interests
+
+    export startup: func() -> u64;
+    export tick: func();
+    export interacted: func();
+    export animation-finished: func(animation-name: string);
+}

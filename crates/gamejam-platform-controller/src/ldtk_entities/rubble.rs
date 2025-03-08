@@ -1,5 +1,5 @@
 use crate::enemies::attackable::Attackable;
-use crate::enemies::{Dying, Enemy, EnemyStateMachine, HitPoints};
+use crate::enemies::{Dying, EnemyStateMachine, HitPoints};
 use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationCompleted};
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;
@@ -8,7 +8,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct Rubble {
     pub collider: bool,
     pub sprite_name: String,

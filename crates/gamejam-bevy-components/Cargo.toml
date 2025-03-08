@@ -1,0 +1,9 @@
+[package]
+name = "gamejam-bevy-components"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy_ecs = "0.15.3"
+bevy_ecs_macros = "0.15.3"
+bevy_reflect.workspace = true

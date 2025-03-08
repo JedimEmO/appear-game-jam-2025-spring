@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::time::Duration;
 
-#[derive(Component, Default, Debug)]
+#[derive(Component, Default, Debug, Reflect)]
 pub struct SpriteAnimation {
     pub timer: Timer,
     pub animation_start_index: u32,
@@ -10,7 +10,18 @@ pub struct SpriteAnimation {
     pub repeat: bool,
     pub despawn_finished: bool,
     pub animation_name: String,
-    pub sprite_size: UVec2
+    pub sprite_size: UVec2,
+}
+
+#[cfg(test)]
+#[test]
+fn path() {
+    assert_eq!(
+        vec![
+            Sprite::type_path(),
+            SpriteAnimation::type_path()
+        ],
+        vec![""]);
 }
 
 #[derive(Component)]
@@ -67,7 +78,9 @@ pub fn animated_sprite_system(
             return;
         };
 
-        let frame_index = animation.animation_frame.min(animation.animation_frame_count - 1);
+        let frame_index = animation
+            .animation_frame
+            .min(animation.animation_frame_count - 1);
         sprite_atlas.index = (animation.animation_start_index + frame_index) as usize;
     }
 }
@@ -77,7 +90,7 @@ pub struct SpriteSettings {
     pub repeating: bool,
     pub flip_x: bool,
     pub flip_y: bool,
-    pub despawn_finished: bool
+    pub despawn_finished: bool,
 }
 
 pub fn spawn_animated_sprite_for_entity(
@@ -87,7 +100,7 @@ pub fn spawn_animated_sprite_for_entity(
     animation_index: u32,
     frame_count: u32,
     duration: Duration,
-    settings: SpriteSettings
+    settings: SpriteSettings,
 ) {
     let mut animation = SpriteAnimation::default();
 
@@ -96,7 +109,7 @@ pub fn spawn_animated_sprite_for_entity(
     animation.play_animation(animation_index, frame_count, duration, settings.repeating);
 
     let mut sprite = Sprite::from_atlas_image(image, TextureAtlas::from(layout.clone()));
-    
+
     let sprite_atlas = sprite.texture_atlas.as_mut().unwrap();
     sprite_atlas.index = animation.animation_start_index as usize;
     sprite.flip_x = settings.flip_x;

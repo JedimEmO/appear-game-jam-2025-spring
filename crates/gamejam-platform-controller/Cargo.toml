@@ -13,7 +13,11 @@ bevy_common_assets.workspace = true
 bevy_ecs_ldtk.workspace = true
 bevy_framepace.workspace = true
 bevy_trauma_shake.workspace = true
+bevy_wasmer_scripting = { path = "../bevy-wasmer-scripting" }
+gamejam-bevy-components = { path = "../gamejam-bevy-components" }
 haalka.workspace = true
 simple-2d-camera = { path = "../simple-2d-camera" }
 serde.workspace = true
 serde_json.workspace = true
+wasmtime.workspace = true
+wit-component.workspace = true

@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use crate::enemies::{Enemy, EnemyStateMachine, HitPoints};
 
 /// An attackable entity (reacts to attacks)
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct Attackable;
 
 /// Attached when an attackable gets hit by an attack
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct Attacked;
 
 pub struct AttackablePlugin;

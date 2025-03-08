@@ -5,8 +5,10 @@ resolver = "2"
 members = [
     "crates/game",
     "crates/simple-2d-camera",
-    "crates/gamejam-platform-controller"
-]
+    "crates/gamejam-platform-controller",
+    "crates/bevy-wasmer-scripting"
+, "crates/gamejam-bevy-components"]
+exclude = ["crates/scripts"]
 
 [workspace.dependencies]
 anyhow = "1.0.95"
@@ -18,10 +20,14 @@ bevy_common_assets = { version = "0.12.0", features = ["toml"] }
 bevy_ecs_ldtk = { version = "0.11.0" }
 bevy_framepace = "0.18.1"
 bevy-inspector-egui = "0.29.1"
+bevy_reflect = "0.15.3"
 bevy_trauma_shake = "0.4.0"
-haalka = {version = "0.3.0"}
+haalka = { version = "0.3.0" }
 serde = "1.0.217"
 serde_json = "1.0.139"
+wasmtime = "30.0.2"
+wit-component = "0.227.1"
+wit-bindgen = "0.40.0"
 
 # Set the default for dependencies.
 [profile.dev.package."*"]

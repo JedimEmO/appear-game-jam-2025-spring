@@ -1,11 +1,8 @@
 use bevy::prelude::*;
+use gamejam_bevy_components::Interactable;
 use crate::player_components::Player;
+use crate::scripting::scripted_game_entity::EntityScript;
 use crate::ui::interactable_hint::{make_interactable_hint, InteractableHintComponent};
-
-#[derive(Component)]
-pub struct Interactable {
-    pub action_hint: String
-}
 
 #[derive(Component)]
 pub struct InteractableInRange;
@@ -17,7 +14,7 @@ pub fn interactable_player_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     player_query: Query<&Transform, (With<Player>, Without<InteractableHintComponent>)>,
-    interactables_query: Query<(Entity, &Transform, &Interactable), Without<InteractableHintComponent>>,
+    interactables_query: Query<(Entity, &Transform, &Interactable, Option<&EntityScript>), Without<InteractableHintComponent>>,
     mut hint_component: Query<(Entity, &mut Text), With<InteractableHintComponent>>
 ) {
     let Ok(player) = player_query.get_single() else {
@@ -26,10 +23,10 @@ pub fn interactable_player_system(
 
     let mut set = false;
 
-    for (entity, entity_transform, interactable) in interactables_query.iter() {
+    for (entity, entity_transform, interactable, script) in interactables_query.iter() {
         let mut entity_commands = commands.entity(entity);
 
-        if entity_transform.translation.distance(player.translation) > 20. {
+        if entity_transform.translation.distance(player.translation) > interactable.range {
             entity_commands.remove::<InteractableInRange>();
             continue;
         }

@@ -1,0 +1,15 @@
+package gamejam:game;
+
+interface game-host {
+    record interactable {
+        message: string,
+        range: f32
+    }
+
+    variant insertable-components {
+        interactable(interactable),
+    }
+
+    remove-component: func(type-path: string);
+    insert-components: func(components: list<insertable-components>);
+}
