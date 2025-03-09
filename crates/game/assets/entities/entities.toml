@@ -26,3 +26,8 @@ duration_millis = 1000
 sprite_name = "lamp_post"
 animation_name = "swinging"
 duration_millis = 700
+
+[entities.lever]
+id = "lever"
+tags = [ "lever", "interactable" ]
+script_path = "scripts/lever_script.wasm"

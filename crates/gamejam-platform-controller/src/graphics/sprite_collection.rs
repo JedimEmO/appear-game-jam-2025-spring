@@ -1,12 +1,8 @@
 use crate::graphics::animation_system::SpriteAnimation;
 use crate::GameStates;
 use bevy::prelude::*;
-use bevy::utils::HashMap;
-use bevy_asset_loader::prelude::*;
-use bevy_asset_loader_derive::AssetCollection;
 use serde::Deserialize;
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Arc;
+use std::collections::BTreeMap;
 use std::time::Duration;
 
 #[derive(Clone)]
@@ -15,7 +11,7 @@ pub struct AnimatedSprite {
     pub layout: Handle<TextureAtlasLayout>,
     pub animations: BTreeMap<String, AnimationInfo>,
     pub row_width: u32,
-    pub sprite_size: UVec2
+    pub sprite_size: UVec2,
 }
 
 #[derive(Resource, Default, Clone)]
@@ -47,21 +43,19 @@ impl SpriteCollection {
             sprite_info.image.clone(),
             TextureAtlas::from(sprite_info.layout.clone()),
         );
-        
+
         sprite.flip_x = flip_x;
 
         let animation = SpriteAnimation {
-            timer: Timer::new(
-                duration / animation.frame_count,
-                TimerMode::Repeating,
-            ),
-            animation_start_index: animation.row * sprite_info.row_width + animation.frame_start_index,
+            timer: Timer::new(duration / animation.frame_count, TimerMode::Repeating),
+            animation_start_index: animation.row * sprite_info.row_width
+                + animation.frame_start_index,
             animation_frame: 0,
             animation_frame_count: animation.frame_count,
             repeat,
             despawn_finished,
             animation_name: animation_name.to_string(),
-            sprite_size: sprite_info.sprite_size
+            sprite_size: sprite_info.sprite_size,
         };
 
         sprite.texture_atlas.as_mut().unwrap().index = animation.animation_start_index as usize;
@@ -96,11 +90,9 @@ impl SpriteCollection {
         sprite.flip_x = flip_x;
 
         let animation = SpriteAnimation {
-            timer: Timer::new(
-                duration / animation.frame_count,
-                TimerMode::Repeating,
-            ),
-            animation_start_index: animation.row * sprite_info.row_width + animation.frame_start_index,
+            timer: Timer::new(duration / animation.frame_count, TimerMode::Repeating),
+            animation_start_index: animation.row * sprite_info.row_width
+                + animation.frame_start_index,
             animation_frame: 0,
             animation_frame_count: animation.frame_count,
             repeat,
@@ -153,11 +145,11 @@ pub fn spawn_sprite_collection_system(
                     layout,
                     animations: sprite.animations,
                     row_width: max_frames,
-                    sprite_size: UVec2::new(sprite.image_width as u32, sprite.image_height as u32)
+                    sprite_size: UVec2::new(sprite.image_width as u32, sprite.image_height as u32),
                 },
             );
         }
-        
+
         commands.insert_resource(sprite_collection);
         next_state.set(GameStates::Loading);
     }

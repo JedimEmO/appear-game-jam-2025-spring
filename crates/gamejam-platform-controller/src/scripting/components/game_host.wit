@@ -1,15 +1,23 @@
-package gamejam:game;
+package gamejam: game;
 
 interface game-host {
-    record interactable {
-        message: string,
-        range: f32
-    }
+  record interactable {
+    message: string,
+    range: f32
+  }
 
-    variant insertable-components {
-        interactable(interactable),
-    }
+  record collider {
+    width: f32,
+    height: f32
+  }
 
-    remove-component: func(type-path: string);
-    insert-components: func(components: list<insertable-components>);
+variant insertable-components {
+    attackable,
+    collider(collider),
+    interactable(interactable),
+  }
+
+  remove-component: func(type-path: string);
+  insert-components: func(components: list<insertable-components>);
+  play-animation: func(sprite-name: string, animation-name: string, duration-millis: u32, flip-x: bool, repeating: bool);
 }

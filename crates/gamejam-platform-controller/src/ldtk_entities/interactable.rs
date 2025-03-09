@@ -23,7 +23,7 @@ pub fn interactable_player_system(
 
     let mut set = false;
 
-    for (entity, entity_transform, interactable, script) in interactables_query.iter() {
+    for (entity, entity_transform, interactable, _script) in interactables_query.iter() {
         let mut entity_commands = commands.entity(entity);
 
         if entity_transform.translation.distance(player.translation) > interactable.range {

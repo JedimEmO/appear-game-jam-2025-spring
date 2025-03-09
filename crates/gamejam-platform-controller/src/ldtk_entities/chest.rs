@@ -50,7 +50,7 @@ pub fn spawn_chest_system(
     assets: Res<SpriteCollection>,
     mut query: Query<(Entity, &mut Transform, &EntityInstance), Added<Chest>>,
 ) {
-    for (entity, mut transform, entity_instance) in query.iter_mut() {
+    for (entity, _transform, _entity_instance) in query.iter_mut() {
         commands
             .entity(entity)
             .insert(

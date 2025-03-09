@@ -1,11 +1,9 @@
-use crate::ldtk_entities::player_collidable_entity::{
-    PlayerCollidable, PlayerCollidableInRangeForCheck,
-};
+use crate::ldtk_entities::player_collidable_entity::PlayerCollidableInRangeForCheck;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::player_components::Player;
-use avian2d::collision::{Collider, CollisionLayers};
+use avian2d::collision::Collider;
 use avian2d::math::Vector;
-use avian2d::prelude::{AnyCollider, RigidBody, Rotation};
+use avian2d::prelude::{AnyCollider, Rotation};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{EntityInstance, LevelSelection};
 
@@ -48,7 +46,7 @@ pub fn level_transition_system(
             commands.entity(player_entity).insert(RequestedPlayerSpawn {
                 spawn_name: transition.target_player_spawn_name.clone(),
             });
-            
+
             *level_select = LevelSelection::index(transition.target_level_index as usize);
         }
     }
@@ -62,7 +60,7 @@ pub fn spawn_level_transition_observer(
         Added<LevelTransition>,
     >,
 ) {
-    for (entity, mut transform, entity_instance, transition) in query.iter_mut() {
+    for (entity, _transform, entity_instance, _transition) in query.iter_mut() {
         let mut entity = commands.entity(entity);
 
         entity.insert(Collider::rectangle(

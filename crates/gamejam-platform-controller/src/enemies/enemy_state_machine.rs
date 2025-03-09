@@ -1,9 +1,9 @@
 use crate::enemies::{Dying, Sleeping};
 use crate::enemies::{Enemy, EnemyStateMachine};
 use crate::graphics::animation_system::SpriteAnimation;
-use crate::graphics::sprite_collection::{AnimatedSprite, SpriteCollection};
+use crate::graphics::sprite_collection::SpriteCollection;
 use crate::player_components::{Moving, Player};
-use avian2d::prelude::{LinearVelocity, SpatialQuery};
+use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use std::time::Duration;
 
@@ -23,7 +23,6 @@ pub fn enemy_state_machine_system(
         ),
         (Without<Player>, Without<Sleeping>),
     >,
-    spatial_query: SpatialQuery,
 ) {
     let Ok(player_transform) = player.get_single() else {
         return;
@@ -35,7 +34,8 @@ pub fn enemy_state_machine_system(
         let distance_to_player = player_transform
             .translation
             .distance(enemy_transform.translation);
-        let vertical_distance_to_player = (player_transform.translation.y - enemy_transform.translation.y).abs();
+        let vertical_distance_to_player =
+            (player_transform.translation.y - enemy_transform.translation.y).abs();
 
         if sprite_animation.animation_name == "death" && sprite_animation.finished() {
             enemy.state_machine = EnemyStateMachine::Dead;

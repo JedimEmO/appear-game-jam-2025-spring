@@ -11,7 +11,7 @@ pub fn sleeping_enemy_system(
         return;
     };
 
-    for (entity, enemy_transform, sleeping) in enemies.iter() {
+    for (entity, enemy_transform, _sleeping) in enemies.iter() {
         let distance = player_transform.translation.distance(enemy_transform.translation);
 
         if distance > 200. {

@@ -1,6 +1,5 @@
 use crate::player_components::{Attacking, Grounded, JumpState, Moving, Player};
 use avian2d::prelude::{LinearVelocity, ShapeHits, SpatialQuery, SpatialQueryFilter};
-use bevy::log::info;
 use bevy::math::Dir2;
 use bevy::prelude::{Camera2d, Commands, Entity, Query, Res, Time, Transform, With};
 use bevy_trauma_shake::Shake;

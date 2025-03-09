@@ -1,8 +1,8 @@
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::player_components::PlayerStatsMutable;
 use bevy::ecs::system::SystemState;
+use bevy::prelude::Res;
 use bevy::prelude::*;
-use bevy::prelude::{Commands, Res};
 use haalka::prelude::*;
 use std::time::Duration;
 
@@ -15,15 +15,8 @@ pub fn setup_game_ui(
         (a.clone(), b.single().clone())
     };
 
-    let PlayerStatsMutable { hp, max_hp, hearts } = player_health;
+    let PlayerStatsMutable { hearts, .. } = player_health;
     let sprite_collection = assets.clone();
-
-    let health_signal = map_ref! {
-        let hp = hp.signal(),
-        let max_hp = max_hp.signal() => {
-            (*hp, *max_hp)
-        }
-    };
 
     let (health_bar_backdrop, _) = sprite_collection
         .create_ui_node_animation_bundle(
@@ -73,13 +66,11 @@ pub fn setup_game_ui(
             let full_heart = full_heart.clone();
             let half_heart = half_heart.clone();
             let empty_heart = empty_heart.clone();
-            
-            move |heart_value| {
-                match heart_value {
-                    2 => full_heart.clone(),
-                    1 => half_heart.clone(),
-                    _ => empty_heart.clone()
-                }
+
+            move |heart_value| match heart_value {
+                2 => full_heart.clone(),
+                1 => half_heart.clone(),
+                _ => empty_heart.clone(),
             }
         }))
     });

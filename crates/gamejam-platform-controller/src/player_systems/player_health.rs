@@ -1,11 +1,10 @@
 use bevy::prelude::{Query, With, Without};
-use bevy::render::render_resource::encase::private::RuntimeSizedArray;
 use haalka::prelude::Mutable;
 use crate::enemies::HitPoints;
 use crate::player_components::{Player, PlayerStats, PlayerStatsMutable};
 
 pub fn player_health_sync_system(
-    player_stats: Query<(&PlayerStatsMutable), Without<Player>>,
+    player_stats: Query<&PlayerStatsMutable, Without<Player>>,
     player_hp: Query<(&HitPoints, &PlayerStats), With<Player>>,
 ) {
     let Ok(hp) = player_hp.get_single() else {

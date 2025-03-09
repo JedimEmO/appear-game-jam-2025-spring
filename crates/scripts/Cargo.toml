@@ -1,6 +1,6 @@
-
 [workspace]
 
 members = [
+    "lever-script",
     "test-entity-script"
 ]

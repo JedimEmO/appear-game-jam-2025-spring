@@ -2,7 +2,6 @@ use std::error::Error;
 use bevy::asset::{AssetLoader, LoadContext};
 use bevy::asset::io::Reader;
 use bevy::prelude::*;
-use wasmtime::Module;
 
 /// Represents compiled wasm code for a script module
 #[derive(Asset, TypePath)]
@@ -19,7 +18,7 @@ impl AssetLoader for WasmScriptModuleBytesLoader {
     type Settings = ();
     type Error = Box<dyn Error + Send + Sync + 'static>;
 
-    async fn load(&self, reader: &mut dyn Reader, settings: &Self::Settings, load_context: &mut LoadContext<'_>) -> Result<WasmScriptModuleBytes, Self::Error>{
+    async fn load(&self, reader: &mut dyn Reader, _settings: &Self::Settings, _load_context: &mut LoadContext<'_>) -> Result<WasmScriptModuleBytes, Self::Error>{
         let mut wasm_module_bytes = Vec::new();
         reader.read_to_end(&mut wasm_module_bytes).await?;
         

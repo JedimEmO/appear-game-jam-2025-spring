@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct InteractableHintComponent;
 
 pub fn make_interactable_hint(asset_server: &Res<AssetServer>, hint: String) -> impl Bundle {

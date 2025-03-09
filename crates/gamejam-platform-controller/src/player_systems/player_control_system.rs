@@ -2,8 +2,8 @@ use crate::graphics::animation_system::SpriteAnimation;
 use crate::input_systems::PlayerInputAction;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::player_components::{
-    Attacking, Direction, Grounded, JumpState, Moving, Player, PlayerActionTracker,
-    PlayerMovementData, Pogoing,
+    Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData,
+    Pogoing,
 };
 use crate::player_const_rules::{
     ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
@@ -12,7 +12,7 @@ use crate::player_const_rules::{
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{LevelIid, LevelSelection, Respawn};
+use bevy_ecs_ldtk::{LevelIid, Respawn};
 use std::time::Duration;
 
 pub fn player_control_system(
@@ -47,7 +47,7 @@ pub fn player_control_system(
         mut sprite,
         attacking,
         mut player_actions,
-        mut movement_data
+        mut movement_data,
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
@@ -143,7 +143,7 @@ fn do_jump(
     time: &Res<Time>,
     linear_velocity: &mut Mut<LinearVelocity>,
     grounded: Option<&Grounded>,
-    jump_state: &mut Mut<JumpState>
+    jump_state: &mut Mut<JumpState>,
 ) {
     let now = time.elapsed_secs_f64();
     let left_ground_at = jump_state.left_ground_at;
@@ -154,7 +154,7 @@ fn do_jump(
 
     let start = match jump_state.jump_start_requested_at {
         Some(time_requested) => time.elapsed_secs() - time_requested < 0.3,
-        _ => false
+        _ => false,
     };
 
     if start && (is_grounded || can_coyote_jump && jump_state.used == 0) {

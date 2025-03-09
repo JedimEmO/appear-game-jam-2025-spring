@@ -84,7 +84,6 @@ impl Plugin for PlayerPlugin {
                 LoadingState::new(GameStates::Loading)
                     .continue_to_state(GameStates::SpawnPlayer)
                     .load_collection::<PlayerAssets>()
-                    .load_collection::<ThingAssets>(),
             )
             .add_systems(OnEnter(GameStates::SpawnPlayer), (spawn_player_system, setup_game_ui))
             .add_event::<PlayerInputAction>()
@@ -125,23 +124,8 @@ pub struct PlayerAssets {
     player_layout: Handle<TextureAtlasLayout>,
     #[asset(image(sampler(filter = nearest)))]
     #[asset(path = "sprites/guy.png")]
-    player: Handle<Image>,
-    #[asset(texture_atlas_layout(tile_size_x = 64, tile_size_y = 64, columns = 5, rows = 2))]
-    player_attack_layout: Handle<TextureAtlasLayout>,
-    #[asset(image(sampler(filter = nearest)))]
-    #[asset(path = "sprites/attack.png")]
-    player_attack: Handle<Image>,
+    player: Handle<Image>
 }
-
-#[derive(AssetCollection, Resource)]
-pub struct ThingAssets {
-    #[asset(texture_atlas_layout(tile_size_x = 16, tile_size_y = 16, columns = 1, rows = 1))]
-    things_layout: Handle<TextureAtlasLayout>,
-    #[asset(image(sampler(filter = nearest)))]
-    #[asset(path = "sprites/thing.png")]
-    things: Handle<Image>,
-}
-
 
 #[derive(Default, Component)]
 #[require(
@@ -185,7 +169,7 @@ fn spawn_terminal_system(
     assets: Res<SpriteCollection>,
     mut query: Query<(Entity, &mut Transform), Added<Terminal>>,
 ) {
-    for (entity, mut transform) in query.iter_mut() {
+    for (entity, _transform) in query.iter_mut() {
         commands.entity(entity).insert(assets.create_sprite_animation_bundle(
             "terminal",
             "idle",

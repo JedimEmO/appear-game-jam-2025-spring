@@ -1,14 +1,12 @@
-use crate::enemies::attackable::Attackable;
 use crate::enemies::Enemy;
 use crate::game_entities::file_formats::game_entity_definitions::{
     GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
 };
 use crate::ldtk_entities::chest::{
     chest_animation_completed_observer, chest_opening_added_observer, spawn_chest_system, Chest,
-    ChestType,
 };
 use crate::ldtk_entities::game_entity::{
-    game_entity_try_from_entity_instance, player_distance_animation,
+    game_entity_try_from_entity_instance,
 };
 use crate::ldtk_entities::interactable::interactable_player_system;
 use crate::ldtk_entities::level_transition::{
@@ -25,12 +23,10 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::app::LdtkEntityAppExt;
 use bevy_ecs_ldtk::ldtk::{FieldInstance, FieldValue};
 use bevy_ecs_ldtk::EntityInstance;
-use bevy_wasmer_scripting::scripted_entity::{WasmEngine};
+use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
 use std::time::Duration;
-use wasmtime::{Linker, Module, Store};
-use crate::scripting::game_entity::GameEntity;
-use crate::scripting::scripted_game_entity::create_entity_script;
+use crate::scripting::scripted_game_entity::script_interaction_observer;
 
 pub mod chest;
 pub mod game_entity;
@@ -55,7 +51,6 @@ impl Plugin for GameLdtkEntitiesPlugin {
                 handle_ldtk_entities_spawn,
                 move_player_to_spawn,
                 interactable_player_system,
-                player_distance_animation,
             )
                 .run_if(in_state(GameStates::GameLoop)),
         );
@@ -63,6 +58,7 @@ impl Plugin for GameLdtkEntitiesPlugin {
         app.add_observer(chest_opening_added_observer)
             .add_observer(spawn_rubble_system)
             .add_observer(rubble_dying_observer)
+            .add_observer(script_interaction_observer)
             .add_observer(rubble_dead_observer)
             .add_observer(spawn_level_transition_observer)
             .add_observer(chest_animation_completed_observer);

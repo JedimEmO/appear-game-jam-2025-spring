@@ -1,10 +1,10 @@
 use crate::graphics::animation_system::{spawn_animated_sprite_for_entity, SpriteSettings};
+use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::player_components::{Player, PlayerStatsMutable};
-use crate::{GameStates, PlayerAssets, PlayerSpawnSettings};
-use bevy::prelude::{Camera2d, Commands, NextState, Query, Res, ResMut, Transform, With};
+use crate::{GameStates, PlayerAssets};
+use bevy::prelude::{Commands, NextState, Res, ResMut};
 use bevy::utils::default;
 use std::time::Duration;
-use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 
 pub fn spawn_player_system(
     mut commands: Commands,
@@ -13,7 +13,9 @@ pub fn spawn_player_system(
 ) {
     let mut entity = commands.spawn((
         Player,
-        RequestedPlayerSpawn { spawn_name: "game_start".to_string() },
+        RequestedPlayerSpawn {
+            spawn_name: "game_start".to_string(),
+        },
     ));
 
     spawn_animated_sprite_for_entity(

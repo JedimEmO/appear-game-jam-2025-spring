@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use std::time::Duration;
+use crate::graphics::sprite_collection::SpriteCollection;
+use crate::scripting::scripted_game_entity::EntityScript;
 
 #[derive(Component, Default, Debug, Reflect)]
 pub struct SpriteAnimation {
@@ -16,10 +18,17 @@ pub struct SpriteAnimation {
 #[cfg(test)]
 #[test]
 fn path() {
+    use crate::enemies::attackable::Attackable;
+    use gamejam_bevy_components::Interactable;
+    use crate::ui::interactable_hint::InteractableHintComponent;
+
     assert_eq!(
         vec![
             Sprite::type_path(),
-            SpriteAnimation::type_path()
+            SpriteAnimation::type_path(),
+            Attackable::type_path(),
+            Interactable::type_path(),
+            InteractableHintComponent::type_path()
         ],
         vec![""]);
 }
@@ -51,10 +60,11 @@ impl SpriteAnimation {
 
 pub fn animated_sprite_system(
     mut commands: Commands,
+    sprites: Res<SpriteCollection>,
     time: Res<Time>,
-    mut sprite: Query<(Entity, &mut Sprite, &mut SpriteAnimation)>,
+    mut sprite: Query<(Entity, &mut Sprite, &mut SpriteAnimation, Option<&mut EntityScript>)>,
 ) {
-    for (entity, mut sprite, mut animation) in sprite.iter_mut() {
+    for (entity, mut sprite, mut animation, script) in sprite.iter_mut() {
         animation.timer.tick(time.delta());
 
         if animation.timer.finished() {
@@ -63,11 +73,19 @@ pub fn animated_sprite_system(
             if animation.animation_frame >= animation.animation_frame_count {
                 if animation.repeat {
                     animation.animation_frame = 0;
+
+                    if let Some(mut script) = script {
+                        script.animation_finished(&mut commands, &animation.animation_name, &sprites);
+                    }
                 } else {
                     if animation.despawn_finished {
                         commands.entity(entity).despawn();
                         return;
                     } else {
+                        if let Some(mut script) = script {
+                            script.animation_finished(&mut commands, &animation.animation_name, &sprites);
+                        }
+
                         commands.entity(entity).insert(SpriteAnimationCompleted);
                     }
                 }

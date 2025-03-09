@@ -1,5 +1,5 @@
 use crate::enemies::attackable::Attackable;
-use crate::enemies::{Dying, EnemyStateMachine, HitPoints};
+use crate::enemies::{Dying, HitPoints};
 use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationCompleted};
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;
@@ -23,7 +23,7 @@ pub fn spawn_rubble_system(
     assets: Res<SpriteCollection>,
     mut query: Query<(Entity, &mut Transform, &EntityInstance, &Rubble), Added<Rubble>>,
 ) {
-    for (entity, mut transform, entity_instance, rubble) in query.iter_mut() {
+    for (entity, _transform, _entity_instance, rubble) in query.iter_mut() {
         let mut entity = commands.entity(entity);
 
         let (sprite, animation) = assets

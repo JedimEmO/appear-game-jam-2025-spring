@@ -15,7 +15,7 @@ pub struct RequestedPlayerSpawn {
 pub fn move_player_to_spawn(
     mut commands: Commands,
     mut player_query: Query<(Entity, &mut Transform, &RequestedPlayerSpawn), With<Player>>,
-    mut camera_query: Query<(&mut Transform), (With<Camera2d>, Without<Player>)>,
+    mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
     spawn_query: Query<(&Transform, &PlayerSpawnEntity), (Without<Player>, Without<Camera2d>)>
 ) {
     let Ok((player_entity, mut player_transform, request)) = player_query.get_single_mut() else {

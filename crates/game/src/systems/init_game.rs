@@ -2,11 +2,10 @@ use avian2d::prelude::*;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
-use bevy_ecs_ldtk::ldtk::loaded_level::LoadedLevel;
 use bevy_ecs_ldtk::prelude::*;
 #[cfg(feature = "bevy-inspector-egui")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use gamejam_platform_controller::{GameStates, PlayerPlugin, PlayerSpawnSettings};
+use gamejam_platform_controller::{GameStates, PlayerPlugin};
 
 pub struct SimplePlatformGame;
 
@@ -50,7 +49,7 @@ fn wall_spawn_system(
     let mut min_pos = (i32::MAX, i32::MAX);
     let mut max_pos = (i32::MIN, i32::MIN);
 
-    for (entity, _wall, coords) in wall_query.iter() {
+    for (_entity, _wall, coords) in wall_query.iter() {
         wall_tiles.insert(coords);
 
         if min_pos.0 > coords.x {
