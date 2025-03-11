@@ -12,7 +12,7 @@ use bevy::prelude::{Bundle, Commands, Component, Entity, OnAdd, Query, Res, Trig
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
 use gamejam_bevy_components::Interactable;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use avian2d::prelude::Collider;
 use wasmtime::component::Linker;
 use wasmtime::{AsContextMut, Store};
@@ -83,7 +83,6 @@ unsafe impl Sync for GameEngineComponent {}
 
 impl Host for GameEngineComponent {
     fn remove_component(&mut self, path: String) {
-        info!("Removing {path}");
         self.queued_commands
             .push(EntityScriptCommand::RemoveReflectComponent(path));
     }

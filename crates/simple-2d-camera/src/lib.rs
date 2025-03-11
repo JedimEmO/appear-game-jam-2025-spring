@@ -20,7 +20,7 @@ impl Default for SimplePixel2dCameraPlugin {
 }
 
 #[derive(Resource)]
-struct PixelCameraResolution(Vec2);
+pub struct PixelCameraResolution(pub Vec2);
 
 #[derive(Component, Default)]
 pub struct PixelCameraTracked;
@@ -81,7 +81,7 @@ fn camera_track_system(
 
 fn start_camera_system(mut commands: Commands, camera_resolution: Res<PixelCameraResolution>, asset_server: Res<AssetServer>) {
     let sprite = Sprite::from_image(asset_server.load("sprites/scenery/nexus_bg.png"));
-    
+
     let camera_id = commands.spawn((
         Camera2d,
         OrthographicProjection {
