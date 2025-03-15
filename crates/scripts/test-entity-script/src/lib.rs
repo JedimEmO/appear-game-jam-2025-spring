@@ -1,7 +1,4 @@
-wit_bindgen::generate!({
-    path: "../../gamejam-platform-controller/src/scripting/components",
-    world: "game-entity"
-});
+use game_entity_component::prelude::*;
 
 struct MyCmp;
 
@@ -11,10 +8,14 @@ use crate::gamejam::game::game_host::{
     InsertableComponents, Interactable, insert_components, play_animation,
 };
 
+use crate::gamejam::game::game_host;
+
 static mut ACTIVATE_COUNT: u32 = 0;
 
 impl Guest for MyCmp {
-    fn startup() -> u64 {
+    fn startup(params: Option<Vec<String>>) -> u64 {
+        play_animation("house_1", "idle", 1000, false, true);
+
         insert_components(&[InsertableComponents::Interactable(Interactable {
             message: "Hello, world".to_string(),
             range: 50.,
@@ -44,4 +45,6 @@ impl Guest for MyCmp {
     }
     fn attacked() {
     }
+
+    fn receive_event(_: game_host::Event) { }
 }

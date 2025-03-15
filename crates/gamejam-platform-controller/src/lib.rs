@@ -35,6 +35,7 @@ use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
 use bevy::sprite::Material2dPlugin;
+use crate::scripting::ScriptedGameEntityPlugin;
 
 pub mod enemies;
 pub mod game_entities;
@@ -79,6 +80,7 @@ impl Plugin for PlayerPlugin {
             .add_plugins(WasmtimeScriptPlugin)
             .add_plugins(EnemyPlugin)
             .add_plugins(HaalkaPlugin)
+            .add_plugins(ScriptedGameEntityPlugin)
             .add_systems(Startup, (load_resources, spawn_player_ui_proxy_system))
             .init_asset::<WasmScriptModuleBytes>()
             .init_asset_loader::<WasmScriptModuleBytesLoader>()
@@ -141,11 +143,9 @@ fn spawn_fog_system(
     let camera = camera.single();
 
     let fog_image = asset_server.load("textures/fog.png");
-    let noise_image = asset_server.load("textures/perlin.png");
 
     let fog_material = fog_material_assets.add(FogMaterial {
-        color_texture: fog_image,
-        noise_texture: noise_image
+        color_texture: fog_image
     });
     let mesh = Mesh::from(Rectangle::new(camera_resolution.0.x, camera_resolution.0.y));
     let mesh = meshes.add(mesh);

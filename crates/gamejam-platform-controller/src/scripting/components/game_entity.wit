@@ -2,12 +2,14 @@ package gamejam: game;
 
 world game-entity {
   import game-host;
+  use game-host.{event};
 
   // Event listeneres (optionally called based on the interests
 
-  export startup: func() -> u64;
+  export startup: func(params: option<list<string>>) -> u64;
   export tick: func();
   export interacted: func();
   export attacked: func();
   export animation-finished: func(animation-name: string);
+  export receive-event: func(evt: event);
 }

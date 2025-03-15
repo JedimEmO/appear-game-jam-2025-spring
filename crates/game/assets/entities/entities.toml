@@ -31,3 +31,8 @@ duration_millis = 700
 id = "lever"
 tags = [ "lever", "interactable" ]
 script_path = "scripts/lever_script.wasm"
+
+[entities.door]
+id = "door"
+tags = [ "lever", "interactable" ]
+script_path = "scripts/door_script.wasm"

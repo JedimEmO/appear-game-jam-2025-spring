@@ -50,6 +50,26 @@ frame_count = 1
 
 
 
+[sprites.door_1]
+sprite_sheet_file_name = "sprites/scenery/door_1.png"
+image_width = 16
+image_height = 48
+
+[sprites.door_1.animations.closed]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.door_1.animations.opening]
+row = 1
+frame_start_index = 0
+frame_count = 8
+
+[sprites.door_1.animations.open]
+row = 2
+frame_start_index = 0
+frame_count = 1
+
 
 
 [sprites.chest_simple]

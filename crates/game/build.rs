@@ -1,5 +1,3 @@
-use std::process::Command;
-
 fn main() {
     // let out = Command::new("sh")
     //     .current_dir("../scripts")

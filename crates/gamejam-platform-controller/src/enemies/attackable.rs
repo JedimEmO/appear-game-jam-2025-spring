@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::enemies::{Enemy, EnemyStateMachine, HitPoints};
 use crate::graphics::sprite_collection::SpriteCollection;
-use crate::scripting::scripted_game_entity::EntityScript;
+use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
 
 /// An attackable entity (reacts to attacks)
 #[derive(Component, Default, Reflect)]
@@ -21,6 +21,7 @@ impl Plugin for AttackablePlugin {
 
 pub fn attackable_attacked_observer(
     trigger: Trigger<OnAdd, Attacked>,
+    mut event_writer: EventWriter<ScriptEvent>,
     time: Res<Time>,
     sprites: Res<SpriteCollection>,
     mut commands: Commands,
@@ -45,7 +46,7 @@ pub fn attackable_attacked_observer(
         }
         
         if let Some(mut script) = script {
-            script.attacked(&mut commands, &sprites)
+            script.attacked(&mut commands, &sprites, &mut event_writer)
         }
     }
 }

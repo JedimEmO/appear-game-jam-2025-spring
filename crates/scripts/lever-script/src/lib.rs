@@ -1,23 +1,34 @@
-wit_bindgen::generate!({
-    path: "../../gamejam-platform-controller/src/scripting/components",
-    world: "game-entity"
-});
+use game_entity_component::prelude::*;
+use script_utils::script_parameters::ScriptParams;
 
 struct MyCmp;
 
 export!(MyCmp);
 
-use crate::gamejam::game::game_host::{insert_components, play_animation, remove_component, InsertableComponents, Interactable};
+use crate::game_host::publish_event;
+use crate::gamejam::game::game_host;
 use crate::gamejam::game::game_host::Collider;
+use crate::gamejam::game::game_host::{
+    InsertableComponents, Interactable, insert_components, play_animation, remove_component,
+};
 
 static mut STATE: u32 = 0;
+static mut TRIGGER_TARGET: Vec<u32> = vec![];
 
 impl Guest for MyCmp {
-    fn startup() -> u64 {
+    fn startup(params: Option<Vec<String>>) -> u64 {
+        let params = ScriptParams::new(params);
+        unsafe {
+            TRIGGER_TARGET = params.get_list_parameter::<u32>("trigger-targets").unwrap();
+        }
+
         insert_components(&[
             InsertableComponents::Attackable,
-            InsertableComponents::Interactable(Interactable { message: "Flip for fun".to_string(), range: 16.0 }),
-            InsertableComponents::Collider(Collider { width: 24., height: 24.}),
+            InsertableComponents::Collider(Collider {
+                width: 24.,
+                height: 24.,
+                physical: false,
+            }),
         ]);
         play_animation("lever", "open", 1000, false, true);
         0
@@ -27,7 +38,9 @@ impl Guest for MyCmp {
 
     fn interacted() {
         remove_component("gamejam_bevy_components::Interactable");
-        remove_component("gamejam_platform_controller::ui::interactable_hint::InteractableHintComponent");
+        remove_component(
+            "gamejam_platform_controller::ui::interactable_hint::InteractableHintComponent",
+        );
 
         unsafe {
             if STATE == 0 {
@@ -49,13 +62,24 @@ impl Guest for MyCmp {
                 } else {
                     "closed"
                 }
-            },
+            }
         };
 
         play_animation("lever", next_anim_name, 1000, false, true);
     }
 
     fn attacked() {
-        MyCmp::interacted()
+        MyCmp::interacted();
+        #[allow(static_mut_refs)]
+        unsafe {
+            for val in &TRIGGER_TARGET {
+                publish_event(game_host::Event {
+                    topic: 1,
+                    data: game_host::EventData::Trigger(*val),
+                });
+            }
+        }
     }
+
+    fn receive_event(evt: game_host::Event) {}
 }

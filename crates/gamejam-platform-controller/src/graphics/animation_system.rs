@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 use std::time::Duration;
+use avian2d::prelude::RigidBody;
 use crate::graphics::sprite_collection::SpriteCollection;
-use crate::scripting::scripted_game_entity::EntityScript;
+use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
 
 #[derive(Component, Default, Debug, Reflect)]
 pub struct SpriteAnimation {
@@ -28,7 +29,8 @@ fn path() {
             SpriteAnimation::type_path(),
             Attackable::type_path(),
             Interactable::type_path(),
-            InteractableHintComponent::type_path()
+            InteractableHintComponent::type_path(),
+            RigidBody::type_path(),
         ],
         vec![""]);
 }
@@ -60,6 +62,7 @@ impl SpriteAnimation {
 
 pub fn animated_sprite_system(
     mut commands: Commands,
+    mut event_writer: EventWriter<ScriptEvent>,
     sprites: Res<SpriteCollection>,
     time: Res<Time>,
     mut sprite: Query<(Entity, &mut Sprite, &mut SpriteAnimation, Option<&mut EntityScript>)>,
@@ -75,7 +78,7 @@ pub fn animated_sprite_system(
                     animation.animation_frame = 0;
 
                     if let Some(mut script) = script {
-                        script.animation_finished(&mut commands, &animation.animation_name, &sprites);
+                        script.animation_finished(&mut commands, &animation.animation_name, &sprites, &mut event_writer);
                     }
                 } else {
                     if animation.despawn_finished {
@@ -83,7 +86,7 @@ pub fn animated_sprite_system(
                         return;
                     } else {
                         if let Some(mut script) = script {
-                            script.animation_finished(&mut commands, &animation.animation_name, &sprites);
+                            script.animation_finished(&mut commands, &animation.animation_name, &sprites, &mut event_writer);
                         }
 
                         commands.entity(entity).insert(SpriteAnimationCompleted);

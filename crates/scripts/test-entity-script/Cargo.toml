@@ -7,4 +7,4 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-wit-bindgen = { version = "0.40.0", default-features = true }
+game-entity-component = { path = "../game-entity-component"}

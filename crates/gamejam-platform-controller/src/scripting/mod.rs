@@ -1,4 +1,16 @@
+use bevy::app::App;
+use bevy::prelude::{Plugin, Update};
+use crate::scripting::scripted_game_entity::{game_entity_script_event_system, ScriptEvent};
+
 pub mod scripted_game_entity;
+pub struct ScriptedGameEntityPlugin;
+
+impl Plugin for ScriptedGameEntityPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<ScriptEvent>()
+            .add_systems(Update, game_entity_script_event_system);
+    }
+}
 
 pub mod game_entity {
     use bevy::prelude::Component;

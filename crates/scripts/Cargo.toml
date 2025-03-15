@@ -1,6 +1,9 @@
 [workspace]
 
 members = [
+    "door-script",
+    "game-entity-component",
     "lever-script",
+    "script-utils",
     "test-entity-script"
 ]

@@ -1,7 +1,7 @@
 use crate::game_entities::file_formats::game_entity_definitions::{
     GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
 };
-use crate::ldtk_entities::get_ldtk_string_field;
+use crate::ldtk_entities::{get_ldtk_string_array_field, get_ldtk_string_field};
 use crate::scripting::scripted_game_entity::create_entity_script;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
@@ -33,10 +33,12 @@ pub fn game_entity_try_from_entity_instance(
         .get(&prototype_name)
         .expect(&format!("missing entity prototype {prototype_name}"));
 
+    let script_params = get_ldtk_string_array_field("script_params", &entity_instance);
+    
     let script = prototype
         .script_path
         .as_ref()
-        .map(|path| create_entity_script(path, &engine, &asset_server, wasm_scripts.as_mut()));
+        .map(|path| create_entity_script(path, &engine, &asset_server, wasm_scripts.as_mut(), script_params));
 
     transform.scale = Vec3::splat(1.);
 
