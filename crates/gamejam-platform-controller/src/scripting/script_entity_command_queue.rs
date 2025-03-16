@@ -1,17 +1,17 @@
 use crate::enemies::attackable::Attackable;
 use crate::graphics::sprite_collection::SpriteCollection;
-use scripted_game_entity::*;
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
 use avian2d::collision::{Collider, CollisionLayers};
 use avian2d::prelude::RigidBody;
+use bevy::ecs::component::Tick;
 use bevy::ecs::reflect::ReflectCommandExt;
 use bevy::log::info;
 use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res};
 use gamejam_bevy_components::Interactable;
-use std::time::Duration;
-use bevy::ecs::component::Tick;
 use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
+use scripted_game_entity::*;
+use std::time::Duration;
 
 #[derive(Component)]
 pub struct TickingEntity;
@@ -107,7 +107,9 @@ fn apply_command(
             }
         }
         EntityScriptCommand::DespawnEntity(entity) => {
-            commands.get_entity(Entity::from_bits(entity)).map(|mut e| e.despawn());
+            commands
+                .get_entity(Entity::from_bits(entity))
+                .map(|mut e| e.despawn());
         }
     }
 }

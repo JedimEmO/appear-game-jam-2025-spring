@@ -5,10 +5,11 @@ use script_utils::script_parameters::ScriptParams;
 use std::cell::Cell;
 
 use game_entity_component::gamejam::game::game_host::{
-    Collider, EventData, InsertableComponents, insert_components, play_animation, remove_component,
+    get_game_data_kv_int, insert_components, play_animation, remove_component, set_game_data_kv_int,
+    Collider, EventData, InsertableComponents,
 };
 use game_entity_component::*;
-
+use std::str::FromStr;
 
 struct EntityWorld;
 
@@ -19,11 +20,11 @@ impl Guest for EntityWorld {
     type GameEntity = DoorScript;
 }
 
-
 struct DoorScript {
     _self_entity_id: u64,
     trigger_value: u32,
-    state: Cell<u32>,
+    state_variable: String,
+    state: Cell<i32>,
 }
 
 impl GuestGameEntity for DoorScript {
@@ -36,21 +37,29 @@ impl GuestGameEntity for DoorScript {
         let params = ScriptParams::new(params);
 
         let trigger_value = params.get_parameter::<u32>("trigger-id").unwrap();
+        let state_variable = params.get_parameter::<String>("state-variable").unwrap();
 
-        insert_components(&[
-            InsertableComponents::Attackable,
-            InsertableComponents::Collider(Collider {
-                width: 16.,
-                height: 48.,
-                physical: true,
-            }),
-        ]);
-        play_animation("door_1", "closed", 1000, false, true);
+        let game_state = get_game_data_kv_int(&state_variable).unwrap_or(0);
 
+        if game_state == 0 {
+            insert_components(&[
+                InsertableComponents::Attackable,
+                InsertableComponents::Collider(Collider {
+                    width: 16.,
+                    height: 48.,
+                    physical: true,
+                }),
+            ]);
+            play_animation("door_1", "closed", 1000, false, true);
+        } else {
+            insert_components(&[InsertableComponents::Attackable]);
+            play_animation("door_1", "open", 1000, false, true);
+        }
         Self {
             _self_entity_id: self_entity_id,
             trigger_value,
-            state: Cell::new(0),
+            state: Cell::new(game_state),
+            state_variable,
         }
     }
 

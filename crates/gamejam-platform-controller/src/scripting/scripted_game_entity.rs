@@ -1,21 +1,32 @@
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::scripting::script_entity_command_queue::{EntityScriptCommand, TickingEntity};
 use bevy::asset::{AssetServer, Assets, Handle};
-use bevy::log::info;
 use bevy::prelude::{
-    Bundle, Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res, Trigger, With,
+    Bundle, Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res, Resource, Trigger,
+    With,
 };
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
-use scripted_game_entity::exports::gamejam::game::entity_resource::{
-    GameEntity, GuestGameEntity, StartupSettings,
-};
+use scripted_game_entity::exports::gamejam::game::entity_resource::StartupSettings;
 use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::{add_to_linker, Host, InsertableComponents};
 use scripted_game_entity::GameEntityWorld;
+use std::collections::BTreeMap;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use wasmtime::component::{Linker, ResourceAny};
 use wasmtime::{AsContextMut, Store};
+
+#[derive(Default)]
+pub struct GameState {
+    pub strings: BTreeMap<String, String>,
+    pub ints: BTreeMap<String, i32>,
+}
+
+#[derive(Resource, Default)]
+pub struct GameData {
+    pub game_state: Arc<Mutex<GameState>>,
+}
 
 /// Generic game entity script component.
 /// Implements the game_entity.wit component definition.
@@ -32,7 +43,11 @@ impl EntityScript {
         let entity_resource_guest = guest.game_entity();
 
         entity_resource_guest
-            .call_animation_finished(self.store.as_context_mut(), self.entity_resource, animation_name)
+            .call_animation_finished(
+                self.store.as_context_mut(),
+                self.entity_resource,
+                animation_name,
+            )
             .unwrap();
     }
 
@@ -58,6 +73,7 @@ impl EntityScript {
 pub struct GameEngineComponent {
     pub entity: Entity,
     pub queued_commands: Vec<EntityScriptCommand>,
+    pub game_state: Arc<Mutex<GameState>>,
 }
 
 unsafe impl Send for GameEngineComponent {}
@@ -112,6 +128,22 @@ impl Host for GameEngineComponent {
         self.queued_commands
             .push(EntityScriptCommand::DespawnEntity(entity_id));
     }
+
+    fn get_game_data_kv(&mut self, key: String) -> Option<String> {
+        self.game_state.lock().unwrap().strings.get(&key).cloned()
+    }
+
+    fn set_game_data_kv(&mut self, key: String, value: String) -> Option<String> {
+        self.game_state.lock().unwrap().strings.insert(key, value)
+    }
+
+    fn get_game_data_kv_int(&mut self, key: String) -> Option<i32> {
+        self.game_state.lock().unwrap().ints.get(&key).cloned()
+    }
+
+    fn set_game_data_kv_int(&mut self, key: String, value: i32) -> Option<i32> {
+        self.game_state.lock().unwrap().ints.insert(key, value)
+    }
 }
 
 impl GameEngineComponent {}
@@ -125,6 +157,7 @@ pub fn create_entity_script(
     script_path: &str,
     engine: &Res<WasmEngine>,
     asset_server: &Res<AssetServer>,
+    game_data: &Res<GameData>,
     wasm_scripts: &mut Assets<WasmScriptModuleBytes>,
     script_params: Option<Vec<String>>,
 ) -> impl Bundle {
@@ -147,6 +180,7 @@ pub fn create_entity_script(
             host: GameEngineComponent {
                 entity: Entity::PLACEHOLDER,
                 queued_commands: vec![],
+                game_state: game_data.game_state.clone(),
             },
         },
     );
@@ -227,21 +261,28 @@ pub fn game_entity_script_event_system(
 ) {
     for evt in evt.read() {
         for mut entity in script_entities_query.iter_mut() {
-            let EntityScript { game_entity, store,entity_resource } = entity.as_mut();
+            let EntityScript {
+                game_entity,
+                store,
+                entity_resource,
+            } = entity.as_mut();
             let guest = game_entity.gamejam_game_entity_resource();
             let entity_resource_guest = guest.game_entity();
 
             entity_resource_guest
-                .call_receive_event(store.as_context_mut(), *entity_resource, game_host::Event {
-                    topic: evt.topic,
-                    data: match evt.data {
-                        ScriptEventData::Trigger(event_id) => {
-                            game_host::EventData::Trigger(event_id)
-                        }
+                .call_receive_event(
+                    store.as_context_mut(),
+                    *entity_resource,
+                    game_host::Event {
+                        topic: evt.topic,
+                        data: match evt.data {
+                            ScriptEventData::Trigger(event_id) => {
+                                game_host::EventData::Trigger(event_id)
+                            }
+                        },
                     },
-                })
+                )
                 .unwrap();
-
         }
     }
 }

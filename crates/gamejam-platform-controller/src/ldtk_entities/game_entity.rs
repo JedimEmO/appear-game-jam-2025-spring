@@ -2,7 +2,7 @@ use crate::game_entities::file_formats::game_entity_definitions::{
     GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
 };
 use crate::ldtk_entities::{get_ldtk_string_array_field, get_ldtk_string_field};
-use crate::scripting::scripted_game_entity::create_entity_script;
+use crate::scripting::scripted_game_entity::{create_entity_script, GameData};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
@@ -14,6 +14,7 @@ pub fn game_entity_try_from_entity_instance(
     entity_db_handle: &Res<GameEntityDefinitionFileHandle>,
     entity_instance: &EntityInstance,
     engine: &Res<WasmEngine>,
+    game_data: &Res<GameData>,
     asset_server: &Res<AssetServer>,
     wasm_scripts: &mut ResMut<Assets<WasmScriptModuleBytes>>,
     mut transform: Transform,
@@ -42,6 +43,7 @@ pub fn game_entity_try_from_entity_instance(
             path,
             &engine,
             &asset_server,
+            game_data,
             wasm_scripts.as_mut(),
             script_params,
         )

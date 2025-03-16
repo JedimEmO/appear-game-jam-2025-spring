@@ -33,4 +33,8 @@ interface game-host {
     publish-event: func(evt: event);
     set-ticking: func(do-tick: bool);
     despawn-entity: func(entity-id: u64);
+    get-game-data-kv: func(key: string) -> option<string>;
+    set-game-data-kv: func(key: string, value: string) -> option<string>;
+    get-game-data-kv-int: func(key: string) -> option<s32>;
+    set-game-data-kv-int: func(key: string, value: s32) -> option<s32>;
 }

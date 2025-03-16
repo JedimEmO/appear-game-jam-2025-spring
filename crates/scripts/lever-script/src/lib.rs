@@ -5,7 +5,7 @@ use script_utils::script_parameters::ScriptParams;
 use std::cell::Cell;
 
 use game_entity_component::gamejam::game::game_host::{
-    Collider, EventData, InsertableComponents, insert_components, play_animation, publish_event,
+    Collider, EventData, InsertableComponents, insert_components, play_animation, publish_event,set_game_data_kv_int, get_game_data_kv_int,
     remove_component,
 };
 use game_entity_component::*;
@@ -22,7 +22,8 @@ impl Guest for EntityWorld {
 struct LeverScript {
     _self_entity_id: u64,
     trigger_targets: Vec<u32>,
-    state: Cell<u32>,
+    state_variable: String,
+    state: Cell<i32>,
 }
 
 impl GuestGameEntity for LeverScript {
@@ -35,6 +36,9 @@ impl GuestGameEntity for LeverScript {
         let params = ScriptParams::new(params);
 
         let trigger_targets = params.get_list_parameter::<u32>("trigger-targets").unwrap();
+        let state_variable = params.get_parameter::<String>("state-variable").unwrap();
+        let game_state = get_game_data_kv_int(&state_variable).unwrap_or(0);
+
 
         insert_components(&[
             InsertableComponents::Attackable,
@@ -44,12 +48,20 @@ impl GuestGameEntity for LeverScript {
                 physical: false,
             }),
         ]);
-        play_animation("lever", "open", 1000, false, true);
+
+        let animation = if game_state == 0 {
+            "open"
+        } else {
+            "closed"
+        };
+
+        play_animation("lever", animation, 1000, false, true);
 
         Self {
             _self_entity_id: self_entity_id,
             trigger_targets,
-            state: Cell::new(0),
+            state_variable,
+            state: Cell::new(game_state),
         }
     }
 
@@ -63,7 +75,7 @@ impl GuestGameEntity for LeverScript {
 
         if self.state.get() == 0 {
             self.state.set(1);
-
+            set_game_data_kv_int(&self.state_variable, 1);
             play_animation("lever", "closing", 1000, false, false);
         } else if self.state.get() == 1 {
             play_animation("lever", "closed", 1000, false, true);

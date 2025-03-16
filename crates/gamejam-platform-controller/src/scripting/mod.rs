@@ -1,5 +1,7 @@
 use crate::scripting::script_entity_command_queue::scripted_entity_command_queue_system;
-use crate::scripting::scripted_game_entity::{game_entity_script_event_system, tick_scripted_entity_system, ScriptEvent};
+use crate::scripting::scripted_game_entity::{
+    game_entity_script_event_system, tick_scripted_entity_system, GameData, ScriptEvent,
+};
 use crate::GameStates;
 use bevy::app::App;
 use bevy::prelude::{in_state, IntoSystemConfigs, Plugin, Update};
@@ -11,16 +13,18 @@ pub struct ScriptedGameEntityPlugin;
 
 impl Plugin for ScriptedGameEntityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ScriptEvent>().add_systems(
-            Update,
-            (
-                game_entity_script_event_system,
-                tick_scripted_entity_system,
-                scripted_entity_command_queue_system,
+        app.add_event::<ScriptEvent>()
+            .add_systems(
+                Update,
+                (
+                    game_entity_script_event_system,
+                    tick_scripted_entity_system,
+                    scripted_entity_command_queue_system,
+                )
+                    .run_if(in_state(GameStates::GameLoop))
+                    .chain(),
             )
-                .run_if(in_state(GameStates::GameLoop))
-                .chain(),
-        );
+            .insert_resource(GameData::default());
     }
 }
 
@@ -33,5 +37,4 @@ pub mod game_entity {
     pub struct EntityScriptContext {
         pub string_values: BTreeMap<String, String>,
     }
-
 }

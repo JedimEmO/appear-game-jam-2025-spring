@@ -15,7 +15,7 @@ use crate::ldtk_entities::player_spawn::{move_player_to_spawn, PlayerSpawnEntity
 use crate::ldtk_entities::rubble::{
     rubble_dead_observer, rubble_dying_observer, spawn_rubble_system, Rubble,
 };
-use crate::scripting::scripted_game_entity::script_interaction_observer;
+use crate::scripting::scripted_game_entity::{script_interaction_observer, GameData};
 use crate::{spawn_terminal_system, spawn_thing_system, GameStates, TerminalBundle, ThingBundle};
 use anyhow::anyhow;
 use bevy::prelude::*;
@@ -69,6 +69,7 @@ pub fn handle_ldtk_entities_spawn(
     mut commands: Commands,
     engine: Res<WasmEngine>,
     asset_server: Res<AssetServer>,
+    game_data: Res<GameData>,
     mut wasm_scripts: ResMut<Assets<WasmScriptModuleBytes>>,
     entity_db: Res<Assets<GameEntityDefinitionFile>>,
     entity_db_handle: Res<GameEntityDefinitionFileHandle>,
@@ -121,6 +122,7 @@ pub fn handle_ldtk_entities_spawn(
                     &entity_db_handle,
                     entity_instance,
                     &engine,
+                    &game_data,
                     &asset_server,
                     &mut wasm_scripts,
                     *transform,
