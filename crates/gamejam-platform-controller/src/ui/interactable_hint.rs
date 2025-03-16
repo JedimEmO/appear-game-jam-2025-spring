@@ -21,6 +21,6 @@ pub fn make_interactable_hint(asset_server: &Res<AssetServer>, hint: String) -> 
             font: asset_server.load("ui/fonts/kongtext.ttf"),
             font_size: 15.,
             ..default()
-        }
+        },
     )
 }

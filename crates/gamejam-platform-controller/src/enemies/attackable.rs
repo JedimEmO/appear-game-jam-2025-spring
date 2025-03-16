@@ -1,7 +1,7 @@
-use bevy::prelude::*;
 use crate::enemies::{Enemy, EnemyStateMachine, HitPoints};
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
+use bevy::prelude::*;
 
 /// An attackable entity (reacts to attacks)
 #[derive(Component, Default, Reflect)]
@@ -25,26 +25,32 @@ pub fn attackable_attacked_observer(
     time: Res<Time>,
     sprites: Res<SpriteCollection>,
     mut commands: Commands,
-    mut attackables: Query<(Entity, &Attackable, Option<&mut Enemy>, Option<&mut HitPoints>, Option<&mut EntityScript>)>
+    mut attackables: Query<(
+        Entity,
+        &Attackable,
+        Option<&mut Enemy>,
+        Option<&mut HitPoints>,
+        Option<&mut EntityScript>,
+    )>,
 ) {
     commands.entity(trigger.entity()).remove::<Attacked>();
-    
+
     for (entity, _attackable, enemy, hp, script) in attackables.iter_mut() {
         if entity != trigger.entity() {
             continue;
         }
-        
+
         if let Some(mut hp) = hp {
             hp.hp = hp.hp.saturating_sub(10);
         }
-        
+
         if let Some(mut enemy) = enemy {
             enemy.state_machine = EnemyStateMachine::Staggered {
                 staggered_at: time.elapsed_secs(),
-                stagger_for: 0.5
+                stagger_for: 0.5,
             };
         }
-        
+
         if let Some(mut script) = script {
             script.attacked(&mut commands, &sprites, &mut event_writer)
         }

@@ -1,12 +1,11 @@
-use bevy::prelude::*;
 use crate::player_components::Player;
+use bevy::prelude::*;
 
 #[derive(Component, Clone, Copy)]
 pub struct PlayerCollidable;
 
 #[derive(Component, Clone, Copy)]
 pub struct PlayerCollidableInRangeForCheck;
-
 
 pub fn player_collidable_system(
     mut commands: Commands,

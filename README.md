@@ -1,4 +1,23 @@
 # Gamejam entry
 
+You will need `cargo-make`: ```cargo install cargo-make```
 
-Make sure to run `crates/scripts/build_scripts.sh` before running the game to make the wasm scripts assets.
+then do:
+
+```shell
+cargo make setup
+cargo make run
+```
+
+
+to rebuild scripts and assets:
+
+```shell
+cargo make assets
+```
+
+or just scripts:
+
+```shell
+cargo make build-scripts
+```

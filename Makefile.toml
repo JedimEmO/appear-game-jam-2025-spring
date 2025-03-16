@@ -1,0 +1,64 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+# Dependency and setup tasks
+
+[tasks.targets]
+command = "rustup"
+args = ["target", "add", "wasm32-unknown-unknown"]
+
+[tasks.setup]
+dependencies = ["targets"]
+
+# Build tasks
+
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+
+[tasks.build-releasee]
+command = "cargo"
+args = ["build", "--release"]
+dependencies = ["clean"]
+
+[tasks.build-scripts]
+cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/scripts"
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.install-scripts]
+cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/scripts"
+script = '''
+mkdir -p ../game/assets/scripts/
+cp target/wasm32-unknown-unknown/release/*.wasm ../game/assets/scripts/
+'''
+dependencies = ["build-scripts"]
+
+[tasks.assets]
+dependencies = [
+    "install-scripts"
+]
+
+
+[tasks.run]
+command = "cargo"
+args = ["run", "--bin", "gamejam"]
+dependencies = [
+    "assets"
+]
+
+[tasks.release]
+dependencies = [
+    "assets",
+    "build-release"
+]

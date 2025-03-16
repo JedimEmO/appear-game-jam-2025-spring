@@ -1,8 +1,8 @@
-use bevy::prelude::*;
-use std::time::Duration;
-use avian2d::prelude::RigidBody;
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
+use avian2d::prelude::RigidBody;
+use bevy::prelude::*;
+use std::time::Duration;
 
 #[derive(Component, Default, Debug, Reflect)]
 pub struct SpriteAnimation {
@@ -20,8 +20,8 @@ pub struct SpriteAnimation {
 #[test]
 fn path() {
     use crate::enemies::attackable::Attackable;
-    use gamejam_bevy_components::Interactable;
     use crate::ui::interactable_hint::InteractableHintComponent;
+    use gamejam_bevy_components::Interactable;
 
     assert_eq!(
         vec![
@@ -32,7 +32,8 @@ fn path() {
             InteractableHintComponent::type_path(),
             RigidBody::type_path(),
         ],
-        vec![""]);
+        vec![""]
+    );
 }
 
 #[derive(Component)]
@@ -65,7 +66,12 @@ pub fn animated_sprite_system(
     mut event_writer: EventWriter<ScriptEvent>,
     sprites: Res<SpriteCollection>,
     time: Res<Time>,
-    mut sprite: Query<(Entity, &mut Sprite, &mut SpriteAnimation, Option<&mut EntityScript>)>,
+    mut sprite: Query<(
+        Entity,
+        &mut Sprite,
+        &mut SpriteAnimation,
+        Option<&mut EntityScript>,
+    )>,
 ) {
     for (entity, mut sprite, mut animation, script) in sprite.iter_mut() {
         animation.timer.tick(time.delta());
@@ -78,7 +84,12 @@ pub fn animated_sprite_system(
                     animation.animation_frame = 0;
 
                     if let Some(mut script) = script {
-                        script.animation_finished(&mut commands, &animation.animation_name, &sprites, &mut event_writer);
+                        script.animation_finished(
+                            &mut commands,
+                            &animation.animation_name,
+                            &sprites,
+                            &mut event_writer,
+                        );
                     }
                 } else {
                     if animation.despawn_finished {
@@ -86,7 +97,12 @@ pub fn animated_sprite_system(
                         return;
                     } else {
                         if let Some(mut script) = script {
-                            script.animation_finished(&mut commands, &animation.animation_name, &sprites, &mut event_writer);
+                            script.animation_finished(
+                                &mut commands,
+                                &animation.animation_name,
+                                &sprites,
+                                &mut event_writer,
+                            );
                         }
 
                         commands.entity(entity).insert(SpriteAnimationCompleted);

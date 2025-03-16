@@ -7,13 +7,13 @@ mod sleeping;
 use crate::enemies::attackable::{Attackable, AttackablePlugin};
 use crate::enemies::enemy::spawn_enemy_observer;
 use crate::enemies::enemy_state_machine::{enemy_dying_observer, enemy_state_machine_system};
+use crate::enemies::hit_points::hit_points_system;
 use crate::enemies::sleeping::sleeping_enemy_system;
 use crate::player_components::MovementDampeningFactor;
 use crate::player_const_rules::{COLLISION_MARGIN, FALL_GRAVITY, X_DAMPENING_FACTOR};
 use crate::GameStates;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::enemies::hit_points::hit_points_system;
 
 pub struct EnemyPlugin;
 
@@ -70,5 +70,5 @@ pub enum EnemyStateMachine {
         stagger_for: f32,
     },
     Dying,
-    Dead
+    Dead,
 }

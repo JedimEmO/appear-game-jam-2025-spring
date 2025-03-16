@@ -1,8 +1,8 @@
+use bevy::sprite::{AlphaMode2d, Material2d};
 use bevy::{
     prelude::*,
-    render::render_resource::{AsBindGroup, ShaderRef}
+    render::render_resource::{AsBindGroup, ShaderRef},
 };
-use bevy::sprite::{AlphaMode2d, Material2d};
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FogMaterial {

@@ -1,7 +1,7 @@
-use bevy::prelude::{Query, With, Without};
-use haalka::prelude::Mutable;
 use crate::enemies::HitPoints;
 use crate::player_components::{Player, PlayerStats, PlayerStatsMutable};
+use bevy::prelude::{Query, With, Without};
+use haalka::prelude::Mutable;
 
 pub fn player_health_sync_system(
     player_stats: Query<&PlayerStatsMutable, Without<Player>>,
@@ -20,14 +20,14 @@ pub fn player_health_sync_system(
 
     let mut s = stats.hearts.lock_mut();
 
-    let hearts = stats.max_hp.get() as usize/ 2;
+    let hearts = stats.max_hp.get() as usize / 2;
 
     if s.len() < hearts {
-        for _i in 0 ..(hearts - s.len()) {
+        for _i in 0..(hearts - s.len()) {
             s.push_cloned(Mutable::new(0));
         }
     }
-    
+
     if hearts < s.len() {
         for _i in 0..(s.len() - hearts) {
             s.pop();
@@ -35,7 +35,7 @@ pub fn player_health_sync_system(
     }
 
     let hp = stats.hp.get();
-    
+
     let full_hearts = hp as usize / 2;
     let half_hearts = hp as usize % 2;
 

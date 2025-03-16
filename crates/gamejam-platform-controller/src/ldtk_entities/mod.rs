@@ -5,9 +5,7 @@ use crate::game_entities::file_formats::game_entity_definitions::{
 use crate::ldtk_entities::chest::{
     chest_animation_completed_observer, chest_opening_added_observer, spawn_chest_system, Chest,
 };
-use crate::ldtk_entities::game_entity::{
-    game_entity_try_from_entity_instance,
-};
+use crate::ldtk_entities::game_entity::game_entity_try_from_entity_instance;
 use crate::ldtk_entities::interactable::interactable_player_system;
 use crate::ldtk_entities::level_transition::{
     level_transition_system, spawn_level_transition_observer, LevelTransition,
@@ -17,6 +15,7 @@ use crate::ldtk_entities::player_spawn::{move_player_to_spawn, PlayerSpawnEntity
 use crate::ldtk_entities::rubble::{
     rubble_dead_observer, rubble_dying_observer, spawn_rubble_system, Rubble,
 };
+use crate::scripting::scripted_game_entity::script_interaction_observer;
 use crate::{spawn_terminal_system, spawn_thing_system, GameStates, TerminalBundle, ThingBundle};
 use anyhow::anyhow;
 use bevy::prelude::*;
@@ -26,7 +25,6 @@ use bevy_ecs_ldtk::EntityInstance;
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
 use std::time::Duration;
-use crate::scripting::scripted_game_entity::script_interaction_observer;
 
 pub mod chest;
 pub mod game_entity;

@@ -19,7 +19,10 @@ impl Plugin for SimplePlatformGame {
         .insert_resource(LevelSelection::index(0))
         .register_ldtk_int_cell::<WallBundle>(1)
         .add_systems(Startup, start_simple_platform_game)
-        .add_systems(Update, (wall_spawn_system).run_if(in_state(GameStates::GameLoop)))
+        .add_systems(
+            Update,
+            (wall_spawn_system).run_if(in_state(GameStates::GameLoop)),
+        )
         .insert_resource(Gravity(Vec2::new(0., -9.81 * 32.)));
 
         #[cfg(feature = "inspector")]
@@ -89,7 +92,11 @@ fn wall_spawn_system(
                     let width = (pos.x - strip_start_x.unwrap().x) as f32;
 
                     let mut collider = commands.spawn((
-                        Transform::from_xyz(16. * (strip_start_x.unwrap().x as f32 + width / 2.), 16. * pos.y as f32 + 8., 0.),
+                        Transform::from_xyz(
+                            16. * (strip_start_x.unwrap().x as f32 + width / 2.),
+                            16. * pos.y as f32 + 8.,
+                            0.,
+                        ),
                         Collider::rectangle(width * 16., 16.),
                         CollisionLayers::new(0b00100, 0b01101),
                         CollidingEntities::default(),

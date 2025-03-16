@@ -1,6 +1,6 @@
+use crate::scripting::scripted_game_entity::{game_entity_script_event_system, ScriptEvent};
 use bevy::app::App;
 use bevy::prelude::{Plugin, Update};
-use crate::scripting::scripted_game_entity::{game_entity_script_event_system, ScriptEvent};
 
 pub mod scripted_game_entity;
 pub struct ScriptedGameEntityPlugin;
@@ -21,7 +21,7 @@ pub mod game_entity {
     pub struct EntityScriptContext {
         pub string_values: BTreeMap<String, String>,
     }
-    
+
     bindgen!({
         path: "./src/scripting/components/",
         world: "gamejam:game/game-entity",

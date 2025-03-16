@@ -1,6 +1,6 @@
-use bevy::prelude::{Query, Res, Time};
-use avian2d::prelude::LinearVelocity;
 use crate::player_components::{Grounded, MovementDampeningFactor, Moving};
+use avian2d::prelude::LinearVelocity;
+use bevy::prelude::{Query, Res, Time};
 
 pub fn movement_dampening_system(
     time: Res<Time>,

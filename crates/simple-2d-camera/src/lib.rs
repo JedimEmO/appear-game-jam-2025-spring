@@ -30,7 +30,7 @@ pub struct CameraShake {
     pub started_at: f64,
     pub duration: f64,
     pub intensity: f32,
-    pub timer: Timer
+    pub timer: Timer,
 }
 
 impl CameraShake {
@@ -59,7 +59,7 @@ fn camera_track_system(
     tracked: Query<(&Transform, &LinearVelocity), (With<PixelCameraTracked>, Without<Camera>)>,
 ) {
     let mut camera = camera.single_mut();
-    
+
     for (transform, velocity) in tracked.iter() {
         let track_point = calculate_camera_track_point(transform, velocity);
         let dx = track_point.x - camera.translation.x;
@@ -68,7 +68,8 @@ fn camera_track_system(
         let speed_window_x = (dx.abs().clamp(30., 150.) - 30.) / 120.;
 
         if dx.abs() >= 30. {
-            camera.translation.x += dx.signum() * CAMERA_TRACK_SPEED_FAST * speed_window_x * time.delta_secs();
+            camera.translation.x +=
+                dx.signum() * CAMERA_TRACK_SPEED_FAST * speed_window_x * time.delta_secs();
         }
 
         if dy.abs() >= 100. {
@@ -79,24 +80,30 @@ fn camera_track_system(
     }
 }
 
-fn start_camera_system(mut commands: Commands, camera_resolution: Res<PixelCameraResolution>, asset_server: Res<AssetServer>) {
+fn start_camera_system(
+    mut commands: Commands,
+    camera_resolution: Res<PixelCameraResolution>,
+    asset_server: Res<AssetServer>,
+) {
     let sprite = Sprite::from_image(asset_server.load("sprites/scenery/nexus_bg.png"));
 
-    let camera_id = commands.spawn((
-        Camera2d,
-        OrthographicProjection {
-            scaling_mode: ScalingMode::Fixed {
-                width: camera_resolution.0.x,
-                height: camera_resolution.0.y,
+    let camera_id = commands
+        .spawn((
+            Camera2d,
+            OrthographicProjection {
+                scaling_mode: ScalingMode::Fixed {
+                    width: camera_resolution.0.x,
+                    height: camera_resolution.0.y,
+                },
+                near: -1000.,
+                far: 1000.,
+                ..OrthographicProjection::default_2d()
             },
-            near: -1000.,
-            far: 1000.,
-            ..OrthographicProjection::default_2d()
-        },
-        Shake::default(),
-        IsDefaultUiCamera
-    )).id();
-    
+            Shake::default(),
+            IsDefaultUiCamera,
+        ))
+        .id();
+
     let mut camera_child = commands.spawn((sprite, Transform::from_xyz(0., 0., -100.)));
     camera_child.set_parent(camera_id);
 }

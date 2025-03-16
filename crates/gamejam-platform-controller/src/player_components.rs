@@ -1,10 +1,10 @@
+use crate::enemies::HitPoints;
+use crate::player_const_rules::*;
+use crate::AttackDirection;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use haalka::prelude::{Mutable, MutableVec};
 use simple_2d_camera::PixelCameraTracked;
-use crate::AttackDirection;
-use crate::enemies::HitPoints;
-use crate::player_const_rules::*;
 
 #[derive(Component)]
 #[require(
@@ -56,7 +56,7 @@ pub struct Attacking {
 
 #[derive(Component, Default)]
 pub struct PlayerMovementData {
-    pub horizontal_direction: bool
+    pub horizontal_direction: bool,
 }
 
 #[derive(Component, Default)]
@@ -72,7 +72,7 @@ pub struct JumpState {
     pub used: u8,
     pub left_ground_at: Option<f64>,
     pub last_grounded_time: Option<f64>,
-    pub jump_start_requested_at: Option<f32>
+    pub jump_start_requested_at: Option<f32>,
 }
 
 impl JumpState {
@@ -87,14 +87,12 @@ pub struct MovementDampeningFactor(pub f32);
 
 #[derive(Component)]
 pub struct PlayerStats {
-    pub max_health: u32
+    pub max_health: u32,
 }
 
 impl Default for PlayerStats {
     fn default() -> Self {
-        Self {
-            max_health: 6
-        }
+        Self { max_health: 6 }
     }
 }
 
@@ -103,5 +101,5 @@ impl Default for PlayerStats {
 pub struct PlayerStatsMutable {
     pub hp: Mutable<u32>,
     pub max_hp: Mutable<u32>,
-    pub hearts: MutableVec<Mutable<u32>>
+    pub hearts: MutableVec<Mutable<u32>>,
 }

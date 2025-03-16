@@ -1,8 +1,8 @@
 mod systems;
 
+use crate::systems::init_game::SimplePlatformGame;
 use bevy::prelude::*;
 use simple_2d_camera::SimplePixel2dCameraPlugin;
-use crate::systems::init_game::SimplePlatformGame;
 
 fn main() {
     let mut app = App::new();

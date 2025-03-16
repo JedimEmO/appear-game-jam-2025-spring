@@ -2,12 +2,12 @@ use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationComplete
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::get_ldtk_enum_field;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
+use crate::player_components::{Player, PlayerStats};
 use anyhow::anyhow;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
-use std::time::Duration;
 use gamejam_bevy_components::Interactable;
-use crate::player_components::{Player, PlayerStats};
+use std::time::Duration;
 
 pub enum ChestType {
     Small,

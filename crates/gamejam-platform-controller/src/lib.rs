@@ -18,9 +18,11 @@ use crate::player_systems::player_spawn_system::{
     spawn_player_system, spawn_player_ui_proxy_system,
 };
 use crate::scripting::scripted_game_entity::wasmwat_system;
+use crate::scripting::ScriptedGameEntityPlugin;
 use crate::ui::game_ui::setup_game_ui;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::sprite::Material2dPlugin;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
@@ -34,8 +36,6 @@ use haalka::HaalkaPlugin;
 use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
-use bevy::sprite::Material2dPlugin;
-use crate::scripting::ScriptedGameEntityPlugin;
 
 pub mod enemies;
 pub mod game_entities;
@@ -145,7 +145,7 @@ fn spawn_fog_system(
     let fog_image = asset_server.load("textures/fog.png");
 
     let fog_material = fog_material_assets.add(FogMaterial {
-        color_texture: fog_image
+        color_texture: fog_image,
     });
     let mesh = Mesh::from(Rectangle::new(camera_resolution.0.x, camera_resolution.0.y));
     let mesh = meshes.add(mesh);

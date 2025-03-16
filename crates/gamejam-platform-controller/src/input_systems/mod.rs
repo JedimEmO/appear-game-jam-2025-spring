@@ -1,6 +1,6 @@
-use bevy::prelude::Event;
-use bevy::math::Vec2;
 use crate::AttackDirection;
+use bevy::math::Vec2;
+use bevy::prelude::Event;
 
 pub mod gamepad_input;
 pub mod keyboard_input_system;
@@ -13,5 +13,5 @@ pub enum PlayerInputAction {
     JumpAbort,
     Attack(AttackDirection),
     Interact,
-    ReloadLevel
+    ReloadLevel,
 }

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use wasmtime::{Engine};
+use wasmtime::Engine;
 
 #[derive(Resource)]
 pub struct WasmEngine(pub Engine);

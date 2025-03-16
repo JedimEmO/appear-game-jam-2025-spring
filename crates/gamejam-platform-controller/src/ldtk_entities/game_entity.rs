@@ -34,11 +34,16 @@ pub fn game_entity_try_from_entity_instance(
         .expect(&format!("missing entity prototype {prototype_name}"));
 
     let script_params = get_ldtk_string_array_field("script_params", &entity_instance);
-    
-    let script = prototype
-        .script_path
-        .as_ref()
-        .map(|path| create_entity_script(path, &engine, &asset_server, wasm_scripts.as_mut(), script_params));
+
+    let script = prototype.script_path.as_ref().map(|path| {
+        create_entity_script(
+            path,
+            &engine,
+            &asset_server,
+            wasm_scripts.as_mut(),
+            script_params,
+        )
+    });
 
     transform.scale = Vec3::splat(1.);
 
