@@ -1,34 +1,36 @@
 package gamejam: game;
 
 interface game-host {
-  record interactable {
-    message: string,
-    range: f32
-  }
+    record interactable {
+        message: string,
+        range: f32
+    }
 
-  record collider {
-    physical: bool,
-    width: f32,
-    height: f32
-  }
+    record collider {
+        physical: bool,
+        width: f32,
+        height: f32
+    }
 
-  variant insertable-components {
-    attackable,
-    collider(collider),
-    interactable(interactable),
-  }
+    variant insertable-components {
+        attackable,
+        collider(collider),
+        interactable(interactable),
+    }
 
-  variant event-data {
-    trigger(u32)
-  }
+    variant event-data {
+        trigger(u32)
+    }
 
-  record event {
-    topic: u32,
-    data: event-data
-  }
+    record event {
+        topic: u32,
+        data: event-data
+    }
 
-  remove-component: func(type-path: string);
-  insert-components: func(components: list<insertable-components>);
-  play-animation: func(sprite-name: string, animation-name: string, duration-millis: u32, flip-x: bool, repeating: bool);
-  publish-event: func(evt: event);
+    remove-component: func(type-path: string);
+    insert-components: func(components: list<insertable-components>);
+    play-animation: func(sprite-name: string, animation-name: string, duration-millis: u32, flip-x: bool, repeating: bool);
+    publish-event: func(evt: event);
+    set-ticking: func(do-tick: bool);
+    despawn-entity: func(entity-id: u64);
 }

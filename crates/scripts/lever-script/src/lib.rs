@@ -16,8 +16,14 @@ static mut STATE: u32 = 0;
 static mut TRIGGER_TARGET: Vec<u32> = vec![];
 
 impl Guest for MyCmp {
-    fn startup(params: Option<Vec<String>>) -> u64 {
+    fn startup(params: StartupSettings) -> u64 {
+        let StartupSettings {
+            params,
+            self_entity_id
+        } = params;
+
         let params = ScriptParams::new(params);
+
         unsafe {
             TRIGGER_TARGET = params.get_list_parameter::<u32>("trigger-targets").unwrap();
         }

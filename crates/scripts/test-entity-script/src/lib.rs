@@ -1,29 +1,36 @@
+use std::cell::OnceCell;
+use std::sync::{Arc, OnceLock};
 use game_entity_component::prelude::*;
 
 struct MyCmp;
 
 export!(MyCmp);
 
-use crate::gamejam::game::game_host::{
-    InsertableComponents, Interactable, insert_components, play_animation,
-};
+use crate::gamejam::game::game_host::*;
 
 use crate::gamejam::game::game_host;
 
 static mut ACTIVATE_COUNT: u32 = 0;
+static SETTINGS: OnceLock<StartupSettings> = OnceLock::new();
 
 impl Guest for MyCmp {
-    fn startup(params: Option<Vec<String>>) -> u64 {
+    fn startup(params: StartupSettings) -> u64 {
+        SETTINGS.set(params).unwrap();
+
         play_animation("house_1", "idle", 1000, false, true);
 
         insert_components(&[InsertableComponents::Interactable(Interactable {
             message: "Hello, world".to_string(),
             range: 50.,
         })]);
+
+        set_ticking(true);
         0
     }
 
-    fn tick() {}
+    fn tick() {
+        despawn_entity(SETTINGS.get().unwrap().self_entity_id);
+    }
 
     fn interacted() {
         unsafe {

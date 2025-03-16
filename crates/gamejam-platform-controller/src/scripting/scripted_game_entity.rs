@@ -1,24 +1,17 @@
-use crate::enemies::attackable::Attackable;
-use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::scripting::game_entity::gamejam::game::game_host;
 use crate::scripting::game_entity::gamejam::game::game_host::{
     add_to_linker, Host, InsertableComponents,
 };
 use crate::scripting::game_entity::GameEntity;
-use crate::scripting::script_entity_command_queue::EntityScriptCommand;
-use avian2d::collision::CollisionLayers;
-use avian2d::prelude::{Collider, RigidBody};
+use crate::scripting::script_entity_command_queue::{EntityScriptCommand, TickingEntity};
 use bevy::asset::{AssetServer, Assets, Handle};
-use bevy::ecs::reflect::ReflectCommandExt;
-use bevy::log::info;
 use bevy::prelude::{
-    Bundle, Commands, Component, Entity, Event, EventReader, EventWriter, OnAdd, Query, Res,
+    Bundle, Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res,
     Trigger, With,
 };
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
-use gamejam_bevy_components::Interactable;
 use std::time::Duration;
 use wasmtime::component::Linker;
 use wasmtime::{AsContextMut, Store};
@@ -98,6 +91,14 @@ impl Host for GameEngineComponent {
                 },
             }));
     }
+
+    fn set_ticking(&mut self, ticking: bool) {
+        self.queued_commands.push(EntityScriptCommand::ToggleTicking(ticking));
+    }
+
+    fn despawn_entity(&mut self, entity_id: u64) {
+        self.queued_commands.push(EntityScriptCommand::DespawnEntity(entity_id));
+    }
 }
 
 impl GameEngineComponent {}
@@ -107,6 +108,7 @@ pub struct State {
 }
 
 pub fn create_entity_script(
+    entity: Entity,
     script_path: &str,
     engine: &Res<WasmEngine>,
     asset_server: &Res<AssetServer>,
@@ -140,10 +142,15 @@ pub fn create_entity_script(
 
     add_to_linker(&mut linker, |state: &mut State| &mut state.host).unwrap();
 
+    let settings = crate::scripting::game_entity::StartupSettings {
+        params: script_params,
+        self_entity_id: entity.to_bits()
+    };
+
     let entity = GameEntity::instantiate(&mut store, &component, &linker).unwrap();
 
     entity
-        .call_startup(&mut store, script_params.as_deref())
+        .call_startup(&mut store, &settings)
         .unwrap();
 
     EntityScript {
@@ -152,7 +159,7 @@ pub fn create_entity_script(
     }
 }
 
-pub fn wasmwat_system(mut scripted_entities: Query<(Entity, &mut EntityScript)>) {
+pub fn tick_scripted_entity_system(mut scripted_entities: Query<(Entity, &mut EntityScript), With<TickingEntity>>) {
     for (entity, mut script) in scripted_entities.iter_mut() {
         let EntityScript { game_entity, store } = script.as_mut();
         {

@@ -1,5 +1,5 @@
 use crate::scripting::script_entity_command_queue::scripted_entity_command_queue_system;
-use crate::scripting::scripted_game_entity::{game_entity_script_event_system, ScriptEvent};
+use crate::scripting::scripted_game_entity::{game_entity_script_event_system, tick_scripted_entity_system, ScriptEvent};
 use crate::GameStates;
 use bevy::app::App;
 use bevy::prelude::{in_state, IntoSystemConfigs, Plugin, Update};
@@ -15,6 +15,7 @@ impl Plugin for ScriptedGameEntityPlugin {
             Update,
             (
                 game_entity_script_event_system,
+                tick_scripted_entity_system,
                 scripted_entity_command_queue_system,
             )
                 .run_if(in_state(GameStates::GameLoop))

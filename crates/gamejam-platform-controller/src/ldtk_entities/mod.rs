@@ -116,6 +116,7 @@ pub fn handle_ldtk_entities_spawn(
             "game_entity" => {
                 info!("Game entity spawned");
                 let Some((bundle, script)) = game_entity_try_from_entity_instance(
+                    entity,
                     &entity_db,
                     &entity_db_handle,
                     entity_instance,

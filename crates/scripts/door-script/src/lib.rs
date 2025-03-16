@@ -15,7 +15,12 @@ static mut STATE: u32 = 0;
 static mut TRIGGER_VALUE: u32 = 0;
 
 impl Guest for MyCmp {
-    fn startup(params: Option<Vec<String>>) -> u64 {
+    fn startup(params: StartupSettings) -> u64 {
+        let StartupSettings {
+            params,
+            self_entity_id
+        } = params;
+
         let params = ScriptParams::new(params);
         unsafe {
             TRIGGER_VALUE = params.get_parameter::<u32>("trigger-id").unwrap();

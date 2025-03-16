@@ -9,6 +9,7 @@ use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
 
 pub fn game_entity_try_from_entity_instance(
+    entity: Entity,
     entity_db: &Res<Assets<GameEntityDefinitionFile>>,
     entity_db_handle: &Res<GameEntityDefinitionFileHandle>,
     entity_instance: &EntityInstance,
@@ -37,6 +38,7 @@ pub fn game_entity_try_from_entity_instance(
 
     let script = prototype.script_path.as_ref().map(|path| {
         create_entity_script(
+            entity,
             path,
             &engine,
             &asset_server,

@@ -17,7 +17,6 @@ use crate::player_systems::player_health::player_health_sync_system;
 use crate::player_systems::player_spawn_system::{
     spawn_player_system, spawn_player_ui_proxy_system,
 };
-use crate::scripting::scripted_game_entity::wasmwat_system;
 use crate::scripting::ScriptedGameEntityPlugin;
 use crate::ui::game_ui::setup_game_ui;
 use avian2d::prelude::*;

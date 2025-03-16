@@ -10,6 +10,10 @@ use bevy::log::info;
 use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res};
 use gamejam_bevy_components::Interactable;
 use std::time::Duration;
+use bevy::ecs::component::Tick;
+
+#[derive(Component)]
+pub struct TickingEntity;
 
 pub enum EntityScriptCommand {
     RemoveReflectComponent(String),
@@ -22,6 +26,8 @@ pub enum EntityScriptCommand {
         repeat: bool,
     },
     PublishEvent(ScriptEvent),
+    ToggleTicking(bool),
+    DespawnEntity(u64),
 }
 
 pub fn scripted_entity_command_queue_system(
@@ -91,6 +97,16 @@ fn apply_command(
         EntityScriptCommand::PublishEvent(evt) => {
             info!("publishing script event: {evt:?}");
             event_writer.send(evt);
+        }
+        EntityScriptCommand::ToggleTicking(should_tick) => {
+            if should_tick {
+                entity.insert(TickingEntity);
+            } else {
+                entity.remove::<TickingEntity>();
+            }
+        }
+        EntityScriptCommand::DespawnEntity(entity) => {
+            commands.get_entity(Entity::from_bits(entity)).map(|mut e| e.despawn());
         }
     }
 }
