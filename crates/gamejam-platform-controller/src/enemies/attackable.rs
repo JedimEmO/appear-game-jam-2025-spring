@@ -52,7 +52,7 @@ pub fn attackable_attacked_observer(
         }
 
         if let Some(mut script) = script {
-            script.attacked(&mut commands, &sprites, &mut event_writer)
+            script.attacked()
         }
     }
 }

@@ -6,6 +6,7 @@ use crate::scripting::game_entity::gamejam::game::game_host::{
     add_to_linker, Host, InsertableComponents,
 };
 use crate::scripting::game_entity::GameEntity;
+use crate::scripting::script_entity_command_queue::EntityScriptCommand;
 use avian2d::collision::CollisionLayers;
 use avian2d::prelude::{Collider, RigidBody};
 use bevy::asset::{AssetServer, Assets, Handle};
@@ -31,72 +32,28 @@ pub struct EntityScript {
 }
 
 impl EntityScript {
-    pub fn drain_command_queue(
-        &mut self,
-        cmds: &mut Commands,
-        sprites: &Res<SpriteCollection>,
-        event_writer: &mut EventWriter<ScriptEvent>,
-    ) {
-        self.store
-            .data_mut()
-            .host
-            .apply_command_queue(cmds, sprites, event_writer);
-    }
-
-    pub fn animation_finished(
-        &mut self,
-        commands: &mut Commands,
-        animation_name: &str,
-        sprites: &Res<SpriteCollection>,
-        event_writer: &mut EventWriter<ScriptEvent>,
-    ) {
+    pub fn animation_finished(&mut self, animation_name: &str) {
         self.game_entity
             .call_animation_finished(self.store.as_context_mut(), animation_name)
             .unwrap();
-        self.drain_command_queue(commands, sprites, event_writer);
     }
 
-    pub fn interact(
-        &mut self,
-        commands: &mut Commands,
-        sprites: &Res<SpriteCollection>,
-        event_writer: &mut EventWriter<ScriptEvent>,
-    ) {
+    pub fn interact(&mut self) {
         self.game_entity
             .call_interacted(self.store.as_context_mut())
             .unwrap();
-        self.drain_command_queue(commands, sprites, event_writer);
     }
 
-    pub fn attacked(
-        &mut self,
-        commands: &mut Commands,
-        sprites: &Res<SpriteCollection>,
-        event_writer: &mut EventWriter<ScriptEvent>,
-    ) {
+    pub fn attacked(&mut self) {
         self.game_entity
             .call_attacked(self.store.as_context_mut())
             .unwrap();
-        self.drain_command_queue(commands, sprites, event_writer);
     }
 }
 
-enum EntityScriptCommand {
-    RemoveReflectComponent(String),
-    InsertComponent(InsertableComponents),
-    PlayAnimation {
-        sprite_name: String,
-        animation_name: String,
-        duration: Duration,
-        flip_x: bool,
-        repeat: bool,
-    },
-    PublishEvent(ScriptEvent),
-}
-
-struct GameEngineComponent {
-    entity: Entity,
-    queued_commands: Vec<EntityScriptCommand>,
+pub struct GameEngineComponent {
+    pub entity: Entity,
+    pub queued_commands: Vec<EntityScriptCommand>,
 }
 
 unsafe impl Send for GameEngineComponent {}
@@ -143,75 +100,10 @@ impl Host for GameEngineComponent {
     }
 }
 
-impl GameEngineComponent {
-    fn apply_command_queue(
-        &mut self,
-        commands: &mut Commands,
-        sprites: &Res<SpriteCollection>,
-        event_writer: &mut EventWriter<ScriptEvent>,
-    ) {
-        for cmd in self.queued_commands.drain(..) {
-            match cmd {
-                EntityScriptCommand::RemoveReflectComponent(type_path) => {
-                    commands.entity(self.entity).remove_reflect(type_path);
-                }
-                EntityScriptCommand::InsertComponent(cmp) => match cmp {
-                    InsertableComponents::Interactable(game_host::Interactable {
-                        message,
-                        range,
-                    }) => {
-                        commands.entity(self.entity).insert(Interactable {
-                            action_hint: message,
-                            range,
-                        });
-                    }
-                    InsertableComponents::Attackable => {
-                        commands.entity(self.entity).insert(Attackable);
-                    }
-                    InsertableComponents::Collider(c) => {
-                        commands
-                            .entity(self.entity)
-                            .insert(Collider::rectangle(c.width, c.height));
-
-                        if c.physical {
-                            commands.entity(self.entity).insert((
-                                CollisionLayers::new(0b00100, 0b01101),
-                                RigidBody::Static,
-                            ));
-                        }
-                    }
-                },
-                EntityScriptCommand::PlayAnimation {
-                    sprite_name,
-                    animation_name,
-                    duration,
-                    flip_x,
-                    repeat,
-                } => {
-                    commands.entity(self.entity).insert(
-                        sprites
-                            .create_sprite_animation_bundle(
-                                &sprite_name,
-                                &animation_name,
-                                duration,
-                                repeat,
-                                false,
-                                flip_x,
-                            )
-                            .unwrap(),
-                    );
-                }
-                EntityScriptCommand::PublishEvent(evt) => {
-                    info!("publishing script event: {evt:?}");
-                    event_writer.send(evt);
-                }
-            }
-        }
-    }
-}
+impl GameEngineComponent {}
 
 pub struct State {
-    host: GameEngineComponent,
+    pub host: GameEngineComponent,
 }
 
 pub fn create_entity_script(
@@ -260,31 +152,19 @@ pub fn create_entity_script(
     }
 }
 
-pub fn wasmwat_system(
-    sprites: Res<SpriteCollection>,
-    mut event_writer: EventWriter<ScriptEvent>,
-    mut commands: Commands,
-    mut scripted_entities: Query<(Entity, &mut EntityScript)>,
-) {
+pub fn wasmwat_system(mut scripted_entities: Query<(Entity, &mut EntityScript)>) {
     for (entity, mut script) in scripted_entities.iter_mut() {
         let EntityScript { game_entity, store } = script.as_mut();
         {
             store.data_mut().host.entity = entity;
             game_entity.call_tick(store.as_context_mut()).unwrap();
         }
-
-        store
-            .data_mut()
-            .host
-            .apply_command_queue(&mut commands, &sprites, &mut event_writer);
     }
 }
 
 pub fn script_interaction_observer(
     trigger: Trigger<OnAdd, Interacted>,
-    mut event_writer: EventWriter<ScriptEvent>,
     mut commands: Commands,
-    sprites: Res<SpriteCollection>,
     mut query: Query<(Entity, &mut EntityScript), With<InteractableInRange>>,
 ) {
     for (entity, mut script) in query.iter_mut() {
@@ -292,7 +172,7 @@ pub fn script_interaction_observer(
             continue;
         }
 
-        script.interact(&mut commands, &sprites, &mut event_writer);
+        script.interact();
         commands.entity(entity).remove::<Interacted>();
     }
 }

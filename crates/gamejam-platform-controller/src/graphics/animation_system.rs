@@ -63,8 +63,6 @@ impl SpriteAnimation {
 
 pub fn animated_sprite_system(
     mut commands: Commands,
-    mut event_writer: EventWriter<ScriptEvent>,
-    sprites: Res<SpriteCollection>,
     time: Res<Time>,
     mut sprite: Query<(
         Entity,
@@ -84,12 +82,7 @@ pub fn animated_sprite_system(
                     animation.animation_frame = 0;
 
                     if let Some(mut script) = script {
-                        script.animation_finished(
-                            &mut commands,
-                            &animation.animation_name,
-                            &sprites,
-                            &mut event_writer,
-                        );
+                        script.animation_finished(&animation.animation_name);
                     }
                 } else {
                     if animation.despawn_finished {
@@ -97,12 +90,7 @@ pub fn animated_sprite_system(
                         return;
                     } else {
                         if let Some(mut script) = script {
-                            script.animation_finished(
-                                &mut commands,
-                                &animation.animation_name,
-                                &sprites,
-                                &mut event_writer,
-                            );
+                            script.animation_finished(&animation.animation_name);
                         }
 
                         commands.entity(entity).insert(SpriteAnimationCompleted);

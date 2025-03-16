@@ -125,7 +125,6 @@ impl Plugin for PlayerPlugin {
                     player_attack_start_system,
                     player_pogo_system,
                     player_health_sync_system,
-                    wasmwat_system,
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             );
