@@ -1,45 +1,56 @@
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
-use crate::scripting::game_entity::gamejam::game::game_host;
-use crate::scripting::game_entity::gamejam::game::game_host::{
-    add_to_linker, Host, InsertableComponents,
-};
-use crate::scripting::game_entity::GameEntity;
 use crate::scripting::script_entity_command_queue::{EntityScriptCommand, TickingEntity};
 use bevy::asset::{AssetServer, Assets, Handle};
+use bevy::log::info;
 use bevy::prelude::{
-    Bundle, Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res,
-    Trigger, With,
+    Bundle, Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res, Trigger, With,
 };
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
+use scripted_game_entity::exports::gamejam::game::entity_resource::{
+    GameEntity, GuestGameEntity, StartupSettings,
+};
+use scripted_game_entity::gamejam::game::game_host;
+use scripted_game_entity::gamejam::game::game_host::{add_to_linker, Host, InsertableComponents};
+use scripted_game_entity::GameEntityWorld;
 use std::time::Duration;
-use wasmtime::component::Linker;
+use wasmtime::component::{Linker, ResourceAny};
 use wasmtime::{AsContextMut, Store};
 
 /// Generic game entity script component.
 /// Implements the game_entity.wit component definition.
 #[derive(Component)]
 pub struct EntityScript {
-    pub game_entity: GameEntity,
+    pub game_entity: GameEntityWorld,
+    pub entity_resource: ResourceAny,
     pub store: Store<State>,
 }
 
 impl EntityScript {
     pub fn animation_finished(&mut self, animation_name: &str) {
-        self.game_entity
-            .call_animation_finished(self.store.as_context_mut(), animation_name)
+        let guest = self.game_entity.gamejam_game_entity_resource();
+        let entity_resource_guest = guest.game_entity();
+
+        entity_resource_guest
+            .call_animation_finished(self.store.as_context_mut(), self.entity_resource, animation_name)
             .unwrap();
     }
 
     pub fn interact(&mut self) {
-        self.game_entity
-            .call_interacted(self.store.as_context_mut())
+        let guest = self.game_entity.gamejam_game_entity_resource();
+        let entity_resource_guest = guest.game_entity();
+
+        entity_resource_guest
+            .call_interacted(self.store.as_context_mut(), self.entity_resource)
             .unwrap();
     }
 
     pub fn attacked(&mut self) {
-        self.game_entity
-            .call_attacked(self.store.as_context_mut())
+        let guest = self.game_entity.gamejam_game_entity_resource();
+        let entity_resource_guest = guest.game_entity();
+
+        entity_resource_guest
+            .call_attacked(self.store.as_context_mut(), self.entity_resource)
             .unwrap();
     }
 }
@@ -93,11 +104,13 @@ impl Host for GameEngineComponent {
     }
 
     fn set_ticking(&mut self, ticking: bool) {
-        self.queued_commands.push(EntityScriptCommand::ToggleTicking(ticking));
+        self.queued_commands
+            .push(EntityScriptCommand::ToggleTicking(ticking));
     }
 
     fn despawn_entity(&mut self, entity_id: u64) {
-        self.queued_commands.push(EntityScriptCommand::DespawnEntity(entity_id));
+        self.queued_commands
+            .push(EntityScriptCommand::DespawnEntity(entity_id));
     }
 }
 
@@ -142,29 +155,42 @@ pub fn create_entity_script(
 
     add_to_linker(&mut linker, |state: &mut State| &mut state.host).unwrap();
 
-    let settings = crate::scripting::game_entity::StartupSettings {
+    let settings = StartupSettings {
         params: script_params,
-        self_entity_id: entity.to_bits()
+        self_entity_id: entity.to_bits(),
     };
 
-    let entity = GameEntity::instantiate(&mut store, &component, &linker).unwrap();
+    let entity = GameEntityWorld::instantiate(&mut store, &component, &linker).unwrap();
+    let guest = entity.gamejam_game_entity_resource();
+    let entity_resource_guest = guest.game_entity();
 
-    entity
-        .call_startup(&mut store, &settings)
+    let entity_resource = entity_resource_guest
+        .call_constructor(&mut store, &settings)
         .unwrap();
 
     EntityScript {
         game_entity: entity,
+        entity_resource,
         store,
     }
 }
 
-pub fn tick_scripted_entity_system(mut scripted_entities: Query<(Entity, &mut EntityScript), With<TickingEntity>>) {
-    for (entity, mut script) in scripted_entities.iter_mut() {
-        let EntityScript { game_entity, store } = script.as_mut();
+pub fn tick_scripted_entity_system(
+    mut scripted_entities: Query<(Entity, &mut EntityScript), With<TickingEntity>>,
+) {
+    for (_entity, mut script) in scripted_entities.iter_mut() {
+        let EntityScript {
+            game_entity,
+            store,
+            entity_resource,
+        } = script.as_mut();
         {
-            store.data_mut().host.entity = entity;
-            game_entity.call_tick(store.as_context_mut()).unwrap();
+            let guest = game_entity.gamejam_game_entity_resource();
+            let entity_resource_guest = guest.game_entity();
+
+            entity_resource_guest
+                .call_tick(store.as_context_mut(), *entity_resource)
+                .unwrap();
         }
     }
 }
@@ -201,21 +227,21 @@ pub fn game_entity_script_event_system(
 ) {
     for evt in evt.read() {
         for mut entity in script_entities_query.iter_mut() {
-            let EntityScript { game_entity, store } = entity.as_mut();
+            let EntityScript { game_entity, store,entity_resource } = entity.as_mut();
+            let guest = game_entity.gamejam_game_entity_resource();
+            let entity_resource_guest = guest.game_entity();
 
-            game_entity
-                .call_receive_event(
-                    store.as_context_mut(),
-                    game_host::Event {
-                        topic: evt.topic,
-                        data: match evt.data {
-                            ScriptEventData::Trigger(event_id) => {
-                                game_host::EventData::Trigger(event_id)
-                            }
-                        },
+            entity_resource_guest
+                .call_receive_event(store.as_context_mut(), *entity_resource, game_host::Event {
+                    topic: evt.topic,
+                    data: match evt.data {
+                        ScriptEventData::Trigger(event_id) => {
+                            game_host::EventData::Trigger(event_id)
+                        }
                     },
-                )
+                })
                 .unwrap();
+
         }
     }
 }

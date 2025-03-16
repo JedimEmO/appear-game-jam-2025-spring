@@ -34,8 +34,4 @@ pub mod game_entity {
         pub string_values: BTreeMap<String, String>,
     }
 
-    bindgen!({
-        path: "./src/scripting/components/",
-        world: "gamejam:game/game-entity",
-    });
 }

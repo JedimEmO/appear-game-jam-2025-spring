@@ -7,7 +7,7 @@ members = [
     "crates/simple-2d-camera",
     "crates/gamejam-platform-controller",
     "crates/bevy-wasmer-scripting"
-, "crates/gamejam-bevy-components"]
+, "crates/gamejam-bevy-components", "crates/script-wasi-components/scripted-game-entity"]
 exclude = ["crates/scripts"]
 
 [workspace.dependencies]

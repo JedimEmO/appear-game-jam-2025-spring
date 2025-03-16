@@ -1,22 +1,28 @@
-use std::cell::OnceCell;
-use std::sync::{Arc, OnceLock};
-use game_entity_component::prelude::*;
+use game_entity_component::exports::gamejam::game::entity_resource::{
+    Event, Guest, GuestGameEntity, StartupSettings,
+};
+use std::cell::Cell;
 
-struct MyCmp;
+use game_entity_component::gamejam::game::game_host::{Collider, EventData, InsertableComponents, insert_components, play_animation, publish_event, remove_component, Interactable, set_ticking, despawn_entity};
+use game_entity_component::*;
 
-export!(MyCmp);
+struct EntityWorld;
 
-use crate::gamejam::game::game_host::*;
+use game_entity_component::exports;
+export!(EntityWorld);
 
-use crate::gamejam::game::game_host;
+impl Guest for EntityWorld {
+    type GameEntity = TestEntityScript;
+}
 
-static mut ACTIVATE_COUNT: u32 = 0;
-static SETTINGS: OnceLock<StartupSettings> = OnceLock::new();
+struct TestEntityScript {
+    self_entity_id: u64,
+    trigger_targets: Vec<u32>,
+    activate_count: Cell<u32>,
+}
 
-impl Guest for MyCmp {
-    fn startup(params: StartupSettings) -> u64 {
-        SETTINGS.set(params).unwrap();
-
+impl GuestGameEntity for TestEntityScript {
+    fn new(params: StartupSettings) -> Self {
         play_animation("house_1", "idle", 1000, false, true);
 
         insert_components(&[InsertableComponents::Interactable(Interactable {
@@ -25,24 +31,29 @@ impl Guest for MyCmp {
         })]);
 
         set_ticking(true);
-        0
-    }
 
-    fn tick() {
-        despawn_entity(SETTINGS.get().unwrap().self_entity_id);
-    }
-
-    fn interacted() {
-        unsafe {
-            ACTIVATE_COUNT += 1;
-
-            if ACTIVATE_COUNT % 3 == 0 {
-                play_animation("lamp_post", "swinging", 1000, false, false);
-            }
+        Self {
+            self_entity_id: params.self_entity_id,
+            trigger_targets: vec![],
+            activate_count: Cell::new(0),
         }
     }
 
-    fn animation_finished(animation_name: String) {
+    fn tick(&self) {
+        despawn_entity(self.self_entity_id);
+    }
+
+    fn interacted(&self) {
+        self.activate_count.set(self.activate_count.get() + 1);
+
+        if self.activate_count.get() % 3 == 0 {
+            play_animation("lamp_post", "swinging", 1000, false, false);
+        }
+    }
+
+    fn attacked(&self) {}
+
+    fn animation_finished(&self, animation_name: String) {
         let next_anim_name = match animation_name.as_str() {
             "idle" => "glowing",
             _ => "idle",
@@ -50,8 +61,6 @@ impl Guest for MyCmp {
 
         play_animation("house_1", next_anim_name, 1000, false, false);
     }
-    fn attacked() {
-    }
 
-    fn receive_event(_: game_host::Event) { }
+    fn receive_event(&self, _: Event) {}
 }

@@ -1,0 +1,26 @@
+package gamejam: game;
+
+interface entity-resource {
+    use game-host.{event};
+
+    record startup-settings {
+        self-entity-id: u64,
+        params: option<list<string>>
+    }
+
+    resource game-entity {
+        constructor(settings: startup-settings);
+
+        tick: func();
+        interacted: func();
+        attacked: func();
+        animation-finished: func(animation-name: string);
+        receive-event: func(evt: event);
+    }
+}
+
+world game-entity-world {
+    import game-host;
+
+    export entity-resource;
+}

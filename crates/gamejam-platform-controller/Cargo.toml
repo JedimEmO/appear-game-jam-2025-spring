@@ -8,7 +8,6 @@ anyhow.workspace = true
 avian2d.workspace = true
 bevy.workspace = true
 bevy_asset_loader = { workspace = true, features = ["2d"] }
-bevy_asset_loader_derive.workspace = true
 bevy_common_assets.workspace = true
 bevy_ecs_ldtk.workspace = true
 bevy_framepace.workspace = true
@@ -17,7 +16,7 @@ bevy_wasmer_scripting = { path = "../bevy-wasmer-scripting" }
 gamejam-bevy-components = { path = "../gamejam-bevy-components" }
 haalka.workspace = true
 simple-2d-camera = { path = "../simple-2d-camera" }
+scripted-game-entity = { path = "../script-wasi-components/scripted-game-entity" }
 serde.workspace = true
-serde_json.workspace = true
 wasmtime.workspace = true
 wit-component.workspace = true

@@ -1,30 +1,41 @@
-use game_entity_component::prelude::*;
-use script_utils::script_parameters::ScriptParams;
-
-struct MyCmp;
-
-export!(MyCmp);
-
-use crate::gamejam::game::game_host;
-use crate::gamejam::game::game_host::Collider;
-use crate::gamejam::game::game_host::{
-    InsertableComponents, Interactable, insert_components, play_animation, remove_component,
+use game_entity_component::exports::gamejam::game::entity_resource::{
+    Event, Guest, GuestGameEntity, StartupSettings,
 };
+use script_utils::script_parameters::ScriptParams;
+use std::cell::Cell;
 
-static mut STATE: u32 = 0;
-static mut TRIGGER_VALUE: u32 = 0;
+use game_entity_component::gamejam::game::game_host::{
+    Collider, EventData, InsertableComponents, insert_components, play_animation, remove_component,
+};
+use game_entity_component::*;
 
-impl Guest for MyCmp {
-    fn startup(params: StartupSettings) -> u64 {
+
+struct EntityWorld;
+
+use game_entity_component::exports;
+export!(EntityWorld);
+
+impl Guest for EntityWorld {
+    type GameEntity = DoorScript;
+}
+
+
+struct DoorScript {
+    _self_entity_id: u64,
+    trigger_value: u32,
+    state: Cell<u32>,
+}
+
+impl GuestGameEntity for DoorScript {
+    fn new(settings: StartupSettings) -> Self {
         let StartupSettings {
             params,
-            self_entity_id
-        } = params;
+            self_entity_id,
+        } = settings;
 
         let params = ScriptParams::new(params);
-        unsafe {
-            TRIGGER_VALUE = params.get_parameter::<u32>("trigger-id").unwrap();
-        }
+
+        let trigger_value = params.get_parameter::<u32>("trigger-id").unwrap();
 
         insert_components(&[
             InsertableComponents::Attackable,
@@ -35,18 +46,25 @@ impl Guest for MyCmp {
             }),
         ]);
         play_animation("door_1", "closed", 1000, false, true);
-        0
+
+        Self {
+            _self_entity_id: self_entity_id,
+            trigger_value,
+            state: Cell::new(0),
+        }
     }
 
-    fn tick() {}
+    fn tick(&self) -> () {}
 
-    fn interacted() {}
+    fn interacted(&self) -> () {}
 
-    fn animation_finished(animation_name: String) {
+    fn attacked(&self) -> () {}
+
+    fn animation_finished(&self, animation_name: String) -> () {
         let next_anim_name = match animation_name.as_str() {
             "opening" => "open",
             _ => {
-                if unsafe { STATE } == 0 {
+                if self.state.get() == 0 {
                     "closed"
                 } else {
                     "open"
@@ -57,17 +75,15 @@ impl Guest for MyCmp {
         play_animation("door_1", next_anim_name, 1000, false, true);
     }
 
-    fn attacked() {}
-
-    fn receive_event(evt: game_host::Event) {
+    fn receive_event(&self, evt: Event) -> () {
         match evt.data {
-            game_host::EventData::Trigger(id) => unsafe {
-                if id == unsafe { TRIGGER_VALUE } && STATE == 0 {
-                    STATE = 1;
+            EventData::Trigger(id) => {
+                if id == self.trigger_value && self.state.get() == 0 {
+                    self.state.set(1);
                     remove_component("avian2d::dynamics::rigid_body::RigidBody");
                     play_animation("door_1", "opening", 1000, false, false);
                 }
-            },
+            }
         }
     }
 }

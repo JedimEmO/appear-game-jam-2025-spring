@@ -1,32 +1,40 @@
-use game_entity_component::prelude::*;
-use script_utils::script_parameters::ScriptParams;
-
-struct MyCmp;
-
-export!(MyCmp);
-
-use crate::game_host::publish_event;
-use crate::gamejam::game::game_host;
-use crate::gamejam::game::game_host::Collider;
-use crate::gamejam::game::game_host::{
-    InsertableComponents, Interactable, insert_components, play_animation, remove_component,
+use game_entity_component::exports::gamejam::game::entity_resource::{
+    Event, Guest, GuestGameEntity, StartupSettings,
 };
+use script_utils::script_parameters::ScriptParams;
+use std::cell::Cell;
 
-static mut STATE: u32 = 0;
-static mut TRIGGER_TARGET: Vec<u32> = vec![];
+use game_entity_component::gamejam::game::game_host::{
+    Collider, EventData, InsertableComponents, insert_components, play_animation, publish_event,
+    remove_component,
+};
+use game_entity_component::*;
 
-impl Guest for MyCmp {
-    fn startup(params: StartupSettings) -> u64 {
+struct EntityWorld;
+
+use game_entity_component::exports;
+export!(EntityWorld);
+
+impl Guest for EntityWorld {
+    type GameEntity = LeverScript;
+}
+
+struct LeverScript {
+    _self_entity_id: u64,
+    trigger_targets: Vec<u32>,
+    state: Cell<u32>,
+}
+
+impl GuestGameEntity for LeverScript {
+    fn new(params: StartupSettings) -> Self {
         let StartupSettings {
             params,
-            self_entity_id
+            self_entity_id,
         } = params;
 
         let params = ScriptParams::new(params);
 
-        unsafe {
-            TRIGGER_TARGET = params.get_list_parameter::<u32>("trigger-targets").unwrap();
-        }
+        let trigger_targets = params.get_list_parameter::<u32>("trigger-targets").unwrap();
 
         insert_components(&[
             InsertableComponents::Attackable,
@@ -37,33 +45,47 @@ impl Guest for MyCmp {
             }),
         ]);
         play_animation("lever", "open", 1000, false, true);
-        0
+
+        Self {
+            _self_entity_id: self_entity_id,
+            trigger_targets,
+            state: Cell::new(0),
+        }
     }
 
-    fn tick() {}
+    fn tick(&self) {}
 
-    fn interacted() {
+    fn interacted(&self) {
         remove_component("gamejam_bevy_components::Interactable");
         remove_component(
             "gamejam_platform_controller::ui::interactable_hint::InteractableHintComponent",
         );
 
-        unsafe {
-            if STATE == 0 {
-                STATE = 1;
+        if self.state.get() == 0 {
+            self.state.set(1);
 
-                play_animation("lever", "closing", 1000, false, false);
-            } else if STATE == 1 {
-                play_animation("lever", "closed", 1000, false, true);
-            }
+            play_animation("lever", "closing", 1000, false, false);
+        } else if self.state.get() == 1 {
+            play_animation("lever", "closed", 1000, false, true);
         }
     }
 
-    fn animation_finished(animation_name: String) {
+    fn attacked(&self) {
+        self.interacted();
+
+        for val in &self.trigger_targets {
+            publish_event(Event {
+                topic: 1,
+                data: EventData::Trigger(*val),
+            });
+        }
+    }
+
+    fn animation_finished(&self, animation_name: String) {
         let next_anim_name = match animation_name.as_str() {
             "closing" => "closed",
             _ => {
-                if unsafe { STATE } == 0 {
+                if self.state.get() == 0 {
                     "open"
                 } else {
                     "closed"
@@ -74,18 +96,5 @@ impl Guest for MyCmp {
         play_animation("lever", next_anim_name, 1000, false, true);
     }
 
-    fn attacked() {
-        MyCmp::interacted();
-        #[allow(static_mut_refs)]
-        unsafe {
-            for val in &TRIGGER_TARGET {
-                publish_event(game_host::Event {
-                    topic: 1,
-                    data: game_host::EventData::Trigger(*val),
-                });
-            }
-        }
-    }
-
-    fn receive_event(evt: game_host::Event) {}
+    fn receive_event(&self, evt: Event) {}
 }
