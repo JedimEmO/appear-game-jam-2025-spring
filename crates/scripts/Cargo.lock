@@ -470,6 +470,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rubble-script"
+version = "0.1.0"
+dependencies = [
+ "game-entity-component",
+ "script-utils",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"

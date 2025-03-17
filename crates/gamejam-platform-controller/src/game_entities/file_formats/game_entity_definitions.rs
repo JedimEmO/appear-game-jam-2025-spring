@@ -14,10 +14,9 @@ pub struct GameEntityDefinition {
     pub id: String,
     /// Used for searching in the editor
     pub tags: Vec<String>,
-    pub idle_animation: Option<AnimationDescription>,
-    pub distance_based_animations: Option<BTreeMap<String, AnimationDescription>>,
     /// Path to the script file for this entity
     pub script_path: Option<String>,
+    pub script_params: Option<Vec<String>>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

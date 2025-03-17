@@ -36,3 +36,11 @@ script_path = "scripts/lever_script.wasm"
 id = "door"
 tags = [ "lever", "interactable" ]
 script_path = "scripts/door_script.wasm"
+
+
+# Rubble
+[entities.rubble-sign-up-diag]
+id = "rubble-sign-up-diag"
+tags = [ "rubble" ]
+script_path = "scripts/rubble_script.wasm"
+script_params = ["sprite-name=sign_diag_up", "death-duration=200"]

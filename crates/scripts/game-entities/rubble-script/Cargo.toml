@@ -1,0 +1,11 @@
+[package]
+name = "rubble-script"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+game-entity-component = { path = "../../game-entity-component" }
+script-utils = { path = "../../script-utils" }

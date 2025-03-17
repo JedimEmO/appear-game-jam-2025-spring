@@ -27,25 +27,38 @@ pub fn game_entity_try_from_entity_instance(
         .get(&entity_db_handle.0)
         .expect("missing entity db file");
 
-    let prototype_name = get_ldtk_string_field("prototype_name", &entity_instance)
-        .expect("missing prototype_name for game entity");
+    let prototype_name = get_ldtk_string_field("prototype_name", &entity_instance);
 
-    let prototype = db
-        .entities
-        .get(&prototype_name)
-        .expect(&format!("missing entity prototype {prototype_name}"));
+    let script = match prototype_name {
+        Some(prototype_name) => {
+            let prototype = db
+                .entities
+                .get(&prototype_name)
+                .expect(&format!("missing entity prototype {prototype_name}"));
 
-    let script_params = get_ldtk_string_array_field("script_params", &entity_instance);
+            prototype
+                .script_path
+                .clone()
+                .map(|path| (path, prototype.script_params.clone()))
+        }
+        _ => Some((
+            get_ldtk_string_field("script_file", &entity_instance).expect("missing script file"),
+            get_ldtk_string_array_field("script_params", &entity_instance),
+        )),
+    };
 
-    let script = prototype.script_path.as_ref().map(|path| {
+    let script = script.map(|(path, script_params)| {
         create_entity_script(
             entity,
-            path,
+            &path,
             &engine,
             &asset_server,
             game_data,
             wasm_scripts.as_mut(),
-            script_params,
+            script_params.or(get_ldtk_string_array_field(
+                "script_params",
+                &entity_instance,
+            )),
         )
     });
 
