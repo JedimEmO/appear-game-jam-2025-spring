@@ -144,6 +144,11 @@ impl Host for GameEngineComponent {
     fn set_game_data_kv_int(&mut self, key: String, value: i32) -> Option<i32> {
         self.game_state.lock().unwrap().ints.insert(key, value)
     }
+    
+    fn level_transition(&mut self, idx: u32, target: std::string::String) {
+        self.queued_commands
+            .push(EntityScriptCommand::LevelTransition(idx, target));
+    }
 }
 
 impl GameEngineComponent {}

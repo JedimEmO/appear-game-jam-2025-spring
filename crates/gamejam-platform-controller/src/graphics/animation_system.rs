@@ -57,7 +57,7 @@ impl SpriteAnimation {
     }
 
     pub fn finished(&self) -> bool {
-        self.animation_frame == self.animation_frame_count
+        self.animation_frame >= self.animation_frame_count
     }
 }
 

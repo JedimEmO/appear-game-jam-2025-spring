@@ -1,3 +1,4 @@
+use crate::gamejam::game::game_host::level_transition;
 use game_entity_component::exports::gamejam::game::entity_resource::{
     Event, Guest, GuestGameEntity, StartupSettings,
 };
@@ -30,7 +31,6 @@ impl GuestGameEntity for TestEntityScript {
             range: 50.,
         })]);
 
-        set_ticking(true);
 
         Self {
             self_entity_id: params.self_entity_id,
@@ -40,15 +40,10 @@ impl GuestGameEntity for TestEntityScript {
     }
 
     fn tick(&self) {
-        despawn_entity(self.self_entity_id);
     }
 
     fn interacted(&self) {
-        self.activate_count.set(self.activate_count.get() + 1);
-
-        if self.activate_count.get() % 3 == 0 {
-            play_animation("lamp_post", "swinging", 1000, false, false);
-        }
+        level_transition(3, "entry")
     }
 
     fn attacked(&self) {}

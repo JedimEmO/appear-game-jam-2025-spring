@@ -6,12 +6,15 @@ use avian2d::prelude::RigidBody;
 use bevy::ecs::component::Tick;
 use bevy::ecs::reflect::ReflectCommandExt;
 use bevy::log::info;
-use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res};
+use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res, ResMut, With};
 use gamejam_bevy_components::Interactable;
 use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
 use scripted_game_entity::*;
 use std::time::Duration;
+use bevy_ecs_ldtk::LevelSelection;
+use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
+use crate::player_components::Player;
 
 #[derive(Component)]
 pub struct TickingEntity;
@@ -29,26 +32,33 @@ pub enum EntityScriptCommand {
     PublishEvent(ScriptEvent),
     ToggleTicking(bool),
     DespawnEntity(u64),
+    LevelTransition(u32, String)
 }
 
 pub fn scripted_entity_command_queue_system(
     mut commands: Commands,
     sprites: Res<SpriteCollection>,
+    mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
     mut query: Query<(Entity, &mut EntityScript)>,
+    player: Query<Entity, With<Player>>
 ) {
+    let player_entity = player.single();
+
     for (entity, mut queue) in query.iter_mut() {
         for cmd in queue.store.data_mut().host.queued_commands.drain(..) {
-            apply_command(entity, cmd, &mut commands, &sprites, &mut event_writer);
+            apply_command(player_entity, entity, cmd, &mut commands, &sprites, &mut level_select, &mut event_writer);
         }
     }
 }
 
 fn apply_command(
+    player_entity: Entity,
     entity: Entity,
     cmd: EntityScriptCommand,
     commands: &mut Commands,
     sprites: &Res<SpriteCollection>,
+    level_select: &mut ResMut<LevelSelection>,
     event_writer: &mut EventWriter<ScriptEvent>,
 ) {
     let mut entity = commands.entity(entity);
@@ -110,6 +120,13 @@ fn apply_command(
             commands
                 .get_entity(Entity::from_bits(entity))
                 .map(|mut e| e.despawn());
+        },
+        EntityScriptCommand::LevelTransition(level_index, spawn_name) => {
+            commands.entity(player_entity).insert(RequestedPlayerSpawn {
+                spawn_name,
+            });
+
+            **level_select = LevelSelection::index(level_index as usize);
         }
     }
 }

@@ -1,6 +1,6 @@
 [entities.house_1]
 id = "house_1"
-tags = [ "house" ]
+tags = ["house"]
 script_path = "scripts/test_entity_script.wasm"
 
 [entities.house_1.idle_animation]
@@ -15,7 +15,7 @@ duration_millis = 1000
 
 [entities.lamp_post]
 id = "lamp_post"
-tags = [ "decorative" ]
+tags = ["decorative"]
 
 [entities.lamp_post.idle_animation]
 sprite_name = "lamp_post"
@@ -29,18 +29,52 @@ duration_millis = 700
 
 [entities.lever]
 id = "lever"
-tags = [ "lever", "interactable" ]
+tags = ["lever", "interactable"]
 script_path = "scripts/lever_script.wasm"
 
 [entities.door]
 id = "door"
-tags = [ "lever", "interactable" ]
+tags = ["lever", "interactable"]
 script_path = "scripts/door_script.wasm"
 
 
 # Rubble
 [entities.rubble-sign-up-diag]
 id = "rubble-sign-up-diag"
-tags = [ "rubble" ]
+tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=sign_diag_up", "death-duration=200"]
+
+[entities.rubble-reeds]
+id = "rubble-reeds"
+tags = ["rubble"]
+script_path = "scripts/rubble_script.wasm"
+script_params = ["sprite-name=reeds", "death-duration=200"]
+
+[entities.rubble-box-1]
+id = "rubble-box-1"
+tags = ["rubble"]
+script_path = "scripts/rubble_script.wasm"
+script_params = ["sprite-name=rubble_box_1", "death-duration=200"]
+
+
+[entities.rubble-rock-wall]
+id = "rubble-rock-wall"
+tags = ["rubble"]
+script_path = "scripts/rubble_script.wasm"
+script_params = [
+    "sprite-name=rubble_rock_wall",
+    "death-duration=200",
+    "physical=true",
+    "collider-size=32,16"
+]
+
+
+[entities.fireplace]
+id = "firepalce"
+tags = ["rubble"]
+script_path = "scripts/rubble_script.wasm"
+script_params = [
+    "sprite-name=fireplace",
+    "invulnerable=true"
+]

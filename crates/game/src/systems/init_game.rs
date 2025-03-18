@@ -18,6 +18,7 @@ impl Plugin for SimplePlatformGame {
         ))
         .insert_resource(LevelSelection::index(0))
         .register_ldtk_int_cell::<WallBundle>(1)
+        .register_ldtk_int_cell::<WallBundle>(2)
         .add_systems(Startup, start_simple_platform_game)
         .add_systems(
             Update,
