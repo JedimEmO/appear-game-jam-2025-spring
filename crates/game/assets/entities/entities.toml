@@ -37,6 +37,12 @@ id = "door"
 tags = ["lever", "interactable"]
 script_path = "scripts/door_script.wasm"
 
+[entities.platform_1]
+id = "platform_1"
+tags = ["platform"]
+script_path = "scripts/platform_script.wasm"
+script_params = ["sprite-name=platform_1"]
+
 
 # Rubble
 [entities.rubble-sign-up-diag]

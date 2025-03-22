@@ -4,6 +4,7 @@ resolver = "3"
 members = [
     "game-entities/door-script",
     "game-entities/lever-script",
+    "game-entities/platform-script",
     "game-entities/rubble-script",
     "game-entities/test-entity-script",
     "game-entity-component",

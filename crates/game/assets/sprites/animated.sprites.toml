@@ -95,6 +95,29 @@ frame_count = 1
 
 
 
+
+[sprites.platform_1]
+sprite_sheet_file_name = "sprites/scenery/platform_1.png"
+image_width = 64
+image_height = 16
+
+[sprites.platform_1.animations.ghost]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.platform_1.animations.materializing]
+row = 1
+frame_start_index = 0
+frame_count = 7
+
+[sprites.platform_1.animations.solid]
+row = 2
+frame_start_index = 0
+frame_count = 1
+
+
+
 # Enemies
 
 [sprites.what_sprite]
