@@ -181,7 +181,7 @@ frame_count = 5
 
 [sprites.rubble_box_1.animations.dead]
 row = 2
-frame_start_index = 1
+frame_start_index = 0
 frame_count = 1
 
 
