@@ -94,4 +94,7 @@ impl GuestGameEntity for DoorScript {
             }
         }
     }
+
+    fn timer_callback(&self, _timer: u32) -> () {
+    }
 }

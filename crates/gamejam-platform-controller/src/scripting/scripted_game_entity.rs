@@ -68,6 +68,15 @@ impl EntityScript {
             .call_attacked(self.store.as_context_mut(), self.entity_resource)
             .unwrap();
     }
+
+    pub fn timer_callback(&mut self, timer: u32) {
+        let guest = self.game_entity.gamejam_game_entity_resource();
+        let entity_resource_guest = guest.game_entity();
+
+        entity_resource_guest
+            .call_timer_callback(self.store.as_context_mut(), self.entity_resource, timer)
+            .unwrap();
+    }
 }
 
 pub struct GameEngineComponent {
@@ -144,10 +153,15 @@ impl Host for GameEngineComponent {
     fn set_game_data_kv_int(&mut self, key: String, value: i32) -> Option<i32> {
         self.game_state.lock().unwrap().ints.insert(key, value)
     }
-    
-    fn level_transition(&mut self, idx: u32, target: std::string::String) {
+
+    fn level_transition(&mut self, idx: u32, target: String) {
         self.queued_commands
             .push(EntityScriptCommand::LevelTransition(idx, target));
+    }
+
+    fn request_timer_callback(&mut self, timer: u32, millis: u32) {
+        self.queued_commands
+            .push(EntityScriptCommand::RequestTimer(timer, Duration::from_millis(millis as u64)))
     }
 }
 

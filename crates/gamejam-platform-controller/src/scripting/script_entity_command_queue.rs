@@ -12,9 +12,11 @@ use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
 use scripted_game_entity::*;
 use std::time::Duration;
+use bevy::time::{Timer, TimerMode};
 use bevy_ecs_ldtk::LevelSelection;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::player_components::Player;
+use crate::timing::timing_component::TimerComponent;
 
 #[derive(Component)]
 pub struct TickingEntity;
@@ -32,7 +34,8 @@ pub enum EntityScriptCommand {
     PublishEvent(ScriptEvent),
     ToggleTicking(bool),
     DespawnEntity(u64),
-    LevelTransition(u32, String)
+    LevelTransition(u32, String),
+    RequestTimer(u32, Duration),
 }
 
 pub fn scripted_entity_command_queue_system(
@@ -127,6 +130,9 @@ fn apply_command(
             });
 
             **level_select = LevelSelection::index(level_index as usize);
+        }
+        EntityScriptCommand::RequestTimer(timer, duration) => {
+            entity.insert(TimerComponent { timer_name: timer, timer: Timer::new(duration, TimerMode::Once)});
         }
     }
 }

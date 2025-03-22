@@ -4,7 +4,10 @@ use game_entity_component::exports::gamejam::game::entity_resource::{
 };
 use std::cell::Cell;
 
-use game_entity_component::gamejam::game::game_host::{Collider, EventData, InsertableComponents, insert_components, play_animation, publish_event, remove_component, Interactable, set_ticking, despawn_entity};
+use game_entity_component::gamejam::game::game_host::{
+    Collider, EventData, InsertableComponents, Interactable, despawn_entity, insert_components,
+    play_animation, publish_event, remove_component, set_ticking,
+};
 use game_entity_component::*;
 
 struct EntityWorld;
@@ -31,7 +34,6 @@ impl GuestGameEntity for TestEntityScript {
             range: 50.,
         })]);
 
-
         Self {
             self_entity_id: params.self_entity_id,
             trigger_targets: vec![],
@@ -39,8 +41,7 @@ impl GuestGameEntity for TestEntityScript {
         }
     }
 
-    fn tick(&self) {
-    }
+    fn tick(&self) {}
 
     fn interacted(&self) {
         level_transition(3, "entry")
@@ -58,4 +59,6 @@ impl GuestGameEntity for TestEntityScript {
     }
 
     fn receive_event(&self, _: Event) {}
+
+    fn timer_callback(&self, _timer: u32) -> () {}
 }

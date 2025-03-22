@@ -86,4 +86,7 @@ impl GuestGameEntity for RubbleScript {
     }
 
     fn receive_event(&self, _evt: Event) -> () {}
+
+    fn timer_callback(&self, _timer: u32) -> () {
+    }
 }

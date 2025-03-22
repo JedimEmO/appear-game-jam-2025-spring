@@ -38,4 +38,6 @@ interface game-host {
     get-game-data-kv-int: func(key: string) -> option<s32>;
     set-game-data-kv-int: func(key: string, value: s32) -> option<s32>;
     level-transition: func(index: u32, target-spawner: string);
+
+    request-timer-callback: func(timer: u32, millis: u32);
 }

@@ -35,6 +35,7 @@ use haalka::HaalkaPlugin;
 use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
+use crate::timing::timer_system::timer_system;
 
 pub mod enemies;
 pub mod game_entities;
@@ -47,6 +48,7 @@ mod player_const_rules;
 pub mod player_systems;
 pub mod scripting;
 pub mod ui;
+pub mod timing;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
@@ -124,6 +126,7 @@ impl Plugin for PlayerPlugin {
                     player_attack_start_system,
                     player_pogo_system,
                     player_health_sync_system,
+                    timer_system
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             );

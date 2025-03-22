@@ -16,6 +16,7 @@ interface entity-resource {
         attacked: func();
         animation-finished: func(animation-name: string);
         receive-event: func(evt: event);
+        timer-callback: func(timer: u32);
     }
 }
 
