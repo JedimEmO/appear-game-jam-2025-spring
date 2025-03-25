@@ -49,7 +49,7 @@ cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites"
 script = '''
 mkdir -p ../../crates/game/assets/sprites/
 for filename in ./*.aseprite; do
-    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --split-tags --sheet ../../crates/game/assets/sprites/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --split-tags --sheet ../../crates/game/assets/sprites/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
@@ -58,7 +58,7 @@ cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/enemies"
 script = '''
 mkdir -p ../../../crates/game/assets/sprites/enemies/
 for filename in ./*.aseprite; do
-    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/enemies/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/enemies/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
@@ -67,7 +67,7 @@ cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/scenery"
 script = '''
 mkdir -p ../../../crates/game/assets/sprites/scenery/
 for filename in ./*.aseprite; do
-    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/scenery/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/scenery/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
@@ -76,7 +76,7 @@ cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/items"
 script = '''
 mkdir -p ../../../crates/game/assets/sprites/items/
 for filename in ./*.aseprite; do
-    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/items/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/items/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
@@ -85,7 +85,7 @@ cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/tilesets"
 script = '''
 mkdir -p ../../crates/game/assets/tilesets
 for filename in ./*.aseprite; do
-    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --save-as ../../crates/game/assets/tilesets/$(basename "$filename" .aseprite).png
+    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --save-as ../../crates/game/assets/tilesets/$(basename "$filename" .aseprite).png
 done
 '''
 
