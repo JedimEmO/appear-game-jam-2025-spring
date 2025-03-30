@@ -1,6 +1,6 @@
 use crate::ldtk_entities::player_collidable_entity::PlayerCollidableInRangeForCheck;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
-use crate::player_components::Player;
+use crate::player_systems::player_components::Player;
 use avian2d::collision::Collider;
 use avian2d::math::Vector;
 use avian2d::prelude::{AnyCollider, Rotation};

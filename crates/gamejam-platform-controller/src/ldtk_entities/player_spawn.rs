@@ -1,4 +1,4 @@
-use crate::player_components::Player;
+use crate::player_systems::player_components::Player;
 use bevy::prelude::*;
 
 #[derive(Default, Component)]

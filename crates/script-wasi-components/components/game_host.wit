@@ -1,43 +1,78 @@
 package gamejam: game;
 
 interface game-host {
-    record interactable {
-        message: string,
-        range: f32
-    }
+  record interactable {
+    message: string,
+    range: f32
+  }
 
-    record collider {
-        physical: bool,
-        width: f32,
-        height: f32
-    }
+  record collider {
+    physical: bool,
+    width: f32,
+    height: f32
+  }
 
-    variant insertable-components {
-        attackable,
-        collider(collider),
-        interactable(interactable),
-    }
+  enum rigid-body-type {
+    static-body,
+    dynamic
+  }
 
-    variant event-data {
-        trigger(u32)
-    }
+  variant insertable-components {
+    attackable,
+    collider(collider),
+    enemy,
+    interactable(interactable),
+    rigid-body(rigid-body-type),
+  }
 
-    record event {
-        topic: u32,
-        data: event-data
-    }
+  variant event-data {
+    trigger(u32)
+  }
 
-    remove-component: func(type-path: string);
-    insert-components: func(components: list<insertable-components>);
-    play-animation: func(sprite-name: string, animation-name: string, duration-millis: u32, flip-x: bool, repeating: bool);
-    publish-event: func(evt: event);
-    set-ticking: func(do-tick: bool);
-    despawn-entity: func(entity-id: u64);
-    get-game-data-kv: func(key: string) -> option<string>;
-    set-game-data-kv: func(key: string, value: string) -> option<string>;
-    get-game-data-kv-int: func(key: string) -> option<s32>;
-    set-game-data-kv-int: func(key: string, value: s32) -> option<s32>;
-    level-transition: func(index: u32, target-spawner: string);
+  record event {
+    topic: u32,
+    data: event-data
+  }
 
-    request-timer-callback: func(timer: u32, millis: u32);
+  enum direction {
+    west, east
+  }
+
+  variant input {
+    movement(tuple<f32, f32>),
+    jump
+  }
+
+  // player and self specific world data
+  record entity-uniform {
+    position: tuple<f32, f32>,
+    facing: direction,
+    health: option<u32>,
+    is-parrying: bool
+  }
+
+  publish-event: func(evt: event);
+  set-ticking: func(do-tick: bool, distance: option<f32>);
+
+  get-game-data-kv: func(key: string) -> option<string>;
+  set-game-data-kv: func(key: string, value: string) -> option<string>;
+  get-game-data-kv-int: func(key: string) -> option<s32>;
+  set-game-data-kv-int: func(key: string, value: s32) -> option<s32>;
+
+  remove-component: func(type-path: string);
+  insert-components: func(components: list<insertable-components>);
+  play-animation: func(sprite-name: string, animation-name: string, duration-millis: u32, direction: direction, repeating: bool);
+  level-transition: func(index: u32, target-spawner: string);
+  request-timer-callback: func(timer: u32, millis: u32);
+  despawn-entity: func(entity-id: u64);
+
+
+  face-direction: func(direction: direction);
+  get-player-uniform: func() -> entity-uniform;
+  get-self-uniform: func() -> entity-uniform;
+  can-see-player: func() -> bool;
+
+  // gameplay calls
+  send-input: func(input: input);
+  schedule-attack: func(delay: u32, damage: u32, force: f32, point: tuple<f32, f32>, vector: tuple<f32, f32>);
 }

@@ -1,5 +1,5 @@
 use crate::graphics::sprite_collection::SpriteCollection;
-use crate::player_components::PlayerStatsMutable;
+use crate::player_systems::player_components::PlayerStatsMutable;
 use bevy::ecs::system::SystemState;
 use bevy::prelude::Res;
 use bevy::prelude::*;

@@ -1,0 +1,26 @@
+package gamejam: game;
+
+interface entity-resource {
+  use game-host.{event};
+
+  record startup-settings {
+    self-entity-id: u64,
+    params: option<list<string>>
+  }
+
+  variant entity-event {
+    killed
+  }
+
+  resource game-entity {
+    tick: func(delta-t: f32);
+    interacted: func();
+    attacked: func();
+    animation-finished: func(animation-name: string);
+    receive-event: func(evt: event);
+    receive-entity-event: func(evt: entity-event);
+    timer-callback: func(timer: u32);
+  }
+
+  get-entity: func(settings: startup-settings) -> game-entity;
+}

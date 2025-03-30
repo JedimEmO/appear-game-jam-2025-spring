@@ -1,16 +1,18 @@
 pub mod attackable;
+pub mod combat_components;
 pub mod enemy;
-pub mod enemy_state_machine;
 mod hit_points;
-mod sleeping;
+pub mod scheduled_attack_system;
 
 use crate::enemies::attackable::{Attackable, AttackablePlugin};
 use crate::enemies::enemy::spawn_enemy_observer;
-use crate::enemies::enemy_state_machine::{enemy_dying_observer, enemy_state_machine_system};
 use crate::enemies::hit_points::hit_points_system;
-use crate::enemies::sleeping::sleeping_enemy_system;
-use crate::player_components::MovementDampeningFactor;
+use crate::enemies::scheduled_attack_system::scheduled_attack_system;
+use crate::movement_systems::movement_components::FacingDirection;
+use crate::movement_systems::movement_components::MovementData;
 use crate::player_const_rules::{COLLISION_MARGIN, FALL_GRAVITY, X_DAMPENING_FACTOR};
+use crate::player_systems::player_components::JumpState;
+use crate::player_systems::player_components::MovementDampeningFactor;
 use crate::GameStates;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -22,15 +24,9 @@ impl Plugin for EnemyPlugin {
         app.add_plugins(AttackablePlugin)
             .add_systems(
                 Update,
-                (
-                    sleeping_enemy_system,
-                    enemy_state_machine_system,
-                    hit_points_system,
-                )
-                    .run_if(in_state(GameStates::GameLoop)),
+                (scheduled_attack_system, hit_points_system).run_if(in_state(GameStates::GameLoop)),
             )
-            .add_observer(spawn_enemy_observer)
-            .add_observer(enemy_dying_observer);
+            .add_observer(spawn_enemy_observer);
     }
 }
 
@@ -55,20 +51,9 @@ pub struct Sleeping;
     LockedAxes(|| LockedAxes::ROTATION_LOCKED),
     MovementDampeningFactor(|| MovementDampeningFactor(X_DAMPENING_FACTOR)),
     GravityScale(|| GravityScale::from(FALL_GRAVITY)),
+    ShapeCaster(|| ShapeCaster::new(Collider::rectangle(4., 4.), Vec2::ZERO, 0., Dir2::NEG_Y).with_max_distance(40.).with_max_hits(5).with_query_filter(SpatialQueryFilter::from_mask(0b00100))),
+    JumpState,
+    FacingDirection,
+    MovementData(|| MovementData::default_enemy()),
 )]
-pub struct Enemy {
-    pub state_machine: EnemyStateMachine,
-}
-
-#[derive(Default)]
-pub enum EnemyStateMachine {
-    #[default]
-    Idle,
-    Charging,
-    Staggered {
-        staggered_at: f32,
-        stagger_for: f32,
-    },
-    Dying,
-    Dead,
-}
+pub struct Enemy;

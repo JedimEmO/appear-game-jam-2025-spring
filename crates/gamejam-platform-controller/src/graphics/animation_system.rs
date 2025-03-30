@@ -1,8 +1,8 @@
-use crate::graphics::sprite_collection::SpriteCollection;
-use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
-use avian2d::prelude::RigidBody;
+use crate::scripting::scripted_game_entity::EntityScript;
 use bevy::prelude::*;
 use std::time::Duration;
+#[allow(unused_imports)]
+use avian2d::prelude::RigidBody;
 
 #[derive(Component, Default, Debug, Reflect)]
 pub struct SpriteAnimation {

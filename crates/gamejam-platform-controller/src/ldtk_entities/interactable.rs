@@ -1,4 +1,4 @@
-use crate::player_components::Player;
+use crate::player_systems::player_components::Player;
 use crate::scripting::scripted_game_entity::EntityScript;
 use crate::ui::interactable_hint::{make_interactable_hint, InteractableHintComponent};
 use bevy::prelude::*;

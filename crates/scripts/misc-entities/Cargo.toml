@@ -1,0 +1,28 @@
+[package]
+name = "misc-entities"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "door_script"
+path = "src/door.rs"
+
+[[bin]]
+name = "lever_script"
+path = "src/lever.rs"
+
+[[bin]]
+name = "platform_script"
+path = "src/platform.rs"
+
+[[bin]]
+name = "rubble_script"
+path = "src/rubble.rs"
+
+[[bin]]
+name = "test_entity_script"
+path = "src/test_entity.rs"
+
+[dependencies]
+game-entity-component = { path = "../game-entity-component" }
+script-utils = { path = "../script-utils" }

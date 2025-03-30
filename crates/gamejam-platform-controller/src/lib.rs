@@ -9,8 +9,7 @@ use crate::graphics::sprite_collection::{
 use crate::input_systems::gamepad_input::gamepad_input_system;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
-use crate::player_systems::grounded_system::grounded_player_system;
-use crate::player_systems::movement_dampening_system::movement_dampening_system;
+use crate::movement_systems::movement_plugin::MovementPlugin;
 use crate::player_systems::player_attack_system::{player_attack_start_system, player_pogo_system};
 use crate::player_systems::player_control_system::player_control_system;
 use crate::player_systems::player_health::player_health_sync_system;
@@ -18,6 +17,7 @@ use crate::player_systems::player_spawn_system::{
     spawn_player_system, spawn_player_ui_proxy_system,
 };
 use crate::scripting::ScriptedGameEntityPlugin;
+use crate::timing::timer_system::timer_system;
 use crate::ui::game_ui::setup_game_ui;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -35,7 +35,6 @@ use haalka::HaalkaPlugin;
 use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
-use crate::timing::timer_system::timer_system;
 
 pub mod enemies;
 pub mod game_entities;
@@ -43,12 +42,12 @@ pub mod game_resources;
 pub mod graphics;
 mod input_systems;
 pub mod ldtk_entities;
-pub mod player_components;
+pub mod movement_systems;
 mod player_const_rules;
 pub mod player_systems;
 pub mod scripting;
-pub mod ui;
 pub mod timing;
+pub mod ui;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
@@ -80,6 +79,7 @@ impl Plugin for PlayerPlugin {
             .add_plugins(GameLdtkEntitiesPlugin)
             .add_plugins(WasmtimeScriptPlugin)
             .add_plugins(EnemyPlugin)
+            .add_plugins(MovementPlugin)
             .add_plugins(HaalkaPlugin)
             .add_plugins(ScriptedGameEntityPlugin)
             .add_systems(Startup, (load_resources, spawn_player_ui_proxy_system))
@@ -109,11 +109,7 @@ impl Plugin for PlayerPlugin {
             .add_event::<PlayerInputAction>()
             .add_systems(
                 Update,
-                (
-                    grounded_player_system,
-                    player_control_system,
-                    movement_dampening_system,
-                )
+                (player_control_system,)
                     .run_if(in_state(GameStates::GameLoop))
                     .chain(),
             )
@@ -126,7 +122,7 @@ impl Plugin for PlayerPlugin {
                     player_attack_start_system,
                     player_pogo_system,
                     player_health_sync_system,
-                    timer_system
+                    timer_system,
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             );

@@ -1,6 +1,6 @@
 use crate::graphics::animation_system::{spawn_animated_sprite_for_entity, SpriteSettings};
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
-use crate::player_components::{Player, PlayerStatsMutable};
+use crate::player_systems::player_components::{Player, PlayerStatsMutable};
 use crate::{GameStates, PlayerAssets};
 use bevy::prelude::{Commands, NextState, Res, ResMut};
 use bevy::utils::default;

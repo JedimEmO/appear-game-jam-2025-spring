@@ -72,8 +72,8 @@ fn camera_track_system(
                 dx.signum() * CAMERA_TRACK_SPEED_FAST * speed_window_x * time.delta_secs();
         }
 
-        if dy.abs() >= 100. {
-            camera.translation.y += dy.signum() * CAMERA_TRACK_SPEED_FAST * time.delta_secs();
+        if velocity.y < -16. * 28. {
+            camera.translation.y = transform.translation.y;
         } else if dy.abs() >= 64. {
             camera.translation.y += dy.signum() * CAMERA_TRACK_SPEED * time.delta_secs();
         }

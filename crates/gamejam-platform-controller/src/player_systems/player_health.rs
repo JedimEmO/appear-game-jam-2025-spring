@@ -1,5 +1,5 @@
 use crate::enemies::HitPoints;
-use crate::player_components::{Player, PlayerStats, PlayerStatsMutable};
+use crate::player_systems::player_components::{Player, PlayerStats, PlayerStatsMutable};
 use bevy::prelude::{Query, With, Without};
 use haalka::prelude::Mutable;
 
@@ -14,6 +14,10 @@ pub fn player_health_sync_system(
     let Ok(stats) = player_stats.get_single() else {
         return;
     };
+
+    if hp.0.hp == 0 {
+        panic!("Game over man. Game over!");
+    }
 
     stats.hp.set(hp.0.hp);
     stats.max_hp.set(hp.1.max_health);

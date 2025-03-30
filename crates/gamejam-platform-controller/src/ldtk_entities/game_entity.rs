@@ -2,9 +2,9 @@ use crate::game_entities::file_formats::game_entity_definitions::{
     GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
 };
 use crate::ldtk_entities::{get_ldtk_string_array_field, get_ldtk_string_field};
-use crate::scripting::scripted_game_entity::{create_entity_script, GameData};
+use crate::scripting::create_entity_script::create_entity_script;
+use crate::scripting::scripted_game_entity::GameData;
 use bevy::prelude::*;
-use bevy::utils::info;
 use bevy_ecs_ldtk::EntityInstance;
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
@@ -50,13 +50,12 @@ pub fn game_entity_try_from_entity_instance(
 
     let script = script.map(|(path, script_params)| {
         let mut script_params = script_params.unwrap_or(vec![]);
-        script_params.append(&mut get_ldtk_string_array_field(
-            "script_params",
-            &entity_instance,
-        ).unwrap_or(vec![]));
-        
+        script_params.append(
+            &mut get_ldtk_string_array_field("script_params", &entity_instance).unwrap_or(vec![]),
+        );
+
         info!("params: {script_params:?}");
-        
+
         create_entity_script(
             entity,
             &path,
@@ -65,6 +64,7 @@ pub fn game_entity_try_from_entity_instance(
             game_data,
             wasm_scripts.as_mut(),
             Some(script_params),
+            transform.translation.truncate(),
         )
     });
 

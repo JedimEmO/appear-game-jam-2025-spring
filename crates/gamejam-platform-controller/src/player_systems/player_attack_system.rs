@@ -1,8 +1,10 @@
 use crate::enemies::attackable::{Attackable, Attacked};
 use crate::graphics::animation_system::SpriteAnimation;
 use crate::graphics::sprite_collection::SpriteCollection;
-use crate::player_components::{Attacking, JumpState, Player, PlayerMovementData, Pogoing};
 use crate::player_const_rules::{PLAYER_ATTACK_DURATION, POGO_HIT_KICKBACK_ACCELERATION};
+use crate::player_systems::player_components::{
+    Attacking, JumpState, Player, PlayerMovementData, Pogoing,
+};
 use crate::AttackDirection;
 use avian2d::position::Position;
 use avian2d::prelude::{Collider, LinearVelocity, SpatialQuery, SpatialQueryFilter};
@@ -119,7 +121,9 @@ pub fn player_attack_start_system(
             attacked_linear_velocity.y += 200.;
         }
 
-        commands.entity(attacked_entity).insert(Attacked);
+        commands
+            .entity(attacked_entity)
+            .insert(Attacked { damage: 5 });
         if is_pogo {
             apply_pogo(
                 &mut commands,

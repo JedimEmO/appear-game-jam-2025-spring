@@ -145,6 +145,11 @@ row = 2
 frame_start_index = 4
 frame_count = 1
 
+[sprites.what_sprite.animations.attack]
+row = 3
+frame_start_index = 0
+frame_count = 7
+
 
 # Neutrals
 

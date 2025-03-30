@@ -1,0 +1,13 @@
+[package]
+name = "enemies"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "simple_enemy"
+path = "src/simple_enemy.rs"
+
+[dependencies]
+game-entity-component = { path = "../game-entity-component" }
+glam.workspace = true
+script-utils = { path = "../script-utils" }

@@ -26,17 +26,20 @@ command = "cargo"
 args = ["build"]
 
 
-[tasks.build-releasee]
+[tasks.build-release]
 command = "cargo"
 args = ["build", "--release"]
 dependencies = ["clean"]
 
+
 [tasks.build-scripts]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/scripts"
 command = "cargo"
 args = ["build", "--release"]
 
 [tasks.install-scripts]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/scripts"
 script = '''
 mkdir -p ../game/assets/scripts/
@@ -45,47 +48,52 @@ cp target/wasm32-unknown-unknown/release/*.wasm ../game/assets/scripts/
 dependencies = ["build-scripts"]
 
 [tasks.build-sprites]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites"
 script = '''
 mkdir -p ../../crates/game/assets/sprites/
 for filename in ./*.aseprite; do
-    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --split-tags --sheet ../../crates/game/assets/sprites/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --split-tags --sheet ../../crates/game/assets/sprites/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
 [tasks.build-enemy-sprites]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/enemies"
 script = '''
 mkdir -p ../../../crates/game/assets/sprites/enemies/
 for filename in ./*.aseprite; do
-    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/enemies/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/enemies/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
 [tasks.build-scenery-sprites]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/scenery"
 script = '''
 mkdir -p ../../../crates/game/assets/sprites/scenery/
 for filename in ./*.aseprite; do
-    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/scenery/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/scenery/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
 [tasks.build-items-sprites]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/items"
 script = '''
 mkdir -p ../../../crates/game/assets/sprites/items/
 for filename in ./*.aseprite; do
-    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/items/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/sprites/items/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
 done
 '''
 
 [tasks.build-tilesets]
+workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/tilesets"
 script = '''
 mkdir -p ../../crates/game/assets/tilesets
 for filename in ./*.aseprite; do
-    /home/mmy/.local/share/Steam/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --save-as ../../crates/game/assets/tilesets/$(basename "$filename" .aseprite).png
+    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../palettes/general.pal --save-as ../../crates/game/assets/tilesets/$(basename "$filename" .aseprite).png
 done
 '''
 

@@ -1,11 +1,13 @@
 use crate::scripting::script_entity_command_queue::scripted_entity_command_queue_system;
 use crate::scripting::scripted_game_entity::{
-    game_entity_script_event_system, tick_scripted_entity_system, GameData, ScriptEvent,
+    game_entity_script_event_system, scripted_entity_uniform_system, tick_scripted_entity_system,
+    GameData, ScriptEvent,
 };
 use crate::GameStates;
 use bevy::app::App;
 use bevy::prelude::{in_state, IntoSystemConfigs, Plugin, Update};
 
+pub mod create_entity_script;
 pub mod script_entity_command_queue;
 pub mod scripted_game_entity;
 
@@ -17,6 +19,7 @@ impl Plugin for ScriptedGameEntityPlugin {
             .add_systems(
                 Update,
                 (
+                    scripted_entity_uniform_system,
                     game_entity_script_event_system,
                     tick_scripted_entity_system,
                     scripted_entity_command_queue_system,
@@ -31,7 +34,7 @@ impl Plugin for ScriptedGameEntityPlugin {
 pub mod game_entity {
     use bevy::prelude::Component;
     use std::collections::BTreeMap;
-    use wasmtime::component::bindgen;
+    
 
     #[derive(Component, Default)]
     pub struct EntityScriptContext {

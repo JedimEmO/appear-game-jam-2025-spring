@@ -1,20 +1,23 @@
+use crate::enemies::combat_components::ScheduledAttack;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
+use crate::movement_systems::movement_components::{FacingDirection, Input};
+use crate::player_systems::player_components::Player;
 use crate::scripting::script_entity_command_queue::{EntityScriptCommand, TickingEntity};
-use bevy::asset::{AssetServer, Assets, Handle};
+use bevy::math::Vec2;
 use bevy::prelude::{
-    Bundle, Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res, Resource, Trigger,
-    With,
+    Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res, Resource, Time, Transform,
+    Trigger, With,
 };
-use bevy_wasmer_scripting::scripted_entity::WasmEngine;
-use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
-use scripted_game_entity::exports::gamejam::game::entity_resource::StartupSettings;
-use scripted_game_entity::gamejam::game::game_host;
-use scripted_game_entity::gamejam::game::game_host::{add_to_linker, Host, InsertableComponents};
+use bevy::time::TimerMode;
+use scripted_game_entity::exports::gamejam::game::entity_resource::EntityEvent;
+use scripted_game_entity::gamejam::game::game_host::Direction;
+use scripted_game_entity::gamejam::game::game_host::{self, EntityUniform};
+use scripted_game_entity::gamejam::game::game_host::{Host, InsertableComponents};
 use scripted_game_entity::GameEntityWorld;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use wasmtime::component::{Linker, ResourceAny};
+use wasmtime::component::ResourceAny;
 use wasmtime::{AsContextMut, Store};
 
 #[derive(Default)]
@@ -34,7 +37,19 @@ pub struct GameData {
 pub struct EntityScript {
     pub game_entity: GameEntityWorld,
     pub entity_resource: ResourceAny,
-    pub store: Store<State>,
+    pub store: Store<GameEntityState>,
+}
+
+pub struct GameEntityHost {
+    pub entity: Entity,
+    pub queued_commands: Vec<EntityScriptCommand>,
+    pub game_state: Arc<Mutex<GameState>>,
+    pub player_uniform: EntityUniform,
+    pub self_uniform: EntityUniform,
+}
+
+pub struct GameEntityState {
+    pub host: GameEntityHost,
 }
 
 impl EntityScript {
@@ -77,18 +92,25 @@ impl EntityScript {
             .call_timer_callback(self.store.as_context_mut(), self.entity_resource, timer)
             .unwrap();
     }
+
+    pub fn killed(&mut self) {
+        self.dispatch_entity_event(EntityEvent::Killed);
+    }
+
+    pub fn dispatch_entity_event(&mut self, event: EntityEvent) {
+        let guest = self.game_entity.gamejam_game_entity_resource();
+        let entity_resource_guest = guest.game_entity();
+
+        entity_resource_guest
+            .call_receive_entity_event(self.store.as_context_mut(), self.entity_resource, event)
+            .unwrap();
+    }
 }
 
-pub struct GameEngineComponent {
-    pub entity: Entity,
-    pub queued_commands: Vec<EntityScriptCommand>,
-    pub game_state: Arc<Mutex<GameState>>,
-}
+unsafe impl Send for GameEntityHost {}
+unsafe impl Sync for GameEntityHost {}
 
-unsafe impl Send for GameEngineComponent {}
-unsafe impl Sync for GameEngineComponent {}
-
-impl Host for GameEngineComponent {
+impl Host for GameEntityHost {
     fn remove_component(&mut self, path: String) {
         self.queued_commands
             .push(EntityScriptCommand::RemoveReflectComponent(path));
@@ -106,7 +128,7 @@ impl Host for GameEngineComponent {
         sprite_name: String,
         animation_name: String,
         duration_millis: u32,
-        flip_x: bool,
+        direction: Direction,
         repeat: bool,
     ) {
         self.queued_commands
@@ -114,7 +136,7 @@ impl Host for GameEngineComponent {
                 sprite_name,
                 animation_name,
                 duration: Duration::from_millis(duration_millis as u64),
-                flip_x,
+                direction,
                 repeat,
             });
     }
@@ -128,9 +150,9 @@ impl Host for GameEngineComponent {
             }));
     }
 
-    fn set_ticking(&mut self, ticking: bool) {
+    fn set_ticking(&mut self, ticking: bool, distance: Option<f32>) {
         self.queued_commands
-            .push(EntityScriptCommand::ToggleTicking(ticking));
+            .push(EntityScriptCommand::ToggleTicking((ticking, distance)));
     }
 
     fn despawn_entity(&mut self, entity_id: u64) {
@@ -160,89 +182,132 @@ impl Host for GameEngineComponent {
     }
 
     fn request_timer_callback(&mut self, timer: u32, millis: u32) {
+        self.queued_commands.push(EntityScriptCommand::RequestTimer(
+            timer,
+            Duration::from_millis(millis as u64),
+        ))
+    }
+
+    fn can_see_player(&mut self) -> bool {
+        todo!()
+    }
+
+    fn face_direction(
+        &mut self,
+        direction: scripted_game_entity::gamejam::game::game_host::Direction,
+    ) {
         self.queued_commands
-            .push(EntityScriptCommand::RequestTimer(timer, Duration::from_millis(millis as u64)))
+            .push(EntityScriptCommand::Face(match direction {
+                Direction::West => FacingDirection::West,
+                _ => FacingDirection::East,
+            }));
+    }
+
+    fn get_player_uniform(&mut self) -> EntityUniform {
+        self.player_uniform
+    }
+
+    fn get_self_uniform(
+        &mut self,
+    ) -> scripted_game_entity::gamejam::game::game_host::EntityUniform {
+        self.self_uniform
+    }
+
+    fn send_input(&mut self, input: game_host::Input) {
+        let input = match input {
+            game_host::Input::Movement(dir) => Input::Move(Vec2::new(dir.0, dir.1)),
+            game_host::Input::Jump => Input::Jump,
+        };
+
+        self.queued_commands.push(EntityScriptCommand::Input(input))
+    }
+
+    fn schedule_attack(
+        &mut self,
+        delay: u32,
+        damage: u32,
+        force: f32,
+        point: (f32, f32),
+        vector: (f32, f32),
+    ) {
+        self.queued_commands
+            .push(EntityScriptCommand::ScheduleAttack(ScheduledAttack {
+                attacker: Entity::PLACEHOLDER,
+                delay: bevy::prelude::Timer::from_seconds(
+                    Duration::from_millis(delay as u64).as_secs_f32(),
+                    TimerMode::Once,
+                ),
+                damage,
+                force,
+                origin: Vec2::new(point.0, point.1),
+                vector: Vec2::new(vector.0, vector.1),
+            }))
     }
 }
 
-impl GameEngineComponent {}
+pub fn scripted_entity_uniform_system(
+    player: Query<(&Transform, &FacingDirection), With<Player>>,
+    mut entities: Query<(&mut EntityScript, &Transform)>,
+) {
+    let (player_transform, player_direction) = player.single();
 
-pub struct State {
-    pub host: GameEngineComponent,
-}
+    for (mut script, transform) in entities.iter_mut() {
+        let data = script.store.data_mut();
 
-pub fn create_entity_script(
-    entity: Entity,
-    script_path: &str,
-    engine: &Res<WasmEngine>,
-    asset_server: &Res<AssetServer>,
-    game_data: &Res<GameData>,
-    wasm_scripts: &mut Assets<WasmScriptModuleBytes>,
-    script_params: Option<Vec<String>>,
-) -> impl Bundle {
-    let script: Handle<WasmScriptModuleBytes> = asset_server.load(script_path);
-    let script = wasm_scripts.get_mut(&script).unwrap();
+        data.host.player_uniform.position = (
+            player_transform.translation.x,
+            player_transform.translation.y,
+        );
+        data.host.player_uniform.facing = match player_direction {
+            FacingDirection::West => Direction::West,
+            _ => Direction::East,
+        };
 
-    let bytes = script.aot_component_bytes.get_or_insert_with(|| {
-        wit_component::ComponentEncoder::default()
-            .module(script.wasm_module_bytes.as_slice())
-            .unwrap()
-            .encode()
-            .unwrap()
-    });
-
-    let component = wasmtime::component::Component::from_binary(&engine.0, bytes).unwrap();
-
-    let mut store = Store::new(
-        &engine.0,
-        State {
-            host: GameEngineComponent {
-                entity: Entity::PLACEHOLDER,
-                queued_commands: vec![],
-                game_state: game_data.game_state.clone(),
-            },
-        },
-    );
-
-    let mut linker = Linker::<State>::new(&engine.0);
-
-    add_to_linker(&mut linker, |state: &mut State| &mut state.host).unwrap();
-
-    let settings = StartupSettings {
-        params: script_params,
-        self_entity_id: entity.to_bits(),
-    };
-
-    let entity = GameEntityWorld::instantiate(&mut store, &component, &linker).unwrap();
-    let guest = entity.gamejam_game_entity_resource();
-    let entity_resource_guest = guest.game_entity();
-
-    let entity_resource = entity_resource_guest
-        .call_constructor(&mut store, &settings)
-        .unwrap();
-
-    EntityScript {
-        game_entity: entity,
-        entity_resource,
-        store,
+        data.host.self_uniform.position = (transform.translation.x, transform.translation.y);
     }
 }
 
 pub fn tick_scripted_entity_system(
-    mut scripted_entities: Query<(Entity, &mut EntityScript), With<TickingEntity>>,
+    time: Res<Time>,
+    player: Query<&Transform, With<Player>>,
+    mut scripted_entities: Query<(
+        Entity,
+        &mut EntityScript,
+        &TickingEntity,
+        Option<&Transform>,
+    )>,
 ) {
-    for (_entity, mut script) in scripted_entities.iter_mut() {
+    let player = player.single();
+    let delta_t = time.elapsed_secs();
+
+    for (_entity, mut script, TickingEntity(distance), transform) in scripted_entities.iter_mut() {
         let EntityScript {
             game_entity,
             store,
             entity_resource,
         } = script.as_mut();
         {
+            let in_range = if let Some(distance) = distance {
+                if transform.is_none()
+                    || transform.unwrap().translation.distance(player.translation) > *distance
+                {
+                    false
+                } else {
+                    true
+                }
+            } else {
+                true
+            };
+
+            if !in_range {
+                continue;
+            }
+
             let guest = game_entity.gamejam_game_entity_resource();
             let entity_resource_guest = guest.game_entity();
 
             entity_resource_guest
-                .call_tick(store.as_context_mut(), *entity_resource)
+                .call_tick(store.as_context_mut(), *entity_resource, delta_t)
                 .unwrap();
         }
     }

@@ -84,3 +84,15 @@ script_params = [
     "sprite-name=fireplace",
     "invulnerable=true"
 ]
+
+
+# Enemies
+
+
+[entities.enemy-what]
+id = "enemy-what"
+tags = ["enemy", "what"]
+script_path = "scripts/simple_enemy.wasm"
+script_params = [
+    "sprite-name=what_sprite"
+]

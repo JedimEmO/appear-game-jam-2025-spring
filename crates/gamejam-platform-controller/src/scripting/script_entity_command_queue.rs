@@ -1,25 +1,28 @@
 use crate::enemies::attackable::Attackable;
+use crate::enemies::combat_components::ScheduledAttack;
+use crate::enemies::Enemy;
 use crate::graphics::sprite_collection::SpriteCollection;
+use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
+use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};
+use crate::player_systems::player_components::Player;
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
+use crate::timing::timing_component::TimerComponent;
 use avian2d::collision::{Collider, CollisionLayers};
 use avian2d::prelude::RigidBody;
-use bevy::ecs::component::Tick;
 use bevy::ecs::reflect::ReflectCommandExt;
-use bevy::log::info;
+use bevy::hierarchy::BuildChildren;
+use bevy::log::{error, info};
 use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res, ResMut, With};
+use bevy::time::{Timer, TimerMode};
+use bevy_ecs_ldtk::LevelSelection;
 use gamejam_bevy_components::Interactable;
 use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
-use scripted_game_entity::*;
+use scripted_game_entity::gamejam::game::game_host::*;
 use std::time::Duration;
-use bevy::time::{Timer, TimerMode};
-use bevy_ecs_ldtk::LevelSelection;
-use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
-use crate::player_components::Player;
-use crate::timing::timing_component::TimerComponent;
 
 #[derive(Component)]
-pub struct TickingEntity;
+pub struct TickingEntity(pub Option<f32>);
 
 pub enum EntityScriptCommand {
     RemoveReflectComponent(String),
@@ -28,14 +31,17 @@ pub enum EntityScriptCommand {
         sprite_name: String,
         animation_name: String,
         duration: Duration,
-        flip_x: bool,
+        direction: Direction,
         repeat: bool,
     },
     PublishEvent(ScriptEvent),
-    ToggleTicking(bool),
+    ToggleTicking((bool, Option<f32>)),
     DespawnEntity(u64),
     LevelTransition(u32, String),
     RequestTimer(u32, Duration),
+    Input(Input),
+    Face(FacingDirection),
+    ScheduleAttack(ScheduledAttack),
 }
 
 pub fn scripted_entity_command_queue_system(
@@ -43,28 +49,39 @@ pub fn scripted_entity_command_queue_system(
     sprites: Res<SpriteCollection>,
     mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
+    mut input_event_writer: EventWriter<EntityInput>,
     mut query: Query<(Entity, &mut EntityScript)>,
-    player: Query<Entity, With<Player>>
+    player: Query<Entity, With<Player>>,
 ) {
     let player_entity = player.single();
 
     for (entity, mut queue) in query.iter_mut() {
         for cmd in queue.store.data_mut().host.queued_commands.drain(..) {
-            apply_command(player_entity, entity, cmd, &mut commands, &sprites, &mut level_select, &mut event_writer);
+            apply_command(
+                player_entity,
+                entity,
+                cmd,
+                &mut commands,
+                &sprites,
+                &mut level_select,
+                &mut event_writer,
+                &mut input_event_writer,
+            );
         }
     }
 }
 
 fn apply_command(
     player_entity: Entity,
-    entity: Entity,
+    entity_id: Entity,
     cmd: EntityScriptCommand,
     commands: &mut Commands,
     sprites: &Res<SpriteCollection>,
     level_select: &mut ResMut<LevelSelection>,
     event_writer: &mut EventWriter<ScriptEvent>,
+    input_event_writer: &mut EventWriter<EntityInput>,
 ) {
-    let mut entity = commands.entity(entity);
+    let mut entity = commands.entity(entity_id);
 
     match cmd {
         EntityScriptCommand::RemoveReflectComponent(type_path) => {
@@ -87,12 +104,24 @@ fn apply_command(
                     entity.insert((CollisionLayers::new(0b00100, 0b01101), RigidBody::Static));
                 }
             }
+            InsertableComponents::RigidBody(type_) => {
+                error!("inserting rigid body");
+                let body_type = match type_ {
+                    RigidBodyType::StaticBody => RigidBody::Static,
+                    RigidBodyType::Dynamic => RigidBody::Dynamic,
+                };
+
+                entity.insert(body_type);
+            }
+            InsertableComponents::Enemy => {
+                entity.insert(Enemy::default());
+            }
         },
         EntityScriptCommand::PlayAnimation {
             sprite_name,
             animation_name,
             duration,
-            flip_x,
+            direction,
             repeat,
         } => {
             entity.insert(
@@ -103,7 +132,10 @@ fn apply_command(
                         duration,
                         repeat,
                         false,
-                        flip_x,
+                        match direction {
+                            Direction::West => true,
+                            _ => false,
+                        },
                     )
                     .unwrap(),
             );
@@ -112,9 +144,9 @@ fn apply_command(
             info!("publishing script event: {evt:?}");
             event_writer.send(evt);
         }
-        EntityScriptCommand::ToggleTicking(should_tick) => {
+        EntityScriptCommand::ToggleTicking((should_tick, distance)) => {
             if should_tick {
-                entity.insert(TickingEntity);
+                entity.insert(TickingEntity(distance));
             } else {
                 entity.remove::<TickingEntity>();
             }
@@ -123,16 +155,33 @@ fn apply_command(
             commands
                 .get_entity(Entity::from_bits(entity))
                 .map(|mut e| e.despawn());
-        },
+        }
         EntityScriptCommand::LevelTransition(level_index, spawn_name) => {
-            commands.entity(player_entity).insert(RequestedPlayerSpawn {
-                spawn_name,
-            });
+            commands
+                .entity(player_entity)
+                .insert(RequestedPlayerSpawn { spawn_name });
 
             **level_select = LevelSelection::index(level_index as usize);
         }
         EntityScriptCommand::RequestTimer(timer, duration) => {
-            entity.insert(TimerComponent { timer_name: timer, timer: Timer::new(duration, TimerMode::Once)});
+            entity.insert(TimerComponent {
+                timer_name: timer,
+                timer: Timer::new(duration, TimerMode::Once),
+            });
+        }
+        EntityScriptCommand::Input(input) => {
+            input_event_writer.send(EntityInput {
+                entity: entity_id,
+                input,
+            });
+        }
+        EntityScriptCommand::Face(direction) => {
+            entity.insert(direction);
+        }
+        EntityScriptCommand::ScheduleAttack(mut attack) => {
+            attack.attacker = entity_id;
+            let mut attack = commands.spawn(attack);
+            attack.set_parent(entity_id);
         }
     }
 }

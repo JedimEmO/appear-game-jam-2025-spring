@@ -1,13 +1,14 @@
 use crate::graphics::animation_system::SpriteAnimation;
 use crate::input_systems::PlayerInputAction;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
-use crate::player_components::{
-    Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData,
-    Pogoing,
-};
+use crate::movement_systems::movement_components::FacingDirection;
 use crate::player_const_rules::{
     ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
     PLAYER_ATTACK_DELAY_SECONDS,
+};
+use crate::player_systems::player_components::{
+    Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData,
+    Pogoing,
 };
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
@@ -30,6 +31,7 @@ pub fn player_control_system(
             Option<&Attacking>,
             &mut PlayerActionTracker,
             &mut PlayerMovementData,
+            &mut FacingDirection,
         ),
         With<Player>,
     >,
@@ -48,6 +50,7 @@ pub fn player_control_system(
         attacking,
         mut player_actions,
         mut movement_data,
+        mut facing_direction,
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
@@ -84,6 +87,12 @@ pub fn player_control_system(
                     linear_velocity.y += dir.y * ACCELERATION * delta_t * reverse_factor;
 
                     linear_velocity.x = linear_velocity.x.clamp(-MAX_SPEED, MAX_SPEED);
+
+                    *facing_direction = match dir.x {
+                        x if x < 0. => FacingDirection::West,
+                        _ => FacingDirection::East,
+                    };
+
                     movement_data.horizontal_direction = dir.x < 0.;
                     sprite.flip_x = movement_data.horizontal_direction;
                 }
@@ -131,9 +140,20 @@ pub fn player_control_system(
             }
         }
 
+        if jump_state.left_ground_at.is_some()
+            && attacking.is_none()
+            && animation.animation_start_index != 12
+        {
+            animation.play_animation(12, 4, Duration::from_millis(500), true);
+        }
+
         if still_moving {
             commands.entity(entity).insert(Moving);
         } else {
+            if attacking.is_none() && jump_state.left_ground_at.is_none() {
+                animation.play_animation(0, 4, Duration::from_millis(500), true);
+            }
+
             commands.entity(entity).remove::<Moving>();
         }
     }
