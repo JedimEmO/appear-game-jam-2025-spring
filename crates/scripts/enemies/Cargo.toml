@@ -7,6 +7,10 @@ edition = "2024"
 name = "simple_enemy"
 path = "src/simple_enemy.rs"
 
+[[bin]]
+name = "enemy_biped"
+path = "src/enemy_biped.rs"
+
 [dependencies]
 game-entity-component = { path = "../game-entity-component" }
 glam.workspace = true

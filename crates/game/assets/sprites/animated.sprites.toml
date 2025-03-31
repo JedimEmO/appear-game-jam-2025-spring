@@ -151,6 +151,59 @@ frame_start_index = 0
 frame_count = 7
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+[sprites.bob]
+sprite_sheet_file_name = "sprites/enemies/bob.png"
+image_width = 64
+image_height = 64
+
+[sprites.bob.animations.run]
+row = 3
+frame_start_index = 0
+frame_count = 4
+
+[sprites.bob.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 2
+
+[sprites.bob.animations.death]
+row = 4
+frame_start_index = 0
+frame_count = 6
+
+[sprites.bob.animations.dead]
+row = 4
+frame_start_index = 5
+frame_count = 1
+
+[sprites.bob.animations.windup]
+row = 1
+frame_start_index = 0
+frame_count = 3
+
+[sprites.bob.animations.wound]
+row = 1
+frame_start_index = 2
+frame_count = 1
+
+[sprites.bob.animations.attack]
+row = 2
+frame_start_index = 0
+frame_count = 5
+
+
 # Neutrals
 
 

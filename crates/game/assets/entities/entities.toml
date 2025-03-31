@@ -96,3 +96,26 @@ script_path = "scripts/simple_enemy.wasm"
 script_params = [
     "sprite-name=what_sprite"
 ]
+
+# sprite_name: params.get_parameter("sprite-name").ok_or(())?,
+#            idle_animation: params.get_parameter("idle-animation").ok_or(())?,
+#            walking_animation: params.get_parameter("walking-animation").ok_or(())?,
+#            windup_animation: params.get_parameter("windup-animation").ok_or(())?,
+#            wound_animation: params.get_parameter("wound-animation").ok_or(())?,
+#            attack_animation: params.get_parameter("attack-animation").ok_or(())?,
+#            death_animation: params.get_parameter("death-animation").ok_or(())?,
+#            dead_animation: params.get_parameter("dead-animation").ok_or(())?,
+[entities.enemy-bob]
+id = "enemy-bob"
+tags = ["enemy", "bob"]
+script_path = "scripts/enemy_biped.wasm"
+script_params = [
+    "sprite-name=bob",
+    "idle-animation=idle",
+    "walking-animation=run",
+    "windup-animation=windup",
+    "wound-animation=wound",
+    "attack-animation=attack",
+    "death-animation=death",
+    "dead-animation=dead"
+]
