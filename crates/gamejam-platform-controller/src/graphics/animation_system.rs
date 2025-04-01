@@ -19,7 +19,7 @@ pub struct SpriteAnimation {
 #[cfg(test)]
 #[test]
 fn path() {
-    use crate::enemies::attackable::Attackable;
+    use crate::combat::attackable::Attackable;
     use crate::ui::interactable_hint::InteractableHintComponent;
     use gamejam_bevy_components::Interactable;
 

@@ -15,6 +15,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{LevelIid, Respawn};
 use std::time::Duration;
+use crate::combat::combat_components::Stamina;
 
 pub fn player_control_system(
     mut commands: Commands,
@@ -32,6 +33,7 @@ pub fn player_control_system(
             &mut PlayerActionTracker,
             &mut PlayerMovementData,
             &mut FacingDirection,
+            &mut Stamina
         ),
         With<Player>,
     >,
@@ -51,6 +53,7 @@ pub fn player_control_system(
         mut player_actions,
         mut movement_data,
         mut facing_direction,
+        mut stamina
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
@@ -113,6 +116,13 @@ pub fn player_control_system(
                     }
                 }
                 PlayerInputAction::Attack(direction) => {
+                    if stamina.current_stamina < 25 {
+                        continue;
+                    }
+                    
+                    stamina.current_stamina -= 25;
+                    stamina.newly_consumed_stamina += 25;
+                    
                     let now = time.elapsed_secs_f64();
 
                     if now - player_actions.last_attack_at.unwrap_or(0.)

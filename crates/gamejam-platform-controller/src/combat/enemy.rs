@@ -1,4 +1,4 @@
-use crate::enemies::{Enemy, HitPoints};
+use crate::combat::{Enemy, HitPoints};
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;
 use bevy::prelude::*;

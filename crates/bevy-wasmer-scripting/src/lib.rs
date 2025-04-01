@@ -10,7 +10,7 @@ pub struct WasmtimeScriptPlugin;
 impl Plugin for WasmtimeScriptPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WasmEngine(
-            Engine::new(Config::new().wasm_threads(false).wasm_component_model(true)).unwrap(),
+            Engine::new(Config::new().wasm_component_model(true)).unwrap(),
         ));
     }
 }

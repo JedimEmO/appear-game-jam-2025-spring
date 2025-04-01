@@ -1,6 +1,6 @@
 use std::time::Duration;
 use bevy::math::vec2;
-use crate::enemies::HitPoints;
+use crate::combat::HitPoints;
 use crate::scripting::scripted_game_entity::EntityScript;
 use bevy::prelude::*;
 use crate::movement_systems::movement_components::ApplyTimedLinearVelocity;

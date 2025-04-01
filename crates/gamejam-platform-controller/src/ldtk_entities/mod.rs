@@ -1,4 +1,4 @@
-use crate::enemies::Enemy;
+use crate::combat::Enemy;
 use crate::game_entities::file_formats::game_entity_definitions::{
     GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
 };

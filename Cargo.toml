@@ -7,7 +7,7 @@ members = [
     "crates/simple-2d-camera",
     "crates/gamejam-platform-controller",
     "crates/bevy-wasmer-scripting"
-, "crates/gamejam-bevy-components", "crates/script-wasi-components/scripted-game-entity"]
+    , "crates/gamejam-bevy-components", "crates/script-wasi-components/scripted-game-entity"]
 exclude = ["crates/scripts"]
 
 [workspace.dependencies]
@@ -25,7 +25,7 @@ bevy_trauma_shake = "0.4.0"
 haalka = { version = "0.3.0" }
 serde = "1.0.217"
 serde_json = "1.0.139"
-wasmtime = "30.0.2"
+wasmtime = { version = "31.0.0" }
 wit-component = "0.227.1"
 wit-bindgen = "0.40.0"
 

@@ -87,6 +87,16 @@ for filename in ./*.aseprite; do
 done
 '''
 
+[tasks.build-ui]
+workspace = false
+cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/sprites/ui"
+script = '''
+mkdir -p ../../../crates/game/assets/ui
+for filename in ./*.aseprite; do
+    ~/.steam/debian-installation/steamapps/common/Aseprite/aseprite -b $filename --palette ../../palettes/general.pal --split-tags --sheet ../../../crates/game/assets/ui/$(basename "$filename" .aseprite).png --sheet-type rows --shape-padding 2
+done
+'''
+
 [tasks.build-tilesets]
 workspace = false
 cwd = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/asset-sources/tilesets"
@@ -105,6 +115,7 @@ dependencies = [
     "build-enemy-sprites",
     "build-scenery-sprites",
     "build-tilesets",
+    "build-ui",
 ]
 
 

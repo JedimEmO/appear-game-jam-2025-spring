@@ -1,5 +1,6 @@
-use crate::enemies::attackable::Attackable;
-use crate::enemies::HitPoints;
+use crate::combat::combat_components::Stamina;
+use crate::combat::attackable::Attackable;
+use crate::combat::HitPoints;
 use crate::movement_systems::movement_components::FacingDirection;
 use crate::movement_systems::movement_components::MovementData;
 use crate::player_const_rules::*;
@@ -30,7 +31,8 @@ use simple_2d_camera::PixelCameraTracked;
     HitPoints(|| HitPoints { hp: 300 }),
     FacingDirection(|| FacingDirection::East),
     MovementData(|| MovementData::default_player()),
-    Attackable
+    Attackable,
+    Stamina(|| Stamina::default_player())
 )]
 pub struct Player;
 
@@ -108,4 +110,7 @@ pub struct PlayerStatsMutable {
     pub hp: Mutable<u32>,
     pub max_hp: Mutable<u32>,
     pub hearts: MutableVec<Mutable<u32>>,
+    pub stamina: Mutable<u32>,
+    pub max_stamina: Mutable<u32>,
+    pub newly_consumed_stamina: Mutable<u32>,
 }

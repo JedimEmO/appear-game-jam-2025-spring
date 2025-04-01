@@ -97,14 +97,6 @@ script_params = [
     "sprite-name=what_sprite"
 ]
 
-# sprite_name: params.get_parameter("sprite-name").ok_or(())?,
-#            idle_animation: params.get_parameter("idle-animation").ok_or(())?,
-#            walking_animation: params.get_parameter("walking-animation").ok_or(())?,
-#            windup_animation: params.get_parameter("windup-animation").ok_or(())?,
-#            wound_animation: params.get_parameter("wound-animation").ok_or(())?,
-#            attack_animation: params.get_parameter("attack-animation").ok_or(())?,
-#            death_animation: params.get_parameter("death-animation").ok_or(())?,
-#            dead_animation: params.get_parameter("dead-animation").ok_or(())?,
 [entities.enemy-bob]
 id = "enemy-bob"
 tags = ["enemy", "bob"]
@@ -119,4 +111,8 @@ script_params = [
     "death-animation=death",
     "dead-animation=dead",
     "staggered-animation=staggered",
+    "attack-range=48",
+    "aggro-range=150",
+    "windup-attack-delay=200",
+    "attack-duration=200"
 ]

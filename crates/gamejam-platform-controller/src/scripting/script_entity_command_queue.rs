@@ -1,6 +1,6 @@
-use crate::enemies::attackable::Attackable;
-use crate::enemies::combat_components::ScheduledAttack;
-use crate::enemies::Enemy;
+use crate::combat::attackable::Attackable;
+use crate::combat::combat_components::ScheduledAttack;
+use crate::combat::Enemy;
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};

@@ -1,5 +1,6 @@
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::player_systems::player_components::PlayerStatsMutable;
+use bevy::color::palettes::tailwind;
 use bevy::ecs::system::SystemState;
 use bevy::prelude::Res;
 use bevy::prelude::*;
@@ -15,7 +16,13 @@ pub fn setup_game_ui(
         (a.clone(), b.single().clone())
     };
 
-    let PlayerStatsMutable { hearts, .. } = player_health;
+    let PlayerStatsMutable {
+        hearts,
+        stamina,
+        max_stamina,
+        newly_consumed_stamina,
+        ..
+    } = player_health;
     let sprite_collection = assets.clone();
 
     let (health_bar_backdrop, _) = sprite_collection
@@ -75,22 +82,74 @@ pub fn setup_game_ui(
         }))
     });
 
-    let health_bar = El::<ImageNode>::new()
+    let stamina_bar_width_broadcast = map_ref! {
+        let current = stamina.signal(),
+        let max = max_stamina.signal() => {
+            180 * current / max.max(&1)
+        }
+    }
+    .broadcast();
+
+    let newly_used_stamina_bar_broadcast = map_ref! {
+        let max = max_stamina.signal(),
+        let used = newly_consumed_stamina.signal() => {
+            180 * used / max.max(&1)
+        }
+    }.broadcast();
+
+    let combined_width_signal = map_ref! {
+        let a = stamina_bar_width_broadcast.signal(),
+        let b = newly_used_stamina_bar_broadcast.signal() => {
+            *a + *b
+        }
+    };
+
+    let newly_used_stamina_bar = El::<Node>::new()
+        .width_signal(newly_used_stamina_bar_broadcast.signal().map(|width| Val::Px(width as f32)))
+        .height(Val::Px(15.))
+        .background_color(BackgroundColor(Color::Srgba(tailwind::AMBER_200)));
+
+
+    let stamina_bar = El::<Node>::new()
+        .width_signal(
+            stamina_bar_width_broadcast
+                .signal()
+                .map(|v| Val::Px(v as f32)),
+        )
+        .height(Val::Px(15.))
+        .background_color(BackgroundColor(Color::Srgba(tailwind::EMERALD_600)));
+
+    let stamina_bar = Row::<Node>::new()
+        .with_node(|mut n| {
+            n.left = Val::Px(14.);
+            n.bottom = Val::Px(13.);
+            n.position_type = PositionType::Absolute;
+        })
+        .width_signal(combined_width_signal.map(|width| Val::Px(width as f32)))
+        .item(stamina_bar)
+        .item(newly_used_stamina_bar);
+
+    let health_backdrop = El::<ImageNode>::new()
         .image_node(health_bar_backdrop)
+        .with_node(|mut n| {
+            n.left = Val::Px(0.);
+            n.bottom = Val::Px(0.);
+            n.position_type = PositionType::Absolute;
+        })
         .width(Val::Px(256.))
-        .height(Val::Px(64.))
-        .align_content(Align::new().center_y())
-        .child(
-            Row::<Node>::new()
-                .with_node(|mut n| n.padding.left = Val::Px(15.))
-                .items_signal_vec(hearts_signal_vec),
-        );
+        .height(Val::Px(99.));
+
+    let health_stack = Stack::<Node>::new()
+        .layer(health_backdrop)
+        .layer(stamina_bar)
+        .width(Val::Px(256.))
+        .height(Val::Px(99.));
 
     El::<Node>::new()
         .ui_root()
         .width(Val::Percent(100.))
         .height(Val::Percent(100.))
         .align_content(Align::new().bottom())
-        .child(health_bar)
+        .child(health_stack)
         .spawn(world);
 }

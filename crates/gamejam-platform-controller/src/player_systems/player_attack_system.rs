@@ -1,4 +1,4 @@
-use crate::enemies::attackable::{Attackable, Attacked};
+use crate::combat::attackable::{Attackable, Attacked};
 use crate::graphics::animation_system::SpriteAnimation;
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::player_const_rules::{PLAYER_ATTACK_DURATION, POGO_HIT_KICKBACK_ACCELERATION};

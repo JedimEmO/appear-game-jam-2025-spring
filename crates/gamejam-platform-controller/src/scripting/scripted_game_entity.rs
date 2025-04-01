@@ -1,4 +1,4 @@
-use crate::enemies::combat_components::ScheduledAttack;
+use crate::combat::combat_components::ScheduledAttack;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::movement_systems::movement_components::{FacingDirection, Input};
 use crate::player_systems::player_components::Player;

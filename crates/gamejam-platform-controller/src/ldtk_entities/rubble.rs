@@ -1,5 +1,5 @@
-use crate::enemies::attackable::Attackable;
-use crate::enemies::{Dying, HitPoints};
+use crate::combat::attackable::Attackable;
+use crate::combat::{Dying, HitPoints};
 use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationCompleted};
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;

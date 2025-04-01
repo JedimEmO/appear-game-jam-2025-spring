@@ -1,5 +1,5 @@
-use crate::enemies::attackable::Attackable;
-use crate::enemies::{Dying, HitPoints};
+use crate::combat::attackable::Attackable;
+use crate::combat::{Dying, HitPoints};
 use crate::player_systems::player_components::Player;
 use crate::scripting::scripted_game_entity::EntityScript;
 use avian2d::collision::CollisionLayers;

@@ -1,4 +1,4 @@
-use crate::enemies::EnemyPlugin;
+use crate::combat::EnemyPlugin;
 use crate::game_entities::file_formats::game_entity_definitions::GameEntityDefinitionFile;
 use crate::game_resources::{load_resources, load_scripts_system};
 use crate::graphics::animation_system::animated_sprite_system;
@@ -36,7 +36,7 @@ use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
 
-pub mod enemies;
+pub mod combat;
 pub mod game_entities;
 pub mod game_resources;
 pub mod graphics;

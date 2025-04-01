@@ -1,5 +1,5 @@
-use crate::enemies::attackable::{Attackable, Attacked};
-use crate::enemies::combat_components::ScheduledAttack;
+use crate::combat::attackable::{Attackable, Attacked};
+use crate::combat::combat_components::ScheduledAttack;
 use avian2d::prelude::Collider;
 use bevy::prelude::{Commands, Entity, Query, Res, Transform, With};
 use bevy::time::Time;

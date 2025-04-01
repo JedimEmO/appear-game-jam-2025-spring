@@ -361,7 +361,7 @@ frame_count = 1
 [sprites.ui_healthbar]
 sprite_sheet_file_name = "ui/healthbar.png"
 image_width = 256
-image_height = 64
+image_height = 99
 
 [sprites.ui_healthbar.animations.idle]
 row = 0

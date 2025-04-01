@@ -1,11 +1,12 @@
-use crate::enemies::HitPoints;
+use crate::combat::HitPoints;
 use crate::player_systems::player_components::{Player, PlayerStats, PlayerStatsMutable};
 use bevy::prelude::{Query, With, Without};
 use haalka::prelude::Mutable;
+use crate::combat::combat_components::Stamina;
 
 pub fn player_health_sync_system(
     player_stats: Query<&PlayerStatsMutable, Without<Player>>,
-    player_hp: Query<(&HitPoints, &PlayerStats), With<Player>>,
+    player_hp: Query<(&HitPoints, &PlayerStats, &Stamina), With<Player>>,
 ) {
     let Ok(hp) = player_hp.get_single() else {
         return;
@@ -21,6 +22,9 @@ pub fn player_health_sync_system(
 
     stats.hp.set(hp.0.hp);
     stats.max_hp.set(hp.1.max_health);
+    stats.stamina.set(hp.2.current_stamina);
+    stats.max_stamina.set(hp.2.max_stamina);
+    stats.newly_consumed_stamina.set(hp.2.newly_consumed_stamina);
 
     let mut s = stats.hearts.lock_mut();
 
