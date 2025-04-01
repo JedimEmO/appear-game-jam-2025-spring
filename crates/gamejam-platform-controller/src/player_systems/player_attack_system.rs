@@ -112,18 +112,16 @@ pub fn player_attack_start_system(
         }
 
         if !did_attack_trauma {
-            camera_shake.add_trauma(0.2);
+            camera_shake.add_trauma(0.1);
             did_attack_trauma = true;
         }
 
-        if let Some(mut attacked_linear_velocity) = attacked_linear_velocity {
-            attacked_linear_velocity.x = attack_ray_direction.x * 150.;
-            attacked_linear_velocity.y += 200.;
-        }
-
-        commands
-            .entity(attacked_entity)
-            .insert(Attacked { damage: 5 });
+        commands.entity(attacked_entity).insert(Attacked {
+            damage: 5,
+            vector: attack_ray_direction,
+            origin: player_transform.translation.truncate(),
+            force: 2.
+        });
         if is_pogo {
             apply_pogo(
                 &mut commands,

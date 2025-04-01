@@ -27,7 +27,7 @@ use simple_2d_camera::PixelCameraTracked;
     PlayerActionTracker,
     PlayerMovementData,
     PlayerStats,
-    HitPoints(|| HitPoints { hp: 3 }),
+    HitPoints(|| HitPoints { hp: 300 }),
     FacingDirection(|| FacingDirection::East),
     MovementData(|| MovementData::default_player()),
     Attackable

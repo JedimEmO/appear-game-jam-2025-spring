@@ -4,3 +4,4 @@ pub mod movement_components;
 pub mod movement_dampening_system;
 pub mod movement_plugin;
 pub mod movement_system;
+pub mod timed_linear_velocity_system;

@@ -1,6 +1,6 @@
 use crate::player_const_rules::MAX_SPEED;
 use bevy::math::Vec2;
-use bevy::prelude::{Component, Entity, Event};
+use bevy::prelude::{Component, Entity, Event, Timer};
 
 #[derive(Component, Debug, Default)]
 pub enum FacingDirection {
@@ -49,4 +49,14 @@ impl MovementData {
             feet_height: 16.,
         }
     }
+}
+
+#[derive(Component)]
+pub struct IgnoreDampening;
+
+#[derive(Component)]
+pub struct ApplyTimedLinearVelocity {
+    pub timer: Timer,
+    /// Produces acceleration based on time left of the timer
+    pub acceleration_function: Box<dyn (Fn(f32) -> Vec2) + Send + Sync>
 }

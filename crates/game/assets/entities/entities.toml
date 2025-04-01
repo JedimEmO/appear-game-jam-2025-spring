@@ -117,5 +117,6 @@ script_params = [
     "wound-animation=wound",
     "attack-animation=attack",
     "death-animation=death",
-    "dead-animation=dead"
+    "dead-animation=dead",
+    "staggered-animation=staggered",
 ]

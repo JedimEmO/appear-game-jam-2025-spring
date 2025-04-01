@@ -17,6 +17,7 @@ use scripted_game_entity::GameEntityWorld;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use bevy::log::info;
 use wasmtime::component::ResourceAny;
 use wasmtime::{AsContextMut, Store};
 

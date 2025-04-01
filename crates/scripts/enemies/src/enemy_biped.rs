@@ -7,6 +7,9 @@ use script_utils::player_utils::{get_direction_to_player, get_vec_to_player};
 use script_utils::script_parameters::ScriptParams;
 use std::cell::Cell;
 
+const WOUND_UP_ATTACK_DELAY_TIMER: u32 = 3000;
+const ATTACK_COOLDOWN_TIMER: u32 = 3001;
+
 export!(EntityWorld);
 
 struct EntityWorld;
@@ -30,11 +33,20 @@ impl Guest for EntityWorld {
     }
 }
 
+struct EnemyStats {
+    aggro_range: f32,
+    attack_range: f32,
+    windup_attack_delay: u32,
+    attack_duration: u32,
+}
+
 struct BipedEnemy {
     animation_info: AnimationInfo,
     state: Cell<BipedEnemyStates>,
     patrol_direction: Cell<Direction>,
+    on_attack_cooldown: Cell<bool>,
     start_uniform: EntityUniform,
+    stats: EnemyStats,
 }
 
 impl BipedEnemy {
@@ -45,7 +57,14 @@ impl BipedEnemy {
             animation_info: AnimationInfo::try_from(&params).unwrap(),
             state: Cell::new(BipedEnemyStates::Patrolling),
             patrol_direction: Cell::new(Direction::West),
+            on_attack_cooldown: Cell::new(false),
             start_uniform: get_self_uniform(),
+            stats: EnemyStats {
+                attack_range: params.get_parameter("attack-range").unwrap_or(48.),
+                aggro_range: params.get_parameter("aggro-range").unwrap_or(150.),
+                windup_attack_delay: params.get_parameter("windup-attack-delay").unwrap_or(500),
+                attack_duration: params.get_parameter("attack-duration").unwrap_or(300),
+            },
         };
 
         out.enter_state(BipedEnemyStates::Patrolling);
@@ -61,6 +80,7 @@ pub struct AnimationInfo {
     pub windup_animation: String,
     pub wound_animation: String,
     pub attack_animation: String,
+    pub staggered_animation: String,
     pub death_animation: String,
     pub dead_animation: String,
 }
@@ -78,6 +98,7 @@ impl TryFrom<&ScriptParams> for AnimationInfo {
             attack_animation: params.get_parameter("attack-animation").ok_or(())?,
             death_animation: params.get_parameter("death-animation").ok_or(())?,
             dead_animation: params.get_parameter("dead-animation").ok_or(())?,
+            staggered_animation: params.get_parameter("staggered-animation").ok_or(())?,
         })
     }
 }
@@ -87,9 +108,12 @@ enum BipedEnemyStates {
     Idle,
     Patrolling,
     Charging,
+    WindingUpAttack,
+    WoundUp,
     Attacking,
     Dying,
     Dead,
+    Staggered,
 }
 
 impl BipedEnemy {
@@ -118,7 +142,13 @@ impl BipedEnemy {
                 get_self_uniform().facing,
                 true,
             ),
-            BipedEnemyStates::Attacking => {}
+            BipedEnemyStates::WindingUpAttack => play_animation(
+                &self.animation_info.sprite_name,
+                &self.animation_info.windup_animation,
+                600,
+                get_self_uniform().facing,
+                false,
+            ),
             BipedEnemyStates::Dying => play_animation(
                 &self.animation_info.sprite_name,
                 &self.animation_info.death_animation,
@@ -126,25 +156,68 @@ impl BipedEnemy {
                 get_self_uniform().facing,
                 false,
             ),
-            BipedEnemyStates::Dead => {
+            BipedEnemyStates::Dead => play_animation(
+                &self.animation_info.sprite_name,
+                &self.animation_info.dead_animation,
+                10000,
+                get_self_uniform().facing,
+                true,
+            ),
+            BipedEnemyStates::WoundUp => {
+                request_timer_callback(WOUND_UP_ATTACK_DELAY_TIMER, self.stats.windup_attack_delay);
                 play_animation(
                     &self.animation_info.sprite_name,
-                    &self.animation_info.dead_animation,
-                    10000,
+                    &self.animation_info.wound_animation,
+                    600,
                     get_self_uniform().facing,
                     true,
                 )
             }
+            BipedEnemyStates::Attacking => {
+                let uniform = get_self_uniform();
+                let player = get_vec_to_player().normalize() * self.stats.attack_range;
+
+                schedule_attack(
+                    self.stats.attack_duration / 2,
+                    2,
+                    5.,
+                    uniform.position,
+                    (player.x, player.y),
+                );
+                play_animation(
+                    &self.animation_info.sprite_name,
+                    &self.animation_info.attack_animation,
+                    self.stats.attack_duration,
+                    get_self_uniform().facing,
+                    false,
+                )
+            }
+            BipedEnemyStates::Staggered => play_animation(
+                &self.animation_info.sprite_name,
+                &self.animation_info.staggered_animation,
+                600,
+                get_self_uniform().facing,
+                false,
+            ),
         }
     }
 
     fn patrol(&self) {
         let player_vec = get_vec_to_player();
+        let self_uniform = get_self_uniform();
 
-        // if player_vec.length() < 150. {
-        //     self.enter_state(BipedEnemyStates::Charging);
-        //     return;
-        // }
+        let direction_to_player = if player_vec.x.signum() < 0. {
+            Direction::West
+        } else {
+            Direction::East
+        };
+
+        if player_vec.length() < self.stats.aggro_range
+            && direction_to_player == self_uniform.facing
+        {
+            self.enter_state(BipedEnemyStates::Charging);
+            return;
+        }
 
         let distance_to_patrol_x = get_self_uniform().position.0 - self.start_uniform.position.0;
 
@@ -166,24 +239,48 @@ impl BipedEnemy {
 
         send_input(Input::Movement(dir));
     }
+
+    pub fn charge(&self) {
+        let player_vec = get_vec_to_player();
+
+        if player_vec.length() < self.stats.attack_range {
+            if !self.on_attack_cooldown.get() {
+                self.enter_state(BipedEnemyStates::WindingUpAttack);
+            }
+
+            return;
+        } else {
+            send_input(Input::Movement((player_vec.x.signum(), 0.)))
+        }
+    }
 }
 
 impl GuestGameEntity for BipedEnemy {
     fn tick(&self, _delta_t: f32) -> () {
         match self.state.get() {
             BipedEnemyStates::Patrolling => self.patrol(),
-            BipedEnemyStates::Charging => self.patrol(),
+            BipedEnemyStates::Charging => self.charge(),
             _ => {}
         }
     }
 
     fn interacted(&self) -> () {}
 
-    fn attacked(&self) -> () {}
-
+    fn attacked(&self) -> () {
+        self.enter_state(BipedEnemyStates::Staggered)
+    }
+    
     fn animation_finished(&self, animation_name: String) -> () {
         if animation_name == self.animation_info.death_animation {
             self.enter_state(BipedEnemyStates::Dead);
+        } else if animation_name == self.animation_info.windup_animation {
+            self.enter_state(BipedEnemyStates::WoundUp);
+        } else if animation_name == self.animation_info.attack_animation {
+            request_timer_callback(ATTACK_COOLDOWN_TIMER, 500);
+            self.enter_state(BipedEnemyStates::Charging);
+        } else if animation_name == self.animation_info.staggered_animation {
+            request_timer_callback(ATTACK_COOLDOWN_TIMER, 500);
+            self.enter_state(BipedEnemyStates::Charging);
         }
     }
 
@@ -191,14 +288,21 @@ impl GuestGameEntity for BipedEnemy {
 
     fn receive_entity_event(&self, evt: EntityEvent) -> () {
         match evt {
-           EntityEvent::Killed => {
-               set_ticking(false, None);
-               self.enter_state(BipedEnemyStates::Dying);
-           }
+            EntityEvent::Killed => {
+                set_ticking(false, None);
+                self.enter_state(BipedEnemyStates::Dying);
+            }
         }
     }
 
-    fn timer_callback(&self, timer: u32) -> () {}
+    fn timer_callback(&self, timer: u32) -> () {
+        if timer == WOUND_UP_ATTACK_DELAY_TIMER {
+            self.on_attack_cooldown.set(true);
+            self.enter_state(BipedEnemyStates::Attacking);
+        } else if timer == ATTACK_COOLDOWN_TIMER {
+            self.on_attack_cooldown.set(false);
+        }
+    }
 }
 
 fn main() {}

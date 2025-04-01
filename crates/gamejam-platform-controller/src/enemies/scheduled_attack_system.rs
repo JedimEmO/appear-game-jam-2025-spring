@@ -35,6 +35,9 @@ pub fn scheduled_attack_system(
             ) {
                 commands.entity(attackable_entity).insert(Attacked {
                     damage: attack.damage,
+                    origin: attack.origin,
+                    vector: attack.vector,
+                    force: attack.force
                 });
             }
         }

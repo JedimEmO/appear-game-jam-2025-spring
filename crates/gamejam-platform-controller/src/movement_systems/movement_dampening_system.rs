@@ -1,6 +1,7 @@
-use crate::player_systems::player_components::{Grounded, MovementDampeningFactor, Moving, Player};
+use crate::player_systems::player_components::{Grounded, MovementDampeningFactor, Moving};
 use avian2d::prelude::LinearVelocity;
 use bevy::prelude::{Query, Res, Time};
+use crate::movement_systems::movement_components::IgnoreDampening;
 
 pub fn movement_dampening_system(
     time: Res<Time>,
@@ -9,10 +10,14 @@ pub fn movement_dampening_system(
         &MovementDampeningFactor,
         Option<&Grounded>,
         Option<&Moving>,
-        Option<&Player>,
+        Option<&IgnoreDampening>
     )>,
 ) {
-    for (mut velocity, dampening, grounded, moving, _player) in &mut query {
+    for (mut velocity, dampening, grounded, moving, ignore_dampening) in &mut query {
+        if ignore_dampening.is_some() {
+            continue;
+        }
+        
         if grounded.is_some() && moving.is_none() {
             velocity.x = 0.;
         } else if moving.is_none() {

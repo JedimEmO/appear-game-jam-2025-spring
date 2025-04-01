@@ -203,6 +203,12 @@ row = 2
 frame_start_index = 0
 frame_count = 5
 
+[sprites.bob.animations.staggered]
+row = 5
+frame_start_index = 0
+frame_count = 1
+
+
 
 # Neutrals
 
