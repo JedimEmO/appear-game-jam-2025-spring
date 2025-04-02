@@ -7,6 +7,48 @@ row = 0
 frame_start_index = 0
 frame_count = 4
 
+[sprites.player]
+sprite_sheet_file_name = "sprites/guy.png"
+image_width = 32
+image_height = 32
+
+[sprites.player.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+[sprites.player.animations.run]
+row = 1
+frame_start_index = 0
+frame_count = 4
+
+[sprites.player.animations.jump]
+row = 2
+frame_start_index = 0
+frame_count = 4
+
+[sprites.player.animations.fall]
+row = 3
+frame_start_index = 0
+frame_count = 4
+
+[sprites.player.animations.attack]
+row = 4
+frame_start_index = 0
+frame_count = 4
+
+[sprites.player.animations.attack_down]
+row = 5
+frame_start_index = 0
+frame_count = 4
+
+[sprites.player.animations.roll]
+row = 6
+frame_start_index = 0
+frame_count = 6
+
+
+
 
 
 

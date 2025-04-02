@@ -1,6 +1,7 @@
 use crate::AttackDirection;
 use bevy::math::Vec2;
 use bevy::prelude::Event;
+use crate::movement_systems::movement_components::FacingDirection;
 
 pub mod gamepad_input;
 pub mod keyboard_input_system;
@@ -14,4 +15,5 @@ pub enum PlayerInputAction {
     Attack(AttackDirection),
     Interact,
     ReloadLevel,
+    Roll(FacingDirection)
 }

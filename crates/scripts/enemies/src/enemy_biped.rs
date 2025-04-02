@@ -9,6 +9,7 @@ use std::cell::Cell;
 
 const WOUND_UP_ATTACK_DELAY_TIMER: u32 = 3000;
 const ATTACK_COOLDOWN_TIMER: u32 = 3001;
+const TURN_TIMER: u32 = 3002;
 
 export!(EntityWorld);
 
@@ -45,6 +46,7 @@ struct BipedEnemy {
     state: Cell<BipedEnemyStates>,
     patrol_direction: Cell<Direction>,
     on_attack_cooldown: Cell<bool>,
+    prewound_charge: Cell<bool>,
     start_uniform: EntityUniform,
     stats: EnemyStats,
 }
@@ -58,6 +60,7 @@ impl BipedEnemy {
             state: Cell::new(BipedEnemyStates::Patrolling),
             patrol_direction: Cell::new(Direction::West),
             on_attack_cooldown: Cell::new(false),
+            prewound_charge: Cell::new(false),
             start_uniform: get_self_uniform(),
             stats: EnemyStats {
                 attack_range: params.get_parameter("attack-range").unwrap_or(48.),
@@ -177,6 +180,8 @@ impl BipedEnemy {
                 let uniform = get_self_uniform();
                 let player = get_vec_to_player().normalize() * self.stats.attack_range;
 
+                self.on_attack_cooldown.set(true);
+
                 schedule_attack(
                     self.stats.attack_duration / 2,
                     2,
@@ -244,7 +249,10 @@ impl BipedEnemy {
         let player_vec = get_vec_to_player();
 
         if player_vec.length() < self.stats.attack_range {
-            if !self.on_attack_cooldown.get() {
+            if self.prewound_charge.get() {
+                self.prewound_charge.set(false);
+                self.enter_state(BipedEnemyStates::Attacking);
+            } else if !self.on_attack_cooldown.get() {
                 self.enter_state(BipedEnemyStates::WindingUpAttack);
             }
 
@@ -253,6 +261,10 @@ impl BipedEnemy {
             send_input(Input::Movement((player_vec.x.signum(), 0.)))
         }
     }
+
+    pub fn face_player(&self) {
+        face_direction(get_direction_to_player());
+    }
 }
 
 impl GuestGameEntity for BipedEnemy {
@@ -260,7 +272,11 @@ impl GuestGameEntity for BipedEnemy {
         match self.state.get() {
             BipedEnemyStates::Patrolling => self.patrol(),
             BipedEnemyStates::Charging => self.charge(),
-            _ => {}
+            _ => {
+                if get_self_uniform().facing != get_direction_to_player() {
+                    request_timer_callback(TURN_TIMER, 500);
+                }
+            }
         }
     }
 
@@ -269,7 +285,7 @@ impl GuestGameEntity for BipedEnemy {
     fn attacked(&self) -> () {
         self.enter_state(BipedEnemyStates::Staggered)
     }
-    
+
     fn animation_finished(&self, animation_name: String) -> () {
         if animation_name == self.animation_info.death_animation {
             self.enter_state(BipedEnemyStates::Dead);
@@ -296,11 +312,34 @@ impl GuestGameEntity for BipedEnemy {
     }
 
     fn timer_callback(&self, timer: u32) -> () {
-        if timer == WOUND_UP_ATTACK_DELAY_TIMER {
-            self.on_attack_cooldown.set(true);
-            self.enter_state(BipedEnemyStates::Attacking);
-        } else if timer == ATTACK_COOLDOWN_TIMER {
-            self.on_attack_cooldown.set(false);
+        match timer {
+            // attack is primed, handle various cases wrt range, facing etc. before following through
+            WOUND_UP_ATTACK_DELAY_TIMER => {
+                if get_vec_to_player().length() > self.stats.attack_range {
+                    self.prewound_charge.set(true);
+                    self.enter_state(BipedEnemyStates::Charging);
+                    return;
+                }
+
+                if get_direction_to_player() != get_self_uniform().facing {
+                    request_timer_callback(
+                        WOUND_UP_ATTACK_DELAY_TIMER,
+                        self.stats.windup_attack_delay,
+                    );
+
+                    return;
+                }
+
+                self.on_attack_cooldown.set(true);
+                self.enter_state(BipedEnemyStates::Attacking);
+            }
+            ATTACK_COOLDOWN_TIMER => {
+                self.on_attack_cooldown.set(false);
+            }
+            TURN_TIMER => {
+                self.face_player();
+            }
+            _ => {}
         }
     }
 }

@@ -1,11 +1,10 @@
+use crate::combat::combat_components::Stamina;
 use crate::graphics::animation_system::SpriteAnimation;
+use crate::graphics::sprite_collection::SpriteCollection;
 use crate::input_systems::PlayerInputAction;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
-use crate::movement_systems::movement_components::FacingDirection;
-use crate::player_const_rules::{
-    ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED,
-    PLAYER_ATTACK_DELAY_SECONDS,
-};
+use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input, Rolling};
+use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED, PLAYER_ATTACK_DELAY_SECONDS, PLAYER_ROLL_DURATION};
 use crate::player_systems::player_components::{
     Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData,
     Pogoing,
@@ -15,12 +14,13 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{LevelIid, Respawn};
 use std::time::Duration;
-use crate::combat::combat_components::Stamina;
 
 pub fn player_control_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut movement_events: EventReader<PlayerInputAction>,
+    sprites: Res<SpriteCollection>,
+    mut player_input_reader: EventReader<PlayerInputAction>,
+    mut movement_event_writer: EventWriter<EntityInput>,
     mut player_velocity: Query<
         (
             Entity,
@@ -28,12 +28,12 @@ pub fn player_control_system(
             Option<&Grounded>,
             &mut JumpState,
             &mut SpriteAnimation,
-            &mut Sprite,
             Option<&Attacking>,
             &mut PlayerActionTracker,
             &mut PlayerMovementData,
-            &mut FacingDirection,
-            &mut Stamina
+            &mut Stamina,
+            Option<&Rolling>,
+            &FacingDirection
         ),
         With<Player>,
     >,
@@ -47,20 +47,31 @@ pub fn player_control_system(
         mut linear_velocity,
         grounded,
         mut jump_state,
-        mut animation,
-        mut sprite,
+        animation,
         attacking,
         mut player_actions,
         mut movement_data,
-        mut facing_direction,
-        mut stamina
+        mut stamina,
+        rolling,
+        facing_direction
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
 
         if let Some(_attacking) = attacking {
             if animation.finished() {
-                animation.play_animation(0, 4, Duration::from_millis(1000), true);
+                commands.entity(entity).insert(
+                    sprites
+                        .create_sprite_animation_bundle(
+                            "player",
+                            "idle",
+                            Duration::from_millis(1000),
+                            true,
+                            false,
+                            false,
+                        )
+                        .unwrap(),
+                );
                 commands.entity(entity).remove::<Attacking>();
                 commands.entity(entity).remove::<Pogoing>();
             }
@@ -68,36 +79,44 @@ pub fn player_control_system(
             continue;
         }
 
+        if rolling.is_some() {
+            continue;
+        }
+
         let mut still_moving = false;
 
-        for movement_action in movement_events.read() {
+        for movement_action in player_input_reader.read() {
             match movement_action {
                 PlayerInputAction::Horizontal(dir) => {
                     still_moving = true;
+
                     if grounded.is_some() {
-                        if animation.animation_start_index != 4 {
-                            animation.play_animation(4, 4, Duration::from_millis(500), true);
+                        if animation.animation_name != "run" {
+                            commands.entity(entity).insert(
+                                sprites
+                                    .create_sprite_animation_bundle(
+                                        "player",
+                                        "run",
+                                        Duration::from_millis(500),
+                                        true,
+                                        false,
+                                        false,
+                                    )
+                                    .unwrap(),
+                            );
                         }
                     }
 
-                    let reverse_factor = if linear_velocity.x.signum() != dir.x.signum() {
-                        FALL_GRAVITY
-                    } else {
-                        1.
-                    };
+                    if attacking.is_some() {
+                        continue;
+                    }
 
-                    linear_velocity.x += dir.x * ACCELERATION * delta_t * reverse_factor;
-                    linear_velocity.y += dir.y * ACCELERATION * delta_t * reverse_factor;
-
-                    linear_velocity.x = linear_velocity.x.clamp(-MAX_SPEED, MAX_SPEED);
-
-                    *facing_direction = match dir.x {
-                        x if x < 0. => FacingDirection::West,
-                        _ => FacingDirection::East,
-                    };
+                    movement_event_writer.send(EntityInput {
+                        entity,
+                        input: Input::Move(*dir),
+                    });
 
                     movement_data.horizontal_direction = dir.x < 0.;
-                    sprite.flip_x = movement_data.horizontal_direction;
                 }
                 PlayerInputAction::Jump => {
                     do_jump(&time, &mut linear_velocity, grounded, &mut jump_state);
@@ -119,10 +138,10 @@ pub fn player_control_system(
                     if stamina.current_stamina < 25 {
                         continue;
                     }
-                    
+
                     stamina.current_stamina -= 25;
                     stamina.newly_consumed_stamina += 25;
-                    
+
                     let now = time.elapsed_secs_f64();
 
                     if now - player_actions.last_attack_at.unwrap_or(0.)
@@ -147,24 +166,76 @@ pub fn player_control_system(
                     let (level, _) = level.single();
                     commands.entity(level).insert(Respawn);
                 }
+                &PlayerInputAction::Roll(direction) => {
+                    if stamina.current_stamina < 25 || grounded.is_none() {
+                        continue;
+                    }
+
+                    stamina.current_stamina -= 25;
+                    stamina.newly_consumed_stamina += 25;
+
+                    commands.entity(entity).insert(
+                        sprites
+                            .create_sprite_animation_bundle(
+                                "player",
+                                "roll",
+                                Duration::from_millis(PLAYER_ROLL_DURATION),
+                                false,
+                                false,
+                                false,
+                            )
+                            .unwrap(),
+                    );
+
+                    movement_event_writer.send(EntityInput {
+                        entity,
+                        input: Input::Roll {
+                            direction,
+                            strength: 3000.,
+                            duration: Duration::from_millis(PLAYER_ROLL_DURATION),
+                        },
+                    });
+
+                    return;
+                }
             }
         }
 
         if jump_state.left_ground_at.is_some()
             && attacking.is_none()
-            && animation.animation_start_index != 12
+            && animation.animation_name != "fall"
         {
-            animation.play_animation(12, 4, Duration::from_millis(500), true);
+            commands.entity(entity).insert(
+                sprites
+                    .create_sprite_animation_bundle(
+                        "player",
+                        "fall",
+                        Duration::from_millis(500),
+                        true,
+                        false,
+                        facing_direction.to_bool(),
+                    )
+                    .unwrap(),
+            );
         }
 
-        if still_moving {
-            commands.entity(entity).insert(Moving);
-        } else {
+        if !still_moving {
             if attacking.is_none() && jump_state.left_ground_at.is_none() {
-                animation.play_animation(0, 4, Duration::from_millis(500), true);
+                if animation.animation_name != "idle" {
+                    commands.entity(entity).insert(
+                        sprites
+                            .create_sprite_animation_bundle(
+                                "player",
+                                "idle",
+                                Duration::from_millis(500),
+                                true,
+                                false,
+                                facing_direction.to_bool(),
+                            )
+                            .unwrap(),
+                    );
+                }
             }
-
-            commands.entity(entity).remove::<Moving>();
         }
     }
 }

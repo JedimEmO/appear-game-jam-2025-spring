@@ -1,6 +1,7 @@
 use crate::input_systems::PlayerInputAction;
 use crate::AttackDirection;
 use bevy::prelude::*;
+use crate::movement_systems::movement_components::FacingDirection;
 
 pub fn gamepad_input_system(
     mut event_sender: EventWriter<PlayerInputAction>,
@@ -15,7 +16,19 @@ pub fn gamepad_input_system(
     let left_stick_down = left_stick.y < -0.4;
     let left_stick_up = left_stick.y > 0.5;
 
-    if (left_stick_down || gamepad.pressed(GamepadButton::DPadDown)) && gamepad.just_pressed(GamepadButton::West) {
+    if gamepad.pressed(GamepadButton::RightTrigger2) {
+        event_sender.send(PlayerInputAction::Roll(FacingDirection::East));
+        return;
+    }
+
+    if gamepad.pressed(GamepadButton::LeftTrigger2) {
+        event_sender.send(PlayerInputAction::Roll(FacingDirection::West));
+        return;
+    }
+
+    if (left_stick_down || gamepad.pressed(GamepadButton::DPadDown))
+        && gamepad.just_pressed(GamepadButton::West)
+    {
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Down));
     } else if gamepad.just_pressed(GamepadButton::West) {
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Sideways));
@@ -34,7 +47,6 @@ pub fn gamepad_input_system(
     if direction.length() > 0.1 {
         event_sender.send(PlayerInputAction::Horizontal(direction));
     }
-
 
     left_stick.y = 0.;
 
@@ -56,11 +68,5 @@ pub fn gamepad_input_system(
 
     if gamepad.just_released(GamepadButton::South) {
         event_sender.send(PlayerInputAction::JumpAbort);
-    }
-
-    // Debug
-
-    if gamepad.pressed(GamepadButton::LeftTrigger2) {
-        event_sender.send(PlayerInputAction::ReloadLevel);
     }
 }

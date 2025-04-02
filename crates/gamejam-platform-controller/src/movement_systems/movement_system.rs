@@ -1,10 +1,15 @@
 use crate::movement_systems::movement_components::{
-    EntityInput, FacingDirection, Input, MovementData,
+    ApplyTimedLinearVelocity, EntityInput, FacingDirection, IgnoreDampening, Input, MovementData,
+    Rolling,
 };
 use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY};
 use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player};
+use crate::timing::timer_system::add_timer_to_entity;
+use crate::timing::timing_component::{TimerComponent, TimerData};
 use avian2d::prelude::LinearVelocity;
-use bevy::prelude::{Commands, Entity, EventReader, Query, Res, Time};
+use bevy::math::vec2;
+use bevy::prelude::{Commands, Entity, EventReader, Query, Res, Time, Timer};
+use bevy::time::TimerMode;
 use std::collections::HashSet;
 
 pub fn movement_system(
@@ -18,7 +23,7 @@ pub fn movement_system(
         &mut JumpState,
         &mut FacingDirection,
         &MovementData,
-        Option<&Player>,
+        Option<&mut TimerComponent>,
     )>,
 ) {
     let delta_t = time.elapsed_secs();
@@ -32,15 +37,11 @@ pub fn movement_system(
             _jump_state,
             mut facing_direction,
             movement_data,
-            player,
+            mut timer,
         )) = entities.get_mut(event.entity).ok()
         else {
             continue;
         };
-
-        if player.is_some() {
-            continue;
-        }
 
         match event.input {
             Input::Move(delta) => {
@@ -59,7 +60,7 @@ pub fn movement_system(
                     .x
                     .clamp(-movement_data.max_speed, movement_data.max_speed);
 
-                *facing_direction.as_mut() = if delta.x < 0. {
+                *facing_direction = if delta.x < 0. {
                     FacingDirection::West
                 } else {
                     FacingDirection::East
@@ -67,14 +68,48 @@ pub fn movement_system(
             }
 
             Input::Jump => {}
+            Input::Roll {
+                direction,
+                strength,
+                duration,
+            } => {
+                linear_velocity.x = 0.;
+
+                let dx = match direction {
+                    FacingDirection::West => -1.,
+                    FacingDirection::East => 1.,
+                };
+
+                *facing_direction = direction;
+
+                let mut entity_commands = commands.entity(entity);
+
+                add_timer_to_entity(
+                    &mut entity_commands,
+                    timer.as_deref_mut(),
+                    TimerData {
+                        timer_name: 0,
+                        timer: Timer::new(duration, TimerMode::Once),
+                        on_expiration: Some(Box::new(|cmds| {
+                            cmds.remove::<Rolling>();
+                        })),
+                    },
+                );
+
+                entity_commands.insert((
+                    ApplyTimedLinearVelocity {
+                        timer: Timer::new(duration, TimerMode::Once),
+                        acceleration_function: Box::new(move |_remaining| {
+                            vec2(dx, 0.3).normalize() * strength
+                        }),
+                    },
+                    Rolling,
+                ));
+            }
         }
     }
 
     for entity in entities.iter() {
-        if entity.6.is_some() {
-            continue;
-        }
-
         let mut entity_cmd = commands.entity(entity.0);
 
         if moving_enemies.contains(&entity.0) {

@@ -6,7 +6,7 @@ use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};
 use crate::player_systems::player_components::Player;
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
-use crate::timing::timing_component::TimerComponent;
+use crate::timing::timing_component::{TimerComponent, TimerData};
 use avian2d::collision::{Collider, CollisionLayers};
 use avian2d::prelude::RigidBody;
 use bevy::ecs::reflect::ReflectCommandExt;
@@ -20,6 +20,7 @@ use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
 use scripted_game_entity::gamejam::game::game_host::*;
 use std::time::Duration;
+use crate::timing::timer_system::add_timer_to_entity;
 
 #[derive(Component)]
 pub struct TickingEntity(pub Option<f32>);
@@ -50,12 +51,12 @@ pub fn scripted_entity_command_queue_system(
     mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
     mut input_event_writer: EventWriter<EntityInput>,
-    mut query: Query<(Entity, &mut EntityScript)>,
+    mut query: Query<(Entity, &mut EntityScript, Option<&mut TimerComponent>)>,
     player: Query<Entity, With<Player>>,
 ) {
     let player_entity = player.single();
 
-    for (entity, mut queue) in query.iter_mut() {
+    for (entity, mut queue, mut timer) in query.iter_mut() {
         for cmd in queue.store.data_mut().host.queued_commands.drain(..) {
             apply_command(
                 player_entity,
@@ -66,6 +67,7 @@ pub fn scripted_entity_command_queue_system(
                 &mut level_select,
                 &mut event_writer,
                 &mut input_event_writer,
+                timer.as_deref_mut(),
             );
         }
     }
@@ -80,6 +82,7 @@ fn apply_command(
     level_select: &mut ResMut<LevelSelection>,
     event_writer: &mut EventWriter<ScriptEvent>,
     input_event_writer: &mut EventWriter<EntityInput>,
+    timer_component: Option<&mut TimerComponent>,
 ) {
     let mut entity = commands.entity(entity_id);
 
@@ -105,7 +108,6 @@ fn apply_command(
                 }
             }
             InsertableComponents::RigidBody(type_) => {
-                error!("inserting rigid body");
                 let body_type = match type_ {
                     RigidBodyType::StaticBody => RigidBody::Static,
                     RigidBodyType::Dynamic => RigidBody::Dynamic,
@@ -164,10 +166,13 @@ fn apply_command(
             **level_select = LevelSelection::index(level_index as usize);
         }
         EntityScriptCommand::RequestTimer(timer, duration) => {
-            entity.insert(TimerComponent {
+            let data = TimerData {
                 timer_name: timer,
                 timer: Timer::new(duration, TimerMode::Once),
-            });
+                on_expiration: None,
+            };
+
+            add_timer_to_entity(&mut entity, timer_component, data);
         }
         EntityScriptCommand::Input(input) => {
             input_event_writer.send(EntityInput {

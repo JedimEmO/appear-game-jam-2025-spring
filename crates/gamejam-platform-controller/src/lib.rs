@@ -109,21 +109,17 @@ impl Plugin for PlayerPlugin {
             .add_event::<PlayerInputAction>()
             .add_systems(
                 Update,
-                (player_control_system,)
-                    .run_if(in_state(GameStates::GameLoop))
-                    .chain(),
-            )
-            .add_systems(
-                Update,
                 (
                     animated_sprite_system,
                     keyboard_input_system,
                     gamepad_input_system,
+                    player_control_system,
                     player_attack_start_system,
                     player_pogo_system,
                     player_health_sync_system,
                     timer_system,
                 )
+                    .chain()
                     .run_if(in_state(GameStates::GameLoop)),
             );
     }

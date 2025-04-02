@@ -59,11 +59,17 @@ pub fn player_attack_start_system(
 
     let is_pogo = attacking.direction == AttackDirection::Down;
 
-    animation.play_animation(
-        if is_pogo { 5 } else { 4 } * 4,
-        4,
-        Duration::from_millis(PLAYER_ATTACK_DURATION),
-        false,
+    commands.entity(entity).insert(
+        sprite_collection
+            .create_sprite_animation_bundle(
+                "player",
+                if is_pogo { "attack_down" } else { "attack" },
+                Duration::from_millis(PLAYER_ATTACK_DURATION),
+                false,
+                false,
+                false,
+            )
+            .unwrap(),
     );
 
     {

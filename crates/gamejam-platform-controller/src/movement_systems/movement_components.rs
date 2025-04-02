@@ -1,8 +1,9 @@
+use std::time::Duration;
 use crate::player_const_rules::MAX_SPEED;
 use bevy::math::Vec2;
 use bevy::prelude::{Component, Entity, Event, Timer};
 
-#[derive(Component, Debug, Default)]
+#[derive(Clone, Copy, Component, Debug, Default)]
 pub enum FacingDirection {
     West,
     #[default]
@@ -27,6 +28,11 @@ pub struct EntityInput {
 pub enum Input {
     Move(Vec2),
     Jump,
+    Roll {
+        direction: FacingDirection,
+        strength: f32,
+        duration: Duration
+    },
 }
 
 #[derive(Component)]
@@ -55,8 +61,11 @@ impl MovementData {
 pub struct IgnoreDampening;
 
 #[derive(Component)]
+pub struct Rolling;
+
+#[derive(Component)]
 pub struct ApplyTimedLinearVelocity {
     pub timer: Timer,
     /// Produces acceleration based on time left of the timer
-    pub acceleration_function: Box<dyn (Fn(f32) -> Vec2) + Send + Sync>
+    pub acceleration_function: Box<dyn (Fn(f32) -> Vec2) + Send + Sync>,
 }

@@ -1,6 +1,5 @@
 use crate::movement_systems::movement_components::{ApplyTimedLinearVelocity, IgnoreDampening};
 use avian2d::prelude::LinearVelocity;
-use bevy::log::info;
 use bevy::prelude::{Commands, Entity, Query, Res, Time};
 
 pub fn timed_linear_velocity_system(
