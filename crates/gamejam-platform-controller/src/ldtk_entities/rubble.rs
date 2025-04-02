@@ -1,5 +1,5 @@
 use crate::combat::attackable::Attackable;
-use crate::combat::{Dying, HitPoints};
+use crate::combat::{Dying};
 use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationCompleted};
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;
@@ -7,6 +7,7 @@ use avian2d::prelude::{CollisionLayers, RigidBody};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
+use crate::combat::combat_components::Health;
 
 #[derive(Component, Default, Reflect)]
 pub struct Rubble {
@@ -44,7 +45,7 @@ pub fn spawn_rubble_system(
             animation,
             RigidBody::Static,
             Collider::rectangle(width as f32, height as f32),
-            HitPoints { hp: 1 },
+            Health::new(1),
             Attackable,
         ));
 

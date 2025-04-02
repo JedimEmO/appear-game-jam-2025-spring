@@ -4,13 +4,14 @@ use crate::movement_systems::movement_components::{
 };
 use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY};
 use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player};
-use crate::timing::timer_system::add_timer_to_entity;
+use crate::timing::timer_system::{add_timed_component_to_entity, add_timer_to_entity};
 use crate::timing::timing_component::{TimerComponent, TimerData};
 use avian2d::prelude::LinearVelocity;
 use bevy::math::vec2;
 use bevy::prelude::{Commands, Entity, EventReader, Query, Res, Time, Timer};
 use bevy::time::TimerMode;
 use std::collections::HashSet;
+use crate::combat::combat_components::Invulnerable;
 
 pub fn movement_system(
     mut commands: Commands,
@@ -84,16 +85,11 @@ pub fn movement_system(
 
                 let mut entity_commands = commands.entity(entity);
 
-                add_timer_to_entity(
+                add_timed_component_to_entity(
                     &mut entity_commands,
                     timer.as_deref_mut(),
-                    TimerData {
-                        timer_name: 0,
-                        timer: Timer::new(duration, TimerMode::Once),
-                        on_expiration: Some(Box::new(|cmds| {
-                            cmds.remove::<Rolling>();
-                        })),
-                    },
+                    (Rolling, Invulnerable),
+                    duration
                 );
 
                 entity_commands.insert((

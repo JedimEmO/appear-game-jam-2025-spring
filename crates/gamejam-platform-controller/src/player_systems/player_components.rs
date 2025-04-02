@@ -1,6 +1,6 @@
+use crate::combat::combat_components::Health;
 use crate::combat::combat_components::Stamina;
 use crate::combat::attackable::Attackable;
-use crate::combat::HitPoints;
 use crate::movement_systems::movement_components::FacingDirection;
 use crate::movement_systems::movement_components::MovementData;
 use crate::player_const_rules::*;
@@ -28,7 +28,7 @@ use simple_2d_camera::PixelCameraTracked;
     PlayerActionTracker,
     PlayerMovementData,
     PlayerStats,
-    HitPoints(|| HitPoints { hp: 300 }),
+    Health(|| Health::default_player()),
     FacingDirection(|| FacingDirection::East),
     MovementData(|| MovementData::default_player()),
     Attackable,
@@ -100,17 +100,20 @@ pub struct PlayerStats {
 
 impl Default for PlayerStats {
     fn default() -> Self {
-        Self { max_health: 6 }
+        Self { max_health: 60}
     }
 }
 
 // UI sync
 #[derive(Component, Default, Clone)]
 pub struct PlayerStatsMutable {
-    pub hp: Mutable<u32>,
-    pub max_hp: Mutable<u32>,
-    pub hearts: MutableVec<Mutable<u32>>,
-    pub stamina: Mutable<u32>,
-    pub max_stamina: Mutable<u32>,
-    pub newly_consumed_stamina: Mutable<u32>,
+    pub health: StatBarMutables,
+    pub stamina: StatBarMutables,
+}
+
+#[derive(Default, Clone)]
+pub struct StatBarMutables {
+    pub current: Mutable<u32>,
+    pub max: Mutable<u32>,
+    pub newly_consumed: Mutable<u32>
 }

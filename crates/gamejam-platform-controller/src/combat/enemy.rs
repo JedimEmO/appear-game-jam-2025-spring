@@ -1,9 +1,10 @@
-use crate::combat::{Enemy, HitPoints};
+use crate::combat::{Enemy};
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
+use crate::combat::combat_components::Health;
 
 pub fn spawn_enemy_observer(
     trigger: Trigger<OnAdd, Enemy>,
@@ -17,7 +18,7 @@ pub fn spawn_enemy_observer(
 
             commands.entity(entity).insert((
                 Collider::circle(15.),
-                HitPoints { hp: 20 },
+                Health::new(20),
                 assets
                     .create_sprite_animation_bundle(
                         "what_sprite",

@@ -38,7 +38,7 @@ pub fn player_attack_start_system(
         entity,
         attacking,
         mut velocity,
-        mut animation,
+        animation,
         mut jump_state,
         player_transform,
         movement_data,
@@ -93,7 +93,7 @@ pub fn player_attack_start_system(
     let mut did_attack_trauma = false;
 
     // Process hits
-    for (attacked_entity, attacked_transform, attacked_collider, attacked_linear_velocity) in
+    for (attacked_entity, attacked_transform, attacked_collider, _attacked_linear_velocity) in
         attackables.iter_mut()
     {
         let attack_ray_direction = if is_pogo {

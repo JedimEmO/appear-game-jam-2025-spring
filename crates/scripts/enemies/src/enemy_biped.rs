@@ -184,7 +184,7 @@ impl BipedEnemy {
 
                 schedule_attack(
                     self.stats.attack_duration / 2,
-                    2,
+                    20,
                     5.,
                     uniform.position,
                     (player.x, player.y),

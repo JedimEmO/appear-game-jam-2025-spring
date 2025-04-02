@@ -40,8 +40,6 @@ pub fn player_control_system(
     level: Query<(Entity, &LevelIid)>,
     interactables: Query<Entity, With<InteractableInRange>>,
 ) {
-    let delta_t = time.delta_secs_f64().adjust_precision();
-
     for (
         entity,
         mut linear_velocity,
@@ -135,12 +133,6 @@ pub fn player_control_system(
                     }
                 }
                 PlayerInputAction::Attack(direction) => {
-                    if stamina.current_stamina < 25 {
-                        continue;
-                    }
-
-                    stamina.current_stamina -= 25;
-                    stamina.newly_consumed_stamina += 25;
 
                     let now = time.elapsed_secs_f64();
 
@@ -148,6 +140,10 @@ pub fn player_control_system(
                         < PLAYER_ATTACK_DELAY_SECONDS
                     {
                         return;
+                    }
+
+                    if !stamina.0.try_consume(25) {
+                        continue;
                     }
 
                     player_actions.last_attack_at = Some(now);
@@ -167,12 +163,9 @@ pub fn player_control_system(
                     commands.entity(level).insert(Respawn);
                 }
                 &PlayerInputAction::Roll(direction) => {
-                    if stamina.current_stamina < 25 || grounded.is_none() {
+                    if grounded.is_none() || !stamina.0.try_consume(25) {
                         continue;
                     }
-
-                    stamina.current_stamina -= 25;
-                    stamina.newly_consumed_stamina += 25;
 
                     commands.entity(entity).insert(
                         sprites

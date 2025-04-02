@@ -1,9 +1,9 @@
-use std::time::Duration;
-use bevy::math::vec2;
-use crate::combat::HitPoints;
-use crate::scripting::scripted_game_entity::EntityScript;
-use bevy::prelude::*;
+use crate::combat::combat_components::{Health, Invulnerable};
 use crate::movement_systems::movement_components::ApplyTimedLinearVelocity;
+use crate::scripting::scripted_game_entity::EntityScript;
+use bevy::math::vec2;
+use bevy::prelude::*;
+use std::time::Duration;
 
 /// An attackable entity (reacts to attacks)
 #[derive(Component, Default, Reflect)]
@@ -29,13 +29,16 @@ impl Plugin for AttackablePlugin {
 pub fn attackable_attacked_observer(
     trigger: Trigger<OnAdd, Attacked>,
     mut commands: Commands,
-    mut attackables: Query<(
-        Entity,
-        &Attackable,
-        &Attacked,
-        Option<&mut HitPoints>,
-        Option<&mut EntityScript>,
-    )>,
+    mut attackables: Query<
+        (
+            Entity,
+            &Attackable,
+            &Attacked,
+            Option<&mut Health>,
+            Option<&mut EntityScript>,
+        ),
+        Without<Invulnerable>,
+    >,
 ) {
     commands.entity(trigger.entity()).remove::<Attacked>();
 
@@ -45,7 +48,7 @@ pub fn attackable_attacked_observer(
         }
 
         if let Some(mut hp) = hp {
-            hp.hp = hp.hp.saturating_sub(attack.damage);
+            hp.0.consume(attack.damage);
         }
 
         let pushback_time = 0.1 + attack.force * 0.03;
@@ -54,9 +57,11 @@ pub fn attackable_attacked_observer(
         commands.entity(entity).insert(ApplyTimedLinearVelocity {
             timer: Timer::new(Duration::from_secs_f32(pushback_time), TimerMode::Once),
             acceleration_function: Box::new(move |remaining_time: f32| {
-                let dir = vec2(push_direction.normalize().x, 1.2).normalize() * (remaining_time / pushback_time) * 3000.;
+                let dir = vec2(push_direction.normalize().x, 1.2).normalize()
+                    * (remaining_time / pushback_time)
+                    * 3000.;
                 dir
-            })
+            }),
         });
 
         if let Some(mut script) = script {

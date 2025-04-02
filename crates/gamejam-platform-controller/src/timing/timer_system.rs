@@ -1,6 +1,7 @@
 use crate::scripting::scripted_game_entity::EntityScript;
 use crate::timing::timing_component::{TimerComponent, TimerData};
-use bevy::prelude::{Commands, Entity, EntityCommands, Query, Res, Time};
+use bevy::prelude::{Bundle, Commands, Component, Entity, EntityCommands, Query, Res, Time, Timer, TimerMode};
+use std::time::Duration;
 
 pub fn timer_system(
     mut commands: Commands,
@@ -42,4 +43,24 @@ pub fn add_timer_to_entity(
     } else {
         commands.insert(TimerComponent { timers: vec![data] });
     }
+}
+pub fn add_timed_component_to_entity<T: Bundle>(
+    commands: &mut EntityCommands,
+    timer: Option<&mut TimerComponent>,
+    component: T,
+    duration: Duration,
+) {
+    commands.insert(component);
+
+    add_timer_to_entity(
+        commands,
+        timer,
+        TimerData {
+            timer_name: 0,
+            timer: Timer::new(duration, TimerMode::Once),
+            on_expiration: Some(Box::new(|cmds| {
+                cmds.remove::<T>();
+            })),
+        },
+    );
 }

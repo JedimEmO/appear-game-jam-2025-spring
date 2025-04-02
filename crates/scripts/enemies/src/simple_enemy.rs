@@ -159,7 +159,7 @@ impl SimpleEnemyScript {
 
         schedule_attack(
             200,
-            1,
+            10,
             1.,
             self_uniform.position,
             attack_direction

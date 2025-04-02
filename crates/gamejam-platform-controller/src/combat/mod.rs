@@ -3,7 +3,7 @@ pub mod combat_components;
 pub mod enemy;
 mod hit_points;
 pub mod scheduled_attack_system;
-pub mod stamina_system;
+pub mod stats_system;
 
 use crate::combat::attackable::{Attackable, AttackablePlugin};
 use crate::combat::enemy::spawn_enemy_observer;
@@ -17,7 +17,7 @@ use crate::player_systems::player_components::MovementDampeningFactor;
 use crate::GameStates;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::combat::stamina_system::stamina_system;
+use crate::combat::stats_system::stats_system;
 
 pub struct EnemyPlugin;
 
@@ -26,16 +26,11 @@ impl Plugin for EnemyPlugin {
         app.add_plugins(AttackablePlugin)
             .add_systems(
                 Update,
-                (scheduled_attack_system, hit_points_system, stamina_system)
+                (scheduled_attack_system, hit_points_system, stats_system)
                     .run_if(in_state(GameStates::GameLoop)),
             )
             .add_observer(spawn_enemy_observer);
     }
-}
-
-#[derive(Component)]
-pub struct HitPoints {
-    pub hp: u32,
 }
 
 #[derive(Component)]
