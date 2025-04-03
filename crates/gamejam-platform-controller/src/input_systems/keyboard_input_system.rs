@@ -3,11 +3,29 @@ use crate::AttackDirection;
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{EventWriter, KeyCode, Res};
+use crate::movement_systems::movement_components::FacingDirection;
+
 pub fn keyboard_input_system(
     mut event_sender: EventWriter<PlayerInputAction>,
     key_input: Res<ButtonInput<KeyCode>>,
 ) {
     let mut direction = Vec2::ZERO;
+
+    if key_input.all_pressed(vec![
+        KeyCode::ArrowLeft,
+        KeyCode::ControlLeft
+    ]) {
+        event_sender.send(PlayerInputAction::Roll(FacingDirection::West));
+        return;
+    }
+
+    if key_input.all_pressed(vec![
+        KeyCode::ArrowRight,
+        KeyCode::ControlLeft
+    ]) {
+        event_sender.send(PlayerInputAction::Roll(FacingDirection::East));
+        return;
+    }
 
     if key_input.pressed(KeyCode::ArrowDown) && key_input.just_pressed(KeyCode::KeyF) {
         event_sender.send(PlayerInputAction::Attack(AttackDirection::Down));
