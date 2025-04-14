@@ -184,7 +184,7 @@ pub fn player_control_system(
                         entity,
                         input: Input::Roll {
                             direction,
-                            strength: 2000.,
+                            strength: 2500.,
                             duration: Duration::from_millis(PLAYER_ROLL_DURATION),
                         },
                     });

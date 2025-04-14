@@ -39,6 +39,8 @@ struct EnemyStats {
     attack_range: f32,
     windup_attack_delay: u32,
     attack_duration: u32,
+    attack_damage: u32,
+    attack_force: f32,
 }
 
 struct BipedEnemy {
@@ -67,6 +69,8 @@ impl BipedEnemy {
                 aggro_range: params.get_parameter("aggro-range").unwrap_or(150.),
                 windup_attack_delay: params.get_parameter("windup-attack-delay").unwrap_or(500),
                 attack_duration: params.get_parameter("attack-duration").unwrap_or(300),
+                attack_damage: params.get_parameter("attack-damage").unwrap_or(20),
+                attack_force: params.get_parameter("attack-force").unwrap_or(5.),
             },
         };
 
@@ -184,8 +188,8 @@ impl BipedEnemy {
 
                 schedule_attack(
                     self.stats.attack_duration / 2,
-                    20,
-                    5.,
+                    self.stats.attack_damage,
+                    self.stats.attack_force,
                     uniform.position,
                     (player.x, player.y),
                 );

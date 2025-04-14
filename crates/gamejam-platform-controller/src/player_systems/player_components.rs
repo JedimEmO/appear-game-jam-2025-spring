@@ -1,3 +1,4 @@
+use crate::timing::timing_component::TimerComponent;
 use crate::combat::combat_components::Health;
 use crate::combat::combat_components::Stamina;
 use crate::combat::attackable::Attackable;
@@ -32,7 +33,8 @@ use simple_2d_camera::PixelCameraTracked;
     FacingDirection(|| FacingDirection::East),
     MovementData(|| MovementData::default_player()),
     Attackable,
-    Stamina(|| Stamina::default_player())
+    Stamina(|| Stamina::default_player()),
+    TimerComponent
 )]
 pub struct Player;
 

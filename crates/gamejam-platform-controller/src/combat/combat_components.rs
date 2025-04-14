@@ -22,7 +22,7 @@ pub struct Stat {
     pub current: u32,
     pub newly_consumed: u32,
     pub tick_timer: Timer,
-    pub regenerate: bool,
+    pub regenerate: Option<u32>,
 }
 
 impl Stat {
@@ -33,9 +33,11 @@ impl Stat {
             .newly_consumed
             .saturating_sub((self.max as f32 * 0.9 * delta.as_secs_f32()) as u32);
 
-        if self.regenerate && self.tick_timer.just_finished() {
-            if self.current < self.max {
-                self.current += 1;
+        if self.tick_timer.just_finished() {
+            if let Some(regen) = self.regenerate {
+                if self.current < self.max {
+                    self.current = self.max.min(self.current + regen);
+                }
             }
         }
     }
@@ -75,8 +77,8 @@ impl Stamina {
             max: 100,
             current: 100,
             newly_consumed: 0,
-            tick_timer: Timer::new(Duration::from_millis(100), TimerMode::Repeating),
-            regenerate: true,
+            tick_timer: Timer::new(Duration::from_millis(75), TimerMode::Repeating),
+            regenerate: Some(1),
         })
     }
 
@@ -85,8 +87,8 @@ impl Stamina {
             max: value,
             current: value,
             newly_consumed: 0,
-            tick_timer: Timer::new(Duration::from_millis(100), TimerMode::Repeating),
-            regenerate: true,
+            tick_timer: Timer::new(Duration::from_millis(75), TimerMode::Repeating),
+            regenerate: Some(1),
         })
     }
 }
@@ -98,7 +100,7 @@ impl Health {
             current: 100,
             newly_consumed: 0,
             tick_timer: Timer::new(Duration::from_millis(100), TimerMode::Repeating),
-            regenerate: false,
+            regenerate: None,
         })
     }
 
@@ -108,7 +110,7 @@ impl Health {
             current: value,
             newly_consumed: 0,
             tick_timer: Timer::new(Duration::from_millis(100), TimerMode::Repeating),
-            regenerate: false,
+            regenerate: None,
         })
     }
 }

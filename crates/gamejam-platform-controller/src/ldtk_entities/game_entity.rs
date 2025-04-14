@@ -8,6 +8,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
+use crate::timing::timing_component::TimerComponent;
 
 pub fn game_entity_try_from_entity_instance(
     entity: Entity,
@@ -70,7 +71,7 @@ pub fn game_entity_try_from_entity_instance(
 
     transform.scale = Vec3::splat(1.);
 
-    Some(((transform, GameEntity {}), script))
+    Some(((transform, GameEntity {}, TimerComponent::default()), script))
 }
 
 /// General purpose game entity

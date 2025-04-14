@@ -1,3 +1,4 @@
+use std::ops::DerefMut;
 use crate::combat::attackable::Attackable;
 use crate::combat::combat_components::ScheduledAttack;
 use crate::combat::Enemy;
@@ -51,7 +52,7 @@ pub fn scripted_entity_command_queue_system(
     mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
     mut input_event_writer: EventWriter<EntityInput>,
-    mut query: Query<(Entity, &mut EntityScript, Option<&mut TimerComponent>)>,
+    mut query: Query<(Entity, &mut EntityScript, &mut TimerComponent)>,
     player: Query<Entity, With<Player>>,
 ) {
     let player_entity = player.single();
@@ -67,7 +68,7 @@ pub fn scripted_entity_command_queue_system(
                 &mut level_select,
                 &mut event_writer,
                 &mut input_event_writer,
-                timer.as_deref_mut(),
+                timer.deref_mut(),
             );
         }
     }
@@ -82,7 +83,7 @@ fn apply_command(
     level_select: &mut ResMut<LevelSelection>,
     event_writer: &mut EventWriter<ScriptEvent>,
     input_event_writer: &mut EventWriter<EntityInput>,
-    timer_component: Option<&mut TimerComponent>,
+    timer_component: &mut TimerComponent,
 ) {
     let mut entity = commands.entity(entity_id);
 
@@ -172,7 +173,7 @@ fn apply_command(
                 on_expiration: None,
             };
 
-            add_timer_to_entity(&mut entity, timer_component, data);
+            add_timer_to_entity(timer_component, data);
         }
         EntityScriptCommand::Input(input) => {
             input_event_writer.send(EntityInput {

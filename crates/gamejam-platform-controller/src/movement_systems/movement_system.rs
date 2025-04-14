@@ -1,3 +1,4 @@
+use crate::combat::combat_components::Invulnerable;
 use crate::movement_systems::movement_components::{
     ApplyTimedLinearVelocity, EntityInput, FacingDirection, IgnoreDampening, Input, MovementData,
     Rolling,
@@ -6,12 +7,15 @@ use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY};
 use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player};
 use crate::timing::timer_system::{add_timed_component_to_entity, add_timer_to_entity};
 use crate::timing::timing_component::{TimerComponent, TimerData};
-use avian2d::prelude::LinearVelocity;
+use avian2d::prelude::{Collider, GravityScale, LinearVelocity};
 use bevy::math::vec2;
-use bevy::prelude::{Commands, Entity, EventReader, Query, Res, Time, Timer};
+use bevy::prelude::{
+    Commands, Entity, EventReader, OnRemove, Query, RemovedComponents, Res, Time, Timer, Trigger,
+    With,
+};
 use bevy::time::TimerMode;
 use std::collections::HashSet;
-use crate::combat::combat_components::Invulnerable;
+use std::ops::DerefMut;
 
 pub fn movement_system(
     mut commands: Commands,
@@ -24,7 +28,9 @@ pub fn movement_system(
         &mut JumpState,
         &mut FacingDirection,
         &MovementData,
-        Option<&mut TimerComponent>,
+        &mut TimerComponent,
+        &Collider,
+        &GravityScale
     )>,
 ) {
     let delta_t = time.elapsed_secs();
@@ -39,6 +45,8 @@ pub fn movement_system(
             mut facing_direction,
             movement_data,
             mut timer,
+            collider,
+            gravity
         )) = entities.get_mut(event.entity).ok()
         else {
             continue;
@@ -87,10 +95,25 @@ pub fn movement_system(
 
                 add_timed_component_to_entity(
                     &mut entity_commands,
-                    timer.as_deref_mut(),
+                    timer.deref_mut(),
                     (Rolling, Invulnerable),
-                    duration
+                    duration,
                 );
+
+                let old_gravity = *gravity;
+                
+                add_timer_to_entity(
+                    timer.deref_mut(),
+                    TimerData {
+                        timer_name: 1,
+                        timer: Timer::new(duration, TimerMode::Once),
+                        on_expiration: Some(Box::new(move |commands| {
+                            commands.insert(old_gravity);
+                        })),
+                    }
+                );
+
+                entity_commands.insert(GravityScale(20.));
 
                 entity_commands.insert((
                     ApplyTimedLinearVelocity {
@@ -99,7 +122,7 @@ pub fn movement_system(
                             vec2(dx, 0.3).normalize() * strength
                         }),
                     },
-                    Rolling,
+                    Collider::rectangle(7., 15.),
                 ));
             }
         }
@@ -113,5 +136,17 @@ pub fn movement_system(
         } else {
             entity_cmd.remove::<Moving>();
         }
+    }
+}
+
+pub fn rolling_removed_observer(
+    trigger: Trigger<OnRemove, Rolling>,
+    mut commands: Commands,
+    mut query: Query<Entity, With<Player>>,
+) {
+    let entity = trigger.entity();
+
+    if let Ok(_) = query.get_mut(entity) {
+        commands.entity(entity).insert(Collider::rectangle(7., 30.));
     }
 }

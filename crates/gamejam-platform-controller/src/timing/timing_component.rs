@@ -1,7 +1,7 @@
 use bevy::prelude::{Commands, Component, EntityCommands};
 use bevy::time::Timer;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct TimerComponent {
     pub timers: Vec<TimerData>,
 }
