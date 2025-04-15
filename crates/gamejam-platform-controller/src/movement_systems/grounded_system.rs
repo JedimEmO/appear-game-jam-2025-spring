@@ -2,11 +2,13 @@ use crate::movement_systems::movement_components::MovementData;
 use crate::player_systems::player_components::{Grounded, JumpState, Player};
 use avian2d::prelude::{LinearVelocity, ShapeHits, SpatialQuery, SpatialQueryFilter};
 use bevy::math::Dir2;
-use bevy::prelude::{Camera2d, Commands, Entity, Query, Res, Time, Transform, With};
+use bevy::prelude::{AssetServer, AudioPlayer, Camera2d, Commands, Entity, PlaybackSettings, Query, Res, Time, Transform, With};
 use bevy_trauma_shake::Shake;
+use crate::audio::audio_components::AudioEffect;
 
 pub fn grounded_system(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     time: Res<Time>,
     mut query: Query<(
         Entity,
@@ -43,6 +45,12 @@ pub fn grounded_system(
             if player.is_some() && now - jump_state_data.last_grounded_time.unwrap_or(0.) >= 1.5 {
                 if let Ok(mut shake) = camera_shake.get_single_mut() {
                     shake.add_trauma(0.3);
+                    
+                    commands.spawn((
+                        AudioPlayer::new(asset_server.load("audio/player/hit.wav")),
+                        AudioEffect,
+                        PlaybackSettings::ONCE,
+                        ));
                 }
             }
 

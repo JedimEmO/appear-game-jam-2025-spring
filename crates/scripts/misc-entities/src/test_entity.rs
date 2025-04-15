@@ -1,3 +1,4 @@
+use crate::gamejam::game::game_host::play_sound_once;
 use crate::gamejam::game::game_host::level_transition;
 use game_entity_component::exports::gamejam::game::entity_resource::{EntityEvent, Event, GameEntity, Guest, GuestGameEntity, StartupSettings};
 use std::cell::Cell;
@@ -11,20 +12,20 @@ use game_entity_component::exports;
 export!(EntityWorld);
 
 impl Guest for EntityWorld {
-    type GameEntity = TestEntityScript;
+    type GameEntity = HouseScript;
 
     fn get_entity(params: StartupSettings) -> GameEntity {
         GameEntity::new(Self::GameEntity::new(params))
     }
 }
 
-struct TestEntityScript {
+struct HouseScript {
     self_entity_id: u64,
     trigger_targets: Vec<u32>,
     activate_count: Cell<u32>,
 }
 
-impl TestEntityScript {
+impl HouseScript {
     fn new(params: StartupSettings) -> Self {
         play_animation("house_1", "idle", 1000, Direction::East, true);
 
@@ -41,10 +42,11 @@ impl TestEntityScript {
     }
 }
 
-impl GuestGameEntity for TestEntityScript {
+impl GuestGameEntity for HouseScript {
     fn tick(&self, _delta_t: f32) -> () {}
 
     fn interacted(&self) {
+        play_sound_once("audio/door_open.ogg");
         level_transition(3, "entry")
     }
 

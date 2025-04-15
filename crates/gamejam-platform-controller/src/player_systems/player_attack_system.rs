@@ -1,3 +1,4 @@
+use crate::audio::audio_components::AudioEffect;
 use crate::combat::attackable::{Attackable, Attacked};
 use crate::graphics::animation_system::SpriteAnimation;
 use crate::graphics::sprite_collection::SpriteCollection;
@@ -9,11 +10,16 @@ use crate::AttackDirection;
 use avian2d::position::Position;
 use avian2d::prelude::{Collider, LinearVelocity, SpatialQuery, SpatialQueryFilter};
 use bevy::prelude::*;
+use bevy_prng::ChaCha8Rng;
+use bevy_rand::prelude::GlobalEntropy;
 use bevy_trauma_shake::Shake;
+use rand_core::RngCore;
 use std::time::Duration;
 
 pub fn player_attack_start_system(
     mut commands: Commands,
+    mut rng: GlobalEntropy<ChaCha8Rng>,
+    asset_server: Res<AssetServer>,
     time: Res<Time>,
     sprite_collection: Res<SpriteCollection>,
     mut player: Query<
@@ -72,6 +78,16 @@ pub fn player_attack_start_system(
             .unwrap(),
     );
 
+    // play a random attack sound
+    let sound_idx = rng.next_u32() % 3 + 1;
+    let sound_file = format!("audio/player/swing{sound_idx}.wav");
+
+    commands.spawn((
+        AudioPlayer::new(asset_server.load(sound_file)),
+        AudioEffect,
+        PlaybackSettings::ONCE,
+    ));
+
     {
         if let Some(bundle) = sprite_collection.create_sprite_animation_bundle(
             "player_attack",
@@ -126,11 +142,12 @@ pub fn player_attack_start_system(
             damage: 5,
             vector: attack_ray_direction,
             origin: player_transform.translation.truncate(),
-            force: 2.
+            force: 2.,
         });
         if is_pogo {
             apply_pogo(
                 &mut commands,
+                asset_server.as_ref(),
                 &time,
                 &mut camera_shake,
                 entity,
@@ -147,6 +164,7 @@ pub fn player_attack_start_system(
 
 pub fn player_pogo_system(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     time: Res<Time>,
     mut player: Query<
         (Entity, &mut LinearVelocity, &Transform, &mut JumpState),
@@ -173,6 +191,7 @@ pub fn player_pogo_system(
         if !hits.is_empty() {
             apply_pogo(
                 &mut commands,
+                asset_server.as_ref(),
                 &time,
                 &mut camera_shake,
                 entity,
@@ -185,12 +204,19 @@ pub fn player_pogo_system(
 
 fn apply_pogo(
     commands: &mut Commands,
+    asset_server: &AssetServer,
     time: &Res<Time>,
     camera_shake: &mut Mut<Shake>,
     entity: Entity,
     velocity: &mut Mut<LinearVelocity>,
     jump_state: &mut Mut<JumpState>,
 ) {
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("audio/player/pogo.wav")),
+        AudioEffect,
+        PlaybackSettings::ONCE,
+    ));
+
     jump_state.last_grounded_time = Some(time.elapsed_secs_f64());
     commands.entity(entity).remove::<Pogoing>();
 

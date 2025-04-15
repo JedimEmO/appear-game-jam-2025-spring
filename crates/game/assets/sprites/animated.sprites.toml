@@ -411,6 +411,18 @@ frame_start_index = 0
 frame_count = 1
 
 
+[sprites.main_menu_backdrop]
+sprite_sheet_file_name = "ui/title.png"
+image_width = 480
+image_height = 270
+
+[sprites.main_menu_backdrop.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+
+
 
 
 

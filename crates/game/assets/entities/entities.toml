@@ -1,3 +1,12 @@
+[entities.game_level]
+id = "game_level"
+tags = []
+script_path = "scripts/game_level_script.wasm"
+script_params = [
+    "music-file=audio/earth_is_all_we_have.ogg"
+]
+
+
 [entities.house_1]
 id = "house_1"
 tags = ["house"]
@@ -49,19 +58,19 @@ script_params = ["sprite-name=platform_1"]
 id = "rubble-sign-up-diag"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
-script_params = ["sprite-name=sign_diag_up", "death-duration=200"]
+script_params = ["sprite-name=sign_diag_up", "death-duration=200", "death-sound=audio/wood-small.wav"]
 
 [entities.rubble-reeds]
 id = "rubble-reeds"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
-script_params = ["sprite-name=reeds", "death-duration=200"]
+script_params = ["sprite-name=reeds", "death-duration=200", "death-sound=audio/cloth.wav"]
 
 [entities.rubble-box-1]
 id = "rubble-box-1"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
-script_params = ["sprite-name=rubble_box_1", "death-duration=200"]
+script_params = ["sprite-name=rubble_box_1", "death-duration=200", "death-sound=audio/wood-small.wav"]
 
 
 [entities.rubble-rock-wall]
@@ -72,7 +81,8 @@ script_params = [
     "sprite-name=rubble_rock_wall",
     "death-duration=200",
     "physical=true",
-    "collider-size=32,16"
+    "collider-size=32,16",
+    "death-sound=audio/stones_01.ogg"
 ]
 
 

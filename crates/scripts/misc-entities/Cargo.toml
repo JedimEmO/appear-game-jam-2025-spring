@@ -23,6 +23,10 @@ path = "src/rubble.rs"
 name = "test_entity_script"
 path = "src/test_entity.rs"
 
+[[bin]]
+name = "game_level_script"
+path = "src/game_level.rs"
+
 [dependencies]
 game-entity-component = { path = "../game-entity-component" }
 script-utils = { path = "../script-utils" }

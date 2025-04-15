@@ -1,3 +1,4 @@
+use crate::gamejam::game::game_host::play_sound_once;
 use game_entity_component::exports::gamejam::game::entity_resource::{EntityEvent, Event, GameEntity, Guest, GuestGameEntity, StartupSettings};
 use script_utils::script_parameters::ScriptParams;
 use std::cell::Cell;
@@ -115,6 +116,7 @@ impl LeverScript {
         if self.state.get() == 0 {
             self.state.set(1);
             set_game_data_kv_int(&self.state_variable, 1);
+            play_sound_once("audio/lever.wav");
             play_animation("lever", "closing", 1000, Direction::East, false);
         } else if self.state.get() == 1 {
             play_animation("lever", "closed", 1000, Direction::East, true);

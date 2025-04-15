@@ -1,3 +1,4 @@
+use crate::audio::game_audio_plugin::GameAudioPlugin;
 use crate::combat::EnemyPlugin;
 use crate::game_entities::file_formats::game_entity_definitions::GameEntityDefinitionFile;
 use crate::game_resources::{load_resources, load_scripts_system};
@@ -9,6 +10,7 @@ use crate::graphics::sprite_collection::{
 use crate::input_systems::gamepad_input::gamepad_input_system;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
+use crate::main_menu::main_menu_plugin::MainMenuPlugin;
 use crate::movement_systems::movement_plugin::MovementPlugin;
 use crate::player_systems::player_attack_system::{player_attack_start_system, player_pogo_system};
 use crate::player_systems::player_control_system::player_control_system;
@@ -26,6 +28,7 @@ use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_framepace::{FramepaceSettings, Limiter};
+use bevy_rand::plugin::EntropyPlugin;
 use bevy_wasmer_scripting::wasm_script_asset::{
     WasmScriptModuleBytes, WasmScriptModuleBytesLoader,
 };
@@ -36,12 +39,14 @@ use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
 
+pub mod audio;
 pub mod combat;
 pub mod game_entities;
 pub mod game_resources;
 pub mod graphics;
 mod input_systems;
 pub mod ldtk_entities;
+pub mod main_menu;
 pub mod movement_systems;
 mod player_const_rules;
 pub mod player_systems;
@@ -56,12 +61,13 @@ pub enum GameStates {
     LoadingScripts,
     Loading,
     SpawnPlayer,
+    MainMenu,
     GameLoop,
 }
 
-pub struct PlayerPlugin;
+pub struct PlatformerPlugin;
 
-impl Plugin for PlayerPlugin {
+impl Plugin for PlatformerPlugin {
     fn build(&self, app: &mut App) {
         app
             //shaders and stuff
@@ -76,6 +82,9 @@ impl Plugin for PlayerPlugin {
                 level_background: LevelBackground::Nonexistent,
                 ..default()
             })
+            .add_plugins(EntropyPlugin::<bevy_rand::prelude::ChaCha8Rng>::default())
+            .add_plugins(GameAudioPlugin)
+            .add_plugins(MainMenuPlugin {})
             .add_plugins(GameLdtkEntitiesPlugin)
             .add_plugins(WasmtimeScriptPlugin)
             .add_plugins(EnemyPlugin)
@@ -99,12 +108,13 @@ impl Plugin for PlayerPlugin {
             )
             .add_loading_state(
                 LoadingState::new(GameStates::Loading)
-                    .continue_to_state(GameStates::SpawnPlayer)
+                    .continue_to_state(GameStates::MainMenu)
                     .load_collection::<PlayerAssets>(),
             )
+            .add_systems(OnEnter(GameStates::MainMenu), spawn_fog_system)
             .add_systems(
                 OnEnter(GameStates::SpawnPlayer),
-                (spawn_player_system, setup_game_ui, spawn_fog_system),
+                (spawn_player_system, setup_game_ui),
             )
             .add_event::<PlayerInputAction>()
             .add_systems(

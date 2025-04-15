@@ -1,3 +1,4 @@
+use crate::gamejam::game::game_host::play_sound_once;
 use game_entity_component::exports::gamejam::game::entity_resource::{
     EntityEvent, Event, GameEntity, Guest, GuestGameEntity, StartupSettings,
 };
@@ -25,6 +26,7 @@ struct RubbleScript {
     sprite_name: String,
     death_animation_duration: u32,
     invulnerable: bool,
+    death_sound: Option<String>
 }
 
 impl RubbleScript {
@@ -37,6 +39,7 @@ impl RubbleScript {
         let params = ScriptParams::new(params);
 
         let sprite_name = params.get_parameter::<String>("sprite-name").unwrap();
+        let death_sound = params.get_parameter::<String>("death-sound");
         let death_animation_duration = params.get_parameter::<u32>("death-duration").unwrap_or(400);
         let physical = params.get_parameter::<bool>("physical").unwrap_or(false);
         let collider = params
@@ -64,6 +67,7 @@ impl RubbleScript {
             sprite_name,
             death_animation_duration,
             invulnerable,
+            death_sound
         }
     }
 }
@@ -85,6 +89,11 @@ impl GuestGameEntity for RubbleScript {
             Direction::East,
             false,
         );
+        
+        if let Some(sound) = &self.death_sound {
+            play_sound_once(sound);
+        }
+        
         remove_component("avian2d::dynamics::rigid_body::RigidBody");
     }
 

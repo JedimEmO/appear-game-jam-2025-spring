@@ -3,6 +3,7 @@ use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::movement_systems::movement_components::{FacingDirection, Input};
 use crate::player_systems::player_components::Player;
 use crate::scripting::script_entity_command_queue::{EntityScriptCommand, TickingEntity};
+use bevy::log::info;
 use bevy::math::Vec2;
 use bevy::prelude::{
     Commands, Component, Entity, Event, EventReader, OnAdd, Query, Res, Resource, Time, Transform,
@@ -17,7 +18,6 @@ use scripted_game_entity::GameEntityWorld;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use bevy::log::info;
 use wasmtime::component::ResourceAny;
 use wasmtime::{AsContextMut, Store};
 
@@ -112,6 +112,36 @@ unsafe impl Send for GameEntityHost {}
 unsafe impl Sync for GameEntityHost {}
 
 impl Host for GameEntityHost {
+    fn publish_event(&mut self, evt: game_host::Event) {
+        self.queued_commands
+            .push(EntityScriptCommand::PublishEvent(ScriptEvent {
+                topic: evt.topic,
+                data: match evt.data {
+                    game_host::EventData::Trigger(topic) => ScriptEventData::Trigger(topic),
+                },
+            }));
+    }
+
+    fn set_ticking(&mut self, ticking: bool, distance: Option<f32>) {
+        self.queued_commands
+            .push(EntityScriptCommand::ToggleTicking((ticking, distance)));
+    }
+
+    fn get_game_data_kv(&mut self, key: String) -> Option<String> {
+        self.game_state.lock().unwrap().strings.get(&key).cloned()
+    }
+    fn set_game_data_kv(&mut self, key: String, value: String) -> Option<String> {
+        self.game_state.lock().unwrap().strings.insert(key, value)
+    }
+
+    fn get_game_data_kv_int(&mut self, key: String) -> Option<i32> {
+        self.game_state.lock().unwrap().ints.get(&key).cloned()
+    }
+
+    fn set_game_data_kv_int(&mut self, key: String, value: i32) -> Option<i32> {
+        self.game_state.lock().unwrap().ints.insert(key, value)
+    }
+
     fn remove_component(&mut self, path: String) {
         self.queued_commands
             .push(EntityScriptCommand::RemoveReflectComponent(path));
@@ -141,41 +171,6 @@ impl Host for GameEntityHost {
                 repeat,
             });
     }
-    fn publish_event(&mut self, evt: game_host::Event) {
-        self.queued_commands
-            .push(EntityScriptCommand::PublishEvent(ScriptEvent {
-                topic: evt.topic,
-                data: match evt.data {
-                    game_host::EventData::Trigger(topic) => ScriptEventData::Trigger(topic),
-                },
-            }));
-    }
-
-    fn set_ticking(&mut self, ticking: bool, distance: Option<f32>) {
-        self.queued_commands
-            .push(EntityScriptCommand::ToggleTicking((ticking, distance)));
-    }
-
-    fn despawn_entity(&mut self, entity_id: u64) {
-        self.queued_commands
-            .push(EntityScriptCommand::DespawnEntity(entity_id));
-    }
-
-    fn get_game_data_kv(&mut self, key: String) -> Option<String> {
-        self.game_state.lock().unwrap().strings.get(&key).cloned()
-    }
-
-    fn set_game_data_kv(&mut self, key: String, value: String) -> Option<String> {
-        self.game_state.lock().unwrap().strings.insert(key, value)
-    }
-
-    fn get_game_data_kv_int(&mut self, key: String) -> Option<i32> {
-        self.game_state.lock().unwrap().ints.get(&key).cloned()
-    }
-
-    fn set_game_data_kv_int(&mut self, key: String, value: i32) -> Option<i32> {
-        self.game_state.lock().unwrap().ints.insert(key, value)
-    }
 
     fn level_transition(&mut self, idx: u32, target: String) {
         self.queued_commands
@@ -189,8 +184,9 @@ impl Host for GameEntityHost {
         ))
     }
 
-    fn can_see_player(&mut self) -> bool {
-        todo!()
+    fn despawn_entity(&mut self, entity_id: u64) {
+        self.queued_commands
+            .push(EntityScriptCommand::DespawnEntity(entity_id));
     }
 
     fn face_direction(
@@ -208,10 +204,12 @@ impl Host for GameEntityHost {
         self.player_uniform
     }
 
-    fn get_self_uniform(
-        &mut self,
-    ) -> scripted_game_entity::gamejam::game::game_host::EntityUniform {
+    fn get_self_uniform(&mut self) -> EntityUniform {
         self.self_uniform
+    }
+
+    fn can_see_player(&mut self) -> bool {
+        todo!()
     }
 
     fn send_input(&mut self, input: game_host::Input) {
@@ -243,6 +241,14 @@ impl Host for GameEntityHost {
                 origin: Vec2::new(point.0, point.1),
                 vector: Vec2::new(vector.0, vector.1),
             }))
+    }
+    fn play_music(&mut self, filename: String) {
+        self.queued_commands
+            .push(EntityScriptCommand::PlayMusic(filename));
+    }
+    fn play_sound_once(&mut self, filename: String) {
+        self.queued_commands
+            .push(EntityScriptCommand::PlaySound(filename));
     }
 }
 

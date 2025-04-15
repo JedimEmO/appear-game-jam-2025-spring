@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use crate::audio::audio_components::{AudioEffect, AudioMusic};
 use crate::combat::attackable::Attackable;
 use crate::combat::combat_components::ScheduledAttack;
 use crate::combat::Enemy;
@@ -7,9 +7,12 @@ use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};
 use crate::player_systems::player_components::Player;
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
+use crate::timing::timer_system::add_timer_to_entity;
 use crate::timing::timing_component::{TimerComponent, TimerData};
 use avian2d::collision::{Collider, CollisionLayers};
 use avian2d::prelude::RigidBody;
+use bevy::asset::AssetServer;
+use bevy::audio::{AudioPlayer, PlaybackSettings};
 use bevy::ecs::reflect::ReflectCommandExt;
 use bevy::hierarchy::BuildChildren;
 use bevy::log::{error, info};
@@ -20,8 +23,8 @@ use gamejam_bevy_components::Interactable;
 use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
 use scripted_game_entity::gamejam::game::game_host::*;
+use std::ops::DerefMut;
 use std::time::Duration;
-use crate::timing::timer_system::add_timer_to_entity;
 
 #[derive(Component)]
 pub struct TickingEntity(pub Option<f32>);
@@ -44,11 +47,14 @@ pub enum EntityScriptCommand {
     Input(Input),
     Face(FacingDirection),
     ScheduleAttack(ScheduledAttack),
+    PlayMusic(String),
+    PlaySound(String),
 }
 
 pub fn scripted_entity_command_queue_system(
     mut commands: Commands,
     sprites: Res<SpriteCollection>,
+    asset_server: Res<AssetServer>,
     mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
     mut input_event_writer: EventWriter<EntityInput>,
@@ -63,6 +69,7 @@ pub fn scripted_entity_command_queue_system(
                 player_entity,
                 entity,
                 cmd,
+                asset_server.as_ref(),
                 &mut commands,
                 &sprites,
                 &mut level_select,
@@ -78,6 +85,7 @@ fn apply_command(
     player_entity: Entity,
     entity_id: Entity,
     cmd: EntityScriptCommand,
+    asset_server: &AssetServer,
     commands: &mut Commands,
     sprites: &Res<SpriteCollection>,
     level_select: &mut ResMut<LevelSelection>,
@@ -188,6 +196,20 @@ fn apply_command(
             attack.attacker = entity_id;
             let mut attack = commands.spawn(attack);
             attack.set_parent(entity_id);
+        }
+        EntityScriptCommand::PlayMusic(filename) => {
+            commands.spawn((
+                AudioPlayer::new(asset_server.load(filename)),
+                PlaybackSettings::LOOP,
+                AudioMusic,
+            ));
+        }
+        EntityScriptCommand::PlaySound(filename) => {
+            commands.spawn((
+                AudioPlayer::new(asset_server.load(filename)),
+                PlaybackSettings::ONCE,
+                AudioEffect,
+            ));
         }
     }
 }

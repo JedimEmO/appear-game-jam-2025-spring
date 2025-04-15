@@ -5,7 +5,7 @@ use bevy::utils::HashSet;
 use bevy_ecs_ldtk::prelude::*;
 #[cfg(feature = "bevy-inspector-egui")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use gamejam_platform_controller::{GameStates, PlayerPlugin};
+use gamejam_platform_controller::{GameStates, PlatformerPlugin};
 
 pub struct SimplePlatformGame;
 
@@ -13,15 +13,15 @@ impl Plugin for SimplePlatformGame {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             PhysicsPlugins::default().with_length_unit(16.),
-            PlayerPlugin,
+            PlatformerPlugin,
             LdtkPlugin,
         ))
         .insert_resource(LevelSelection::index(0))
         .register_ldtk_int_cell::<WallBundle>(1)
         .register_ldtk_int_cell::<WallBundle>(2)
-        .add_systems(Startup, start_simple_platform_game)
+        .add_systems(OnExit(GameStates::MainMenu), start_simple_platform_game)
         .add_systems(
-            Update,
+            FixedUpdate,
             (wall_spawn_system).run_if(in_state(GameStates::GameLoop)),
         )
         .insert_resource(Gravity(Vec2::new(0., -9.81 * 32.)));
@@ -47,7 +47,9 @@ fn wall_spawn_system(
     level_query: Query<Entity, With<LevelIid>>,
     wall_query: Query<(Entity, &Wall, &GridCoords), Added<Wall>>,
 ) {
-    let level_id = level_query.single();
+    let Ok(level_id) = level_query.get_single() else {
+        return;
+    };
 
     let mut wall_tiles = HashSet::new();
     let mut min_pos = (i32::MAX, i32::MAX);

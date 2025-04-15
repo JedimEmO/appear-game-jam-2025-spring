@@ -62,6 +62,8 @@ interface game-host {
   remove-component: func(type-path: string);
   insert-components: func(components: list<insertable-components>);
   play-animation: func(sprite-name: string, animation-name: string, duration-millis: u32, direction: direction, repeating: bool);
+  play-music: func(song-name: string);
+  play-sound-once: func(sound-name: string);
   level-transition: func(index: u32, target-spawner: string);
   request-timer-callback: func(timer: u32, millis: u32);
   despawn-entity: func(entity-id: u64);
