@@ -6,7 +6,7 @@ use crate::movement_systems::movement_system::{movement_system, rolling_removed_
 use crate::movement_systems::timed_linear_velocity_system::timed_linear_velocity_system;
 use crate::scripting::scripted_game_entity::scripted_entity_uniform_system;
 use crate::GameStates;
-use bevy::app::{App, Update};
+use bevy::app::{App, FixedUpdate};
 use bevy::prelude::{in_state, IntoSystemConfigs, Plugin};
 
 pub struct MovementPlugin;
@@ -15,7 +15,7 @@ impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<EntityInput>()
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     (
                         scripted_entity_uniform_system,

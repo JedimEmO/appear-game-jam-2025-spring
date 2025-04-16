@@ -47,6 +47,12 @@ pub struct AttachedToWall;
 #[derive(Component, Default)]
 pub struct Moving;
 
+#[derive(Component, Default)]
+pub struct PowerupRoll;
+
+#[derive(Component, Default)]
+pub struct PowerupPogo;
+
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Direction {
     Left,

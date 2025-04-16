@@ -5,10 +5,7 @@ use crate::input_systems::PlayerInputAction;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input, Rolling};
 use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED, PLAYER_ATTACK_DELAY_SECONDS, PLAYER_ROLL_DURATION};
-use crate::player_systems::player_components::{
-    Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData,
-    Pogoing,
-};
+use crate::player_systems::player_components::{Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData, Pogoing, PowerupPogo, PowerupRoll};
 use avian2d::math::AdjustPrecision;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -33,7 +30,8 @@ pub fn player_control_system(
             &mut PlayerMovementData,
             &mut Stamina,
             Option<&Rolling>,
-            &FacingDirection
+            &FacingDirection,
+            Option<&PowerupRoll>
         ),
         With<Player>,
     >,
@@ -51,7 +49,8 @@ pub fn player_control_system(
         mut movement_data,
         mut stamina,
         rolling,
-        facing_direction
+        facing_direction,
+        powerup_roll
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
@@ -163,6 +162,10 @@ pub fn player_control_system(
                     commands.entity(level).insert(Respawn);
                 }
                 &PlayerInputAction::Roll(direction) => {
+                    if powerup_roll.is_none() {
+                        continue;
+                    }
+
                     if grounded.is_none() || !stamina.0.try_consume(25) {
                         continue;
                     }

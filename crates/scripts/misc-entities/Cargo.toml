@@ -27,6 +27,10 @@ path = "src/test_entity.rs"
 name = "game_level_script"
 path = "src/game_level.rs"
 
+[[bin]]
+name = "powerup_script"
+path = "src/powerup.rs"
+
 [dependencies]
 game-entity-component = { path = "../game-entity-component" }
 script-utils = { path = "../script-utils" }

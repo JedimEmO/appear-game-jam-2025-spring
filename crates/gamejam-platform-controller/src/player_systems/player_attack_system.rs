@@ -4,7 +4,7 @@ use crate::graphics::animation_system::SpriteAnimation;
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::player_const_rules::{PLAYER_ATTACK_DURATION, POGO_HIT_KICKBACK_ACCELERATION};
 use crate::player_systems::player_components::{
-    Attacking, JumpState, Player, PlayerMovementData, Pogoing,
+    Attacking, JumpState, Player, PlayerMovementData, Pogoing, PowerupPogo, PowerupRoll,
 };
 use crate::AttackDirection;
 use avian2d::position::Position;
@@ -31,6 +31,7 @@ pub fn player_attack_start_system(
             &mut JumpState,
             &Transform,
             &mut PlayerMovementData,
+            Option<&PowerupPogo>,
         ),
         (With<Player>, Added<Attacking>),
     >,
@@ -48,6 +49,7 @@ pub fn player_attack_start_system(
         mut jump_state,
         player_transform,
         movement_data,
+        powerup_pogo,
     )) = player.get_single_mut()
     else {
         return;
@@ -148,6 +150,7 @@ pub fn player_attack_start_system(
             apply_pogo(
                 &mut commands,
                 asset_server.as_ref(),
+                powerup_pogo,
                 &time,
                 &mut camera_shake,
                 entity,
@@ -167,7 +170,13 @@ pub fn player_pogo_system(
     asset_server: Res<AssetServer>,
     time: Res<Time>,
     mut player: Query<
-        (Entity, &mut LinearVelocity, &Transform, &mut JumpState),
+        (
+            Entity,
+            &mut LinearVelocity,
+            &Transform,
+            &mut JumpState,
+            Option<&PowerupPogo>,
+        ),
         (With<Player>, With<Pogoing>),
     >,
     mut camera_shake: Query<&mut Shake, With<Camera2d>>,
@@ -177,7 +186,7 @@ pub fn player_pogo_system(
         return;
     };
 
-    for (entity, mut velocity, transform, mut jump_state) in player.iter_mut() {
+    for (entity, mut velocity, transform, mut jump_state, powerup_pogo) in player.iter_mut() {
         // Process pogo
         let hits = spatial_query.ray_hits(
             transform.translation.truncate(),
@@ -192,6 +201,7 @@ pub fn player_pogo_system(
             apply_pogo(
                 &mut commands,
                 asset_server.as_ref(),
+                powerup_pogo,
                 &time,
                 &mut camera_shake,
                 entity,
@@ -205,12 +215,17 @@ pub fn player_pogo_system(
 fn apply_pogo(
     commands: &mut Commands,
     asset_server: &AssetServer,
+    powerup_pogo: Option<&PowerupPogo>,
     time: &Res<Time>,
     camera_shake: &mut Mut<Shake>,
     entity: Entity,
     velocity: &mut Mut<LinearVelocity>,
     jump_state: &mut Mut<JumpState>,
 ) {
+    if powerup_pogo.is_none() {
+        return;
+    }
+
     commands.spawn((
         AudioPlayer::new(asset_server.load("audio/player/pogo.wav")),
         AudioEffect,

@@ -8,6 +8,7 @@ use crate::graphics::sprite_collection::{
     spawn_sprite_collection_system, AnimatedSpriteFile, SpriteCollection,
 };
 use crate::input_systems::gamepad_input::gamepad_input_system;
+use crate::input_systems::input_plugin::InputPlugin;
 use crate::input_systems::keyboard_input_system::keyboard_input_system;
 use crate::ldtk_entities::GameLdtkEntitiesPlugin;
 use crate::main_menu::main_menu_plugin::MainMenuPlugin;
@@ -84,6 +85,7 @@ impl Plugin for PlatformerPlugin {
             })
             .add_plugins(EntropyPlugin::<bevy_rand::prelude::ChaCha8Rng>::default())
             .add_plugins(GameAudioPlugin)
+            .add_plugins(InputPlugin)
             .add_plugins(MainMenuPlugin {})
             .add_plugins(GameLdtkEntitiesPlugin)
             .add_plugins(WasmtimeScriptPlugin)
@@ -99,11 +101,11 @@ impl Plugin for PlatformerPlugin {
                 TomlAssetPlugin::<GameEntityDefinitionFile>::new(&["entities.toml"]),
             ))
             .add_systems(
-                Update,
+                FixedUpdate,
                 load_scripts_system.run_if(in_state(GameStates::LoadingScripts)),
             )
             .add_systems(
-                Update,
+                FixedUpdate,
                 spawn_sprite_collection_system.run_if(in_state(GameStates::LoadingSprites)),
             )
             .add_loading_state(
@@ -118,11 +120,9 @@ impl Plugin for PlatformerPlugin {
             )
             .add_event::<PlayerInputAction>()
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     animated_sprite_system,
-                    keyboard_input_system,
-                    gamepad_input_system,
                     player_control_system,
                     player_attack_start_system,
                     player_pogo_system,

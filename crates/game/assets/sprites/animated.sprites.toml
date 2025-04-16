@@ -346,6 +346,28 @@ row = 1
 frame_start_index = 5
 frame_count = 1
 
+
+[sprites.sign]
+sprite_sheet_file_name = "sprites/scenery/sign.png"
+image_width = 32
+image_height = 32
+
+[sprites.sign.animations.death]
+row = 1
+frame_start_index = 0
+frame_count = 6
+
+[sprites.sign.animations.dead]
+row = 1
+frame_start_index = 5
+frame_count = 1
+
+
+[sprites.sign.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
 [sprites.reeds]
 sprite_sheet_file_name = "sprites/scenery/reeds.png"
 image_width = 32
@@ -368,7 +390,28 @@ frame_count = 1
 
 
 
+[sprites.pedestal]
+sprite_sheet_file_name = "sprites/scenery/pedestal.png"
+image_width = 32
+image_height = 32
 
+[sprites.pedestal.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+
+
+
+[sprites.pedestal_pickup]
+sprite_sheet_file_name = "sprites/scenery/pedestal_pickup.png"
+image_width = 32
+image_height = 32
+
+[sprites.pedestal_pickup.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 6
 
 
 

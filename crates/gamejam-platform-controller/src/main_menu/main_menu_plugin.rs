@@ -3,7 +3,7 @@ use crate::main_menu::menu_input_system::{
     menu_gamepad_input_system, menu_keyboard_input_system, MenuInput,
 };
 use crate::GameStates;
-use bevy::app::App;
+use bevy::app::{App, FixedUpdate};
 use bevy::prelude::{in_state, IntoSystemConfigs, OnEnter, OnExit, Plugin, Update};
 use crate::main_menu::main_menu_components::UiAudioLevels;
 
@@ -14,7 +14,7 @@ impl Plugin for MainMenuPlugin {
         app.add_event::<MenuInput>()
             .insert_resource(UiAudioLevels::default())
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     ui_audio_levels_system,
                     menu_gamepad_input_system,

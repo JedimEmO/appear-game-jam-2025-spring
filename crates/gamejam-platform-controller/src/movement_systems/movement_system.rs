@@ -4,7 +4,7 @@ use crate::movement_systems::movement_components::{
     Rolling,
 };
 use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY};
-use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player};
+use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player, PowerupPogo, PowerupRoll};
 use crate::timing::timer_system::{add_timed_component_to_entity, add_timer_to_entity};
 use crate::timing::timing_component::{TimerComponent, TimerData};
 use avian2d::prelude::{Collider, GravityScale, LinearVelocity};
@@ -30,7 +30,7 @@ pub fn movement_system(
         &MovementData,
         &mut TimerComponent,
         &Collider,
-        &GravityScale
+        &GravityScale,
     )>,
 ) {
     let delta_t = time.elapsed_secs();
@@ -45,8 +45,8 @@ pub fn movement_system(
             mut facing_direction,
             movement_data,
             mut timer,
-            collider,
-            gravity
+            _collider,
+            gravity,
         )) = entities.get_mut(event.entity).ok()
         else {
             continue;

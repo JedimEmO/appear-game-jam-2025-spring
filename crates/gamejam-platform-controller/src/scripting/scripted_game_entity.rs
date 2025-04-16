@@ -250,6 +250,11 @@ impl Host for GameEntityHost {
         self.queued_commands
             .push(EntityScriptCommand::PlaySound(filename));
     }
+
+    fn grant_player_power(&mut self, power: String) {
+        self.queued_commands
+            .push(EntityScriptCommand::GrantPlayerPower(power));
+    }
 }
 
 pub fn scripted_entity_uniform_system(

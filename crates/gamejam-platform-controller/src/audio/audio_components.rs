@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
-pub const MAX_AUDIO_LEVEL: f32 = 5.;
+pub const MAX_AUDIO_LEVEL: f32 = 2.;
 pub const MIN_AUDIO_LEVEL: f32 = 0.;
+pub const AUDIO_LEVEL_STEP: f32 = 0.2;
 
 #[derive(Resource)]
 pub struct AudioLevels {
@@ -20,34 +21,34 @@ impl AudioLevels {
     }
     
     pub fn increase_global(&mut self) {
-        self.global = (self.global + 0.5).min(MAX_AUDIO_LEVEL);
+        self.global = (self.global + AUDIO_LEVEL_STEP).min(MAX_AUDIO_LEVEL);
     }
 
     pub fn decrease_global(&mut self) {
-        self.global = (self.global - 0.5).max(MIN_AUDIO_LEVEL);
+        self.global = (self.global - AUDIO_LEVEL_STEP).max(MIN_AUDIO_LEVEL);
     }
     
     pub fn increase_music(&mut self) {
-        self.music = (self.music + 0.5).min(MAX_AUDIO_LEVEL);
+        self.music = (self.music + AUDIO_LEVEL_STEP).min(MAX_AUDIO_LEVEL);
     }
     
     pub fn decrease_music(&mut self) {
-        self.music = (self.music - 0.5).max(MIN_AUDIO_LEVEL);
+        self.music = (self.music - AUDIO_LEVEL_STEP).max(MIN_AUDIO_LEVEL);
     }
     
     pub fn increase_effects(&mut self) {
-        self.effects = (self.effects + 0.5).min(MAX_AUDIO_LEVEL);
+        self.effects = (self.effects + AUDIO_LEVEL_STEP).min(MAX_AUDIO_LEVEL);
     }
     
     pub fn decrease_effects(&mut self) {
-        self.effects = (self.effects - 0.5).max(MIN_AUDIO_LEVEL);
+        self.effects = (self.effects - AUDIO_LEVEL_STEP).max(MIN_AUDIO_LEVEL);
     }
 }
 
 impl Default for AudioLevels {
     fn default() -> Self {
         Self {
-            global: 1.0,
+            global: 0.4,
             music: 0.0,
             effects: 0.0,
         }

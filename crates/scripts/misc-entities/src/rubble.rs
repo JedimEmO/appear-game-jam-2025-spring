@@ -5,7 +5,7 @@ use game_entity_component::exports::gamejam::game::entity_resource::{
 use script_utils::script_parameters::ScriptParams;
 use std::cell::Cell;
 
-use game_entity_component::gamejam::game::game_host::{Collider, EventData, InsertableComponents, get_game_data_kv_int, insert_components, play_animation, remove_component, set_game_data_kv_int, Direction};
+use game_entity_component::gamejam::game::game_host::{Collider, EventData, InsertableComponents, get_game_data_kv_int, insert_components, play_animation, remove_component, set_game_data_kv_int, Direction, Interactable};
 use game_entity_component::*;
 
 struct EntityWorld;
@@ -39,6 +39,14 @@ impl RubbleScript {
         let params = ScriptParams::new(params);
 
         let sprite_name = params.get_parameter::<String>("sprite-name").unwrap();
+
+        if let Some(message) = params.get_parameter::<String>("message") {
+            insert_components(&[InsertableComponents::Interactable(Interactable {
+                message,
+                range: 30.,
+            })]);
+        }
+
         let death_sound = params.get_parameter::<String>("death-sound");
         let death_animation_duration = params.get_parameter::<u32>("death-duration").unwrap_or(400);
         let physical = params.get_parameter::<bool>("physical").unwrap_or(false);

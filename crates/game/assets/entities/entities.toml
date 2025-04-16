@@ -60,6 +60,18 @@ tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=sign_diag_up", "death-duration=200", "death-sound=audio/wood-small.wav"]
 
+[entities.rubble-sign]
+id = "rubble-sign"
+tags = ["rubble"]
+script_path = "scripts/rubble_script.wasm"
+script_params = ["sprite-name=sign", "death-duration=200", "death-sound=audio/wood-small.wav"]
+
+[entities.rubble-terminal]
+id = "rubble-terminal"
+tags = ["rubble"]
+script_path = "scripts/rubble_script.wasm"
+script_params = ["sprite-name=terminal", "invulnerable=true"]
+
 [entities.rubble-reeds]
 id = "rubble-reeds"
 tags = ["rubble"]
@@ -126,3 +138,18 @@ script_params = [
     "windup-attack-delay=200",
     "attack-duration=200"
 ]
+
+
+# Gameplay
+
+[entities.pedestal]
+id = "pedestal"
+tags = []
+script_path = "scripts/rubble_script.wasm"
+script_params = ["sprite-name=pedestal", "invulnerable=true"]
+
+[entities.pedestal_pickup]
+id = "pedestal_pickup"
+tags = []
+script_path = "scripts/powerup_script.wasm"
+script_params = ["sprite-name=pedestal_pickup", "invulnerable=true"]

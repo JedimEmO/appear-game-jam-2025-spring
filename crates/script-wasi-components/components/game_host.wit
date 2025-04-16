@@ -77,4 +77,5 @@ interface game-host {
   // gameplay calls
   send-input: func(input: input);
   schedule-attack: func(delay: u32, damage: u32, force: f32, point: tuple<f32, f32>, vector: tuple<f32, f32>);
+  grant-player-power: func(power-name: string);
 }

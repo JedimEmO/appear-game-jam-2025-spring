@@ -5,7 +5,7 @@ use crate::combat::Enemy;
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};
-use crate::player_systems::player_components::Player;
+use crate::player_systems::player_components::{Player, PowerupPogo, PowerupRoll};
 use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
 use crate::timing::timer_system::add_timer_to_entity;
 use crate::timing::timing_component::{TimerComponent, TimerData};
@@ -49,6 +49,7 @@ pub enum EntityScriptCommand {
     ScheduleAttack(ScheduledAttack),
     PlayMusic(String),
     PlaySound(String),
+    GrantPlayerPower(String),
 }
 
 pub fn scripted_entity_command_queue_system(
@@ -211,5 +212,16 @@ fn apply_command(
                 AudioEffect,
             ));
         }
+        EntityScriptCommand::GrantPlayerPower(power) => match power.as_str() {
+            "roll" => {
+                commands.entity(player_entity).insert(PowerupRoll);
+            }
+            "pogo" => {
+                commands.entity(player_entity).insert(PowerupPogo);
+            }
+            power => {
+                info!("Attempting to grant invalid power {power}")
+            }
+        },
     }
 }
