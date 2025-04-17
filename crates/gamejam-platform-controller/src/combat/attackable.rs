@@ -4,6 +4,8 @@ use crate::scripting::scripted_game_entity::EntityScript;
 use bevy::math::vec2;
 use bevy::prelude::*;
 use std::time::Duration;
+use bevy_trauma_shake::Shake;
+use crate::player_systems::player_components::Player;
 
 /// An attackable entity (reacts to attacks)
 #[derive(Component, Default, Reflect)]
@@ -36,13 +38,17 @@ pub fn attackable_attacked_observer(
             &Attacked,
             Option<&mut Health>,
             Option<&mut EntityScript>,
+            Option<&Player>
         ),
         Without<Invulnerable>,
     >,
+    mut camera_shake: Query<&mut Shake, With<Camera2d>>,
 ) {
+    let mut camera_shake = camera_shake.single_mut();
+
     commands.entity(trigger.entity()).remove::<Attacked>();
 
-    for (entity, _attackable, attack, hp, script) in attackables.iter_mut() {
+    for (entity, _attackable, attack, hp, script, player) in attackables.iter_mut() {
         if entity != trigger.entity() {
             continue;
         }
@@ -63,6 +69,11 @@ pub fn attackable_attacked_observer(
                 dir
             }),
         });
+
+        // Shake the camera if the player is attacked
+        if player.is_some() {
+            camera_shake.add_trauma(0.3);
+        }
 
         if let Some(mut script) = script {
             script.attacked()

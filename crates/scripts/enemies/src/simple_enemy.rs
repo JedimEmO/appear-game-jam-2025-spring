@@ -43,6 +43,9 @@ struct SimpleEnemyScript {
     state: Cell<EnemyState>,
     patrol_direction: Cell<Direction>,
     start_uniform: EntityUniform,
+    attack_sound: String,
+    death_sound: String,
+    hit_sound: String,
 }
 
 impl SimpleEnemyScript {
@@ -55,6 +58,9 @@ impl SimpleEnemyScript {
         let params = ScriptParams::new(params);
 
         let sprite_name = params.get_parameter::<String>("sprite-name").unwrap();
+        let attack_sound = params.get_parameter::<String>("attack-sound").unwrap();
+        let death_sound = params.get_parameter::<String>("death-sound").unwrap();
+        let hit_sound = params.get_parameter::<String>("hit-sound").unwrap();
 
         insert_components(&[
             InsertableComponents::Enemy,
@@ -80,6 +86,9 @@ impl SimpleEnemyScript {
             patrol_direction: Cell::new(Direction::East),
             start_uniform: get_self_uniform(),
             dead: Cell::new(false),
+            attack_sound,
+            death_sound,
+            hit_sound
         }
     }
 }
@@ -113,7 +122,7 @@ impl SimpleEnemyScript {
 
         self.will_attack.set(true);
 
-        request_timer_callback(ATTACK_TIMER, 200);
+        request_timer_callback(ATTACK_TIMER, 100);
 
         self.attacking_direction.set(get_direction_to_player());
         play_animation(
@@ -129,6 +138,8 @@ impl SimpleEnemyScript {
         if self.attacking.get() || self.dead.get() {
             return;
         }
+
+        play_sound_once(&self.hit_sound);
 
         self.stagger(1000, get_direction_to_player());
     }
@@ -149,6 +160,8 @@ impl SimpleEnemyScript {
             self.attacking_direction.get(),
             false,
         );
+
+        play_sound_once(&self.attack_sound);
 
         let self_uniform = get_self_uniform();
 
@@ -262,11 +275,11 @@ impl GuestGameEntity for SimpleEnemyScript {
                 self.dead.set(true);
                 set_ticking(false, None);
                 play_animation(&self.sprite_name, "death", 1000, Direction::East, false);
+                play_sound_once(&self.death_sound);
             }
         }
     }
 }
 
 fn main() {
-    println!("Hello, world!");
 }

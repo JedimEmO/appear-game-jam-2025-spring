@@ -43,6 +43,12 @@ struct EnemyStats {
     attack_force: f32,
 }
 
+struct Sounds {
+    attack_sound: String,
+    death_sound: String,
+    hit_sound: String,
+}
+
 struct BipedEnemy {
     animation_info: AnimationInfo,
     state: Cell<BipedEnemyStates>,
@@ -51,11 +57,15 @@ struct BipedEnemy {
     prewound_charge: Cell<bool>,
     start_uniform: EntityUniform,
     stats: EnemyStats,
+    sounds: Sounds
 }
 
 impl BipedEnemy {
     pub fn new(settings: StartupSettings) -> Self {
         let params = ScriptParams::new(settings.params);
+        let attack_sound = params.get_parameter::<String>("attack-sound").unwrap();
+        let death_sound = params.get_parameter::<String>("death-sound").unwrap();
+        let hit_sound = params.get_parameter::<String>("hit-sound").unwrap();
 
         let out = Self {
             animation_info: AnimationInfo::try_from(&params).unwrap(),
@@ -71,6 +81,12 @@ impl BipedEnemy {
                 attack_duration: params.get_parameter("attack-duration").unwrap_or(300),
                 attack_damage: params.get_parameter("attack-damage").unwrap_or(20),
                 attack_force: params.get_parameter("attack-force").unwrap_or(5.),
+            },
+
+            sounds: Sounds {
+                attack_sound: attack_sound.clone(),
+                death_sound: death_sound.clone(),
+                hit_sound: hit_sound.clone(),
             },
         };
 
@@ -156,13 +172,16 @@ impl BipedEnemy {
                 get_self_uniform().facing,
                 false,
             ),
-            BipedEnemyStates::Dying => play_animation(
-                &self.animation_info.sprite_name,
-                &self.animation_info.death_animation,
-                600,
-                get_self_uniform().facing,
-                false,
-            ),
+            BipedEnemyStates::Dying => {
+                play_animation(
+                    &self.animation_info.sprite_name,
+                    &self.animation_info.death_animation,
+                    600,
+                    get_self_uniform().facing,
+                    false,
+                );
+                play_sound_once(&self.sounds.death_sound);
+            },
             BipedEnemyStates::Dead => play_animation(
                 &self.animation_info.sprite_name,
                 &self.animation_info.dead_animation,
@@ -175,7 +194,7 @@ impl BipedEnemy {
                 play_animation(
                     &self.animation_info.sprite_name,
                     &self.animation_info.wound_animation,
-                    600,
+                    100,
                     get_self_uniform().facing,
                     true,
                 )
@@ -193,21 +212,26 @@ impl BipedEnemy {
                     uniform.position,
                     (player.x, player.y),
                 );
+
                 play_animation(
                     &self.animation_info.sprite_name,
                     &self.animation_info.attack_animation,
                     self.stats.attack_duration,
                     get_self_uniform().facing,
                     false,
-                )
+                );
+                play_sound_once(&self.sounds.attack_sound);
             }
-            BipedEnemyStates::Staggered => play_animation(
-                &self.animation_info.sprite_name,
-                &self.animation_info.staggered_animation,
-                600,
-                get_self_uniform().facing,
-                false,
-            ),
+            BipedEnemyStates::Staggered => {
+                play_animation(
+                    &self.animation_info.sprite_name,
+                    &self.animation_info.staggered_animation,
+                    600,
+                    get_self_uniform().facing,
+                    false,
+                );
+                play_sound_once(&self.sounds.hit_sound);
+            },
         }
     }
 

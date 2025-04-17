@@ -116,7 +116,10 @@ id = "enemy-what"
 tags = ["enemy", "what"]
 script_path = "scripts/simple_enemy.wasm"
 script_params = [
-    "sprite-name=what_sprite"
+    "sprite-name=what_sprite",
+    "attack-sound=audio/monsters/bite1.wav",
+    "death-sound=audio/monsters/death1.wav",
+    "hit-sound=audio/monsters/hit.ogg",
 ]
 
 [entities.enemy-bob]
@@ -135,8 +138,11 @@ script_params = [
     "staggered-animation=staggered",
     "attack-range=48",
     "aggro-range=150",
-    "windup-attack-delay=200",
-    "attack-duration=200"
+    "windup-attack-delay=50",
+    "attack-duration=200",
+    "attack-sound=audio/monsters/ogre_attack.wav",
+    "death-sound=audio/monsters/ogre_death.wav",
+    "hit-sound=audio/monsters/ogre_hit.wav",
 ]
 
 

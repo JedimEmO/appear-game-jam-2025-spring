@@ -14,6 +14,7 @@ pub fn gamepad_input_system(
     gamepad_query: Query<&Gamepad>,
 ) {
     let mut direction = Vec2::ZERO;
+    
     let Ok(gamepad) = gamepad_query.get_single() else {
         return;
     };
