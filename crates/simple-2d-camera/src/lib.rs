@@ -49,7 +49,7 @@ impl Plugin for SimplePixel2dCameraPlugin {
         app.insert_resource(PixelCameraResolution(self.screen_size));
         app.add_plugins(TraumaPlugin);
         app.add_systems(Startup, start_camera_system);
-        app.add_systems(Update, camera_track_system);
+        app.add_systems(FixedUpdate, camera_track_system);
     }
 }
 

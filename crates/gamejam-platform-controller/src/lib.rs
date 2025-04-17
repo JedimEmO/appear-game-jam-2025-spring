@@ -39,6 +39,7 @@ use haalka::HaalkaPlugin;
 use input_systems::PlayerInputAction;
 use simple_2d_camera::PixelCameraResolution;
 use std::time::Duration;
+use crate::levels::levels_plugin::LevelsPlugin;
 
 pub mod audio;
 pub mod combat;
@@ -54,6 +55,7 @@ pub mod player_systems;
 pub mod scripting;
 pub mod timing;
 pub mod ui;
+pub mod levels;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
 pub enum GameStates {
@@ -64,6 +66,7 @@ pub enum GameStates {
     SpawnPlayer,
     MainMenu,
     GameLoop,
+    LoadLevel
 }
 
 pub struct PlatformerPlugin;
@@ -85,6 +88,7 @@ impl Plugin for PlatformerPlugin {
             })
             .add_plugins(EntropyPlugin::<bevy_rand::prelude::ChaCha8Rng>::default())
             .add_plugins(GameAudioPlugin)
+            .add_plugins(LevelsPlugin)
             .add_plugins(InputPlugin)
             .add_plugins(MainMenuPlugin {})
             .add_plugins(GameLdtkEntitiesPlugin)

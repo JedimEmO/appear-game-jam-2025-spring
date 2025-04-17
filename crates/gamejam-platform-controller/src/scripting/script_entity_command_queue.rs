@@ -16,7 +16,7 @@ use bevy::audio::{AudioPlayer, PlaybackSettings};
 use bevy::ecs::reflect::ReflectCommandExt;
 use bevy::hierarchy::BuildChildren;
 use bevy::log::{error, info};
-use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res, ResMut, With};
+use bevy::prelude::{Commands, Component, Entity, EventWriter, NextState, Query, Res, ResMut, With};
 use bevy::time::{Timer, TimerMode};
 use bevy_ecs_ldtk::LevelSelection;
 use gamejam_bevy_components::Interactable;
@@ -25,6 +25,7 @@ use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
 use scripted_game_entity::gamejam::game::game_host::*;
 use std::ops::DerefMut;
 use std::time::Duration;
+use crate::GameStates;
 
 #[derive(Component)]
 pub struct TickingEntity(pub Option<f32>);
@@ -59,6 +60,7 @@ pub fn scripted_entity_command_queue_system(
     mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
     mut input_event_writer: EventWriter<EntityInput>,
+    mut next_state: ResMut<NextState<GameStates>>,
     mut query: Query<(Entity, &mut EntityScript, &mut TimerComponent)>,
     player: Query<Entity, With<Player>>,
 ) {
@@ -76,6 +78,7 @@ pub fn scripted_entity_command_queue_system(
                 &mut level_select,
                 &mut event_writer,
                 &mut input_event_writer,
+                next_state.as_mut(),
                 timer.deref_mut(),
             );
         }
@@ -92,6 +95,7 @@ fn apply_command(
     level_select: &mut ResMut<LevelSelection>,
     event_writer: &mut EventWriter<ScriptEvent>,
     input_event_writer: &mut EventWriter<EntityInput>,
+    next_state: &mut NextState<GameStates>,
     timer_component: &mut TimerComponent,
 ) {
     let mut entity = commands.entity(entity_id);
@@ -174,6 +178,7 @@ fn apply_command(
                 .insert(RequestedPlayerSpawn { spawn_name });
 
             **level_select = LevelSelection::index(level_index as usize);
+            next_state.set(GameStates::LoadLevel)
         }
         EntityScriptCommand::RequestTimer(timer, duration) => {
             let data = TimerData {

@@ -6,6 +6,7 @@ use avian2d::math::Vector;
 use avian2d::prelude::{AnyCollider, Rotation};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{EntityInstance, LevelSelection};
+use crate::GameStates;
 
 #[derive(Component, Default)]
 pub struct LevelTransition {
@@ -16,6 +17,7 @@ pub struct LevelTransition {
 pub fn level_transition_system(
     mut commands: Commands,
     mut level_select: ResMut<LevelSelection>,
+    mut next_state: ResMut<NextState<GameStates>>,
     player_query: Query<(Entity, &Transform, &Collider), With<Player>>,
     player_collidable_query: Query<
         (&Transform, &LevelTransition, &Collider),
@@ -48,6 +50,7 @@ pub fn level_transition_system(
             });
 
             *level_select = LevelSelection::index(transition.target_level_index as usize);
+            next_state.set(GameStates::LoadLevel);
         }
     }
 }

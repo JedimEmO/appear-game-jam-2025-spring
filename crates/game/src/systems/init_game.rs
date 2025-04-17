@@ -19,7 +19,6 @@ impl Plugin for SimplePlatformGame {
         .insert_resource(LevelSelection::index(0))
         .register_ldtk_int_cell::<WallBundle>(1)
         .register_ldtk_int_cell::<WallBundle>(2)
-        .add_systems(OnExit(GameStates::MainMenu), start_simple_platform_game)
         .add_systems(
             FixedUpdate,
             (wall_spawn_system).run_if(in_state(GameStates::GameLoop)),
@@ -114,13 +113,4 @@ fn wall_spawn_system(
             }
         }
     }
-}
-
-fn start_simple_platform_game(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server
-            .load("maps/grayboxes/nexus_ldtk/nexus.ldtk")
-            .into(),
-        ..default()
-    });
 }

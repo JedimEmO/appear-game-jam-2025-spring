@@ -4,7 +4,7 @@ use crate::scripting::scripted_game_entity::{
     GameData, ScriptEvent,
 };
 use crate::GameStates;
-use bevy::app::App;
+use bevy::app::{App, FixedUpdate};
 use bevy::prelude::{in_state, IntoSystemConfigs, Plugin, Update};
 
 pub mod create_entity_script;
@@ -17,7 +17,7 @@ impl Plugin for ScriptedGameEntityPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ScriptEvent>()
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     scripted_entity_uniform_system,
                     game_entity_script_event_system,

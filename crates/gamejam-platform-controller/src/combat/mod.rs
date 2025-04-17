@@ -25,7 +25,7 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(AttackablePlugin)
             .add_systems(
-                Update,
+                FixedUpdate,
                 (scheduled_attack_system, hit_points_system, stats_system)
                     .run_if(in_state(GameStates::GameLoop)),
             )

@@ -9,6 +9,7 @@ use bevy::prelude::*;
 use bevy::ui::widget::NodeImageMode;
 use haalka::prelude::*;
 use std::time::Duration;
+use bevy_ecs_ldtk::LdtkWorldBundle;
 
 pub fn main_menu_system(
     mut commands: Commands,
@@ -69,7 +70,15 @@ pub fn main_menu_system(
                             PlaybackSettings::ONCE,
                             AudioEffect,
                         ));
-                        next_state.set(GameStates::SpawnPlayer);
+                        
+                        commands.spawn(LdtkWorldBundle {
+                            ldtk_handle: asset_server
+                                .load("maps/grayboxes/nexus_ldtk/nexus.ldtk")
+                                .into(),
+                            ..default()
+                        });
+                        
+                        next_state.set(GameStates::LoadLevel);
                     }
                     MenuEntry::Attributions => {
                         commands.spawn((

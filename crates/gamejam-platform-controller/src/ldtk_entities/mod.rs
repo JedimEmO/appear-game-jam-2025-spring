@@ -39,7 +39,7 @@ pub struct GameLdtkEntitiesPlugin;
 impl Plugin for GameLdtkEntitiesPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            FixedUpdate,
             (
                 player_collidable_system,
                 spawn_thing_system,
