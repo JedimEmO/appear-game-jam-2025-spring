@@ -55,9 +55,10 @@ struct BipedEnemy {
     patrol_direction: Cell<Direction>,
     on_attack_cooldown: Cell<bool>,
     prewound_charge: Cell<bool>,
+    is_dead: Cell<bool>,
     start_uniform: EntityUniform,
     stats: EnemyStats,
-    sounds: Sounds
+    sounds: Sounds,
 }
 
 impl BipedEnemy {
@@ -73,6 +74,7 @@ impl BipedEnemy {
             patrol_direction: Cell::new(Direction::West),
             on_attack_cooldown: Cell::new(false),
             prewound_charge: Cell::new(false),
+            is_dead: Cell::new(false),
             start_uniform: get_self_uniform(),
             stats: EnemyStats {
                 attack_range: params.get_parameter("attack-range").unwrap_or(48.),
@@ -181,7 +183,7 @@ impl BipedEnemy {
                     false,
                 );
                 play_sound_once(&self.sounds.death_sound);
-            },
+            }
             BipedEnemyStates::Dead => play_animation(
                 &self.animation_info.sprite_name,
                 &self.animation_info.dead_animation,
@@ -231,7 +233,7 @@ impl BipedEnemy {
                     false,
                 );
                 play_sound_once(&self.sounds.hit_sound);
-            },
+            }
         }
     }
 
@@ -315,7 +317,9 @@ impl GuestGameEntity for BipedEnemy {
     }
 
     fn animation_finished(&self, animation_name: String) -> () {
-        if animation_name == self.animation_info.death_animation {
+        if self.is_dead.get() {
+            self.enter_state(BipedEnemyStates::Dead);
+        } else if animation_name == self.animation_info.death_animation {
             self.enter_state(BipedEnemyStates::Dead);
         } else if animation_name == self.animation_info.windup_animation {
             self.enter_state(BipedEnemyStates::WoundUp);
@@ -334,6 +338,7 @@ impl GuestGameEntity for BipedEnemy {
         match evt {
             EntityEvent::Killed => {
                 set_ticking(false, None);
+                self.is_dead.set(true);
                 self.enter_state(BipedEnemyStates::Dying);
             }
         }

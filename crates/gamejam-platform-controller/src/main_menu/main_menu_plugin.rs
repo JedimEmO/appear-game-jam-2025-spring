@@ -13,12 +13,20 @@ impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MenuInput>()
             .insert_resource(UiAudioLevels::default())
+            // input systems must run in Update, since just_pressed* functions
+            // get cleared each frame
+            .add_systems(
+                Update,
+                (
+                    menu_gamepad_input_system,
+                    menu_keyboard_input_system,
+                )
+                    .run_if(in_state(GameStates::MainMenu)),
+            )
             .add_systems(
                 FixedUpdate,
                 (
                     ui_audio_levels_system,
-                    menu_gamepad_input_system,
-                    menu_keyboard_input_system,
                     main_menu_system,
                 )
                     .run_if(in_state(GameStates::MainMenu)),
