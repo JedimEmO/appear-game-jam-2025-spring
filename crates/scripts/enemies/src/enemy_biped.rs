@@ -170,7 +170,7 @@ impl BipedEnemy {
             BipedEnemyStates::WindingUpAttack => play_animation(
                 &self.animation_info.sprite_name,
                 &self.animation_info.windup_animation,
-                600,
+                200,
                 get_self_uniform().facing,
                 false,
             ),

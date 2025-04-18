@@ -41,22 +41,26 @@ pub fn game_entity_try_from_entity_instance(
             prototype
                 .script_path
                 .clone()
-                .map(|path| (path, prototype.script_params.clone()))
+                .map(|path| (path, prototype.script_params.clone(), prototype.z))
         }
         _ => Some((
             get_ldtk_string_field("script_file", &entity_instance).expect("missing script file"),
             None,
+            None
         )),
     };
 
-    let script = script.map(|(path, script_params)| {
+    let script = script.map(|(path, script_params, z)| {
         let mut script_params = script_params.unwrap_or(vec![]);
         script_params.append(
             &mut get_ldtk_string_array_field("script_params", &entity_instance).unwrap_or(vec![]),
         );
 
         info!("params: {script_params:?}");
+        info!("transform: {transform:?}");
 
+        transform.translation.z = z.unwrap_or(transform.translation.z);
+        
         create_entity_script(
             entity,
             &path,
@@ -65,7 +69,7 @@ pub fn game_entity_try_from_entity_instance(
             game_data,
             wasm_scripts.as_mut(),
             Some(script_params),
-            transform.translation.truncate(),
+            transform.translation.xy(),
         )
     });
 

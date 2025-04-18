@@ -30,7 +30,7 @@ impl HouseScript {
         play_animation("house_1", "idle", 1000, Direction::East, true);
 
         insert_components(&[InsertableComponents::Interactable(Interactable {
-            message: "Hello, world".to_string(),
+            message: "<up> Enter sketchy looking shack".to_string(),
             range: 50.,
         })]);
 

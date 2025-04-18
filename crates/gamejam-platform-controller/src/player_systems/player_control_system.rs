@@ -97,7 +97,7 @@ pub fn player_control_system(
                                         Duration::from_millis(500),
                                         true,
                                         false,
-                                        false,
+                                        facing_direction.to_bool(),
                                     )
                                     .unwrap(),
                             );

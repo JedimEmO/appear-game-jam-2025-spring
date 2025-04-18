@@ -195,11 +195,25 @@ frame_count = 7
 
 
 
+[sprites.springer]
+sprite_sheet_file_name = "sprites/enemies/springer.png"
+image_width = 32
+image_height = 32
 
+[sprites.springer.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
 
+[sprites.springer.animations.attack]
+row = 1
+frame_start_index = 0
+frame_count = 7
 
-
-
+[sprites.springer.animations.dead]
+row = 2
+frame_start_index = 0
+frame_count = 1
 
 
 

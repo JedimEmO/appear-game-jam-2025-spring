@@ -10,8 +10,8 @@ struct EntityWorld;
 
 use game_entity_component::exports;
 use game_entity_component::gamejam::game::game_host::{
-    Direction, InsertableComponents, Interactable, despawn_entity, get_game_data_kv_int,
-    insert_components, play_animation, play_sound_once, request_timer_callback,
+    Direction, EventData, InsertableComponents, Interactable, despawn_entity, get_game_data_kv_int,
+    insert_components, play_animation, play_sound_once, publish_event, request_timer_callback,
     set_game_data_kv_int,
 };
 
@@ -29,6 +29,7 @@ struct PowerupScript {
     self_entity_id: u64,
     power: String,
     state_variable: String,
+    trigger_id: Option<u32>,
 }
 
 impl PowerupScript {
@@ -43,6 +44,7 @@ impl PowerupScript {
         let sprite_name = params.get_parameter::<String>("sprite-name").unwrap();
         let power = params.get_parameter::<String>("powerup").unwrap();
         let state_variable = params.get_parameter::<String>("state-variable").unwrap();
+        let trigger_id = params.get_parameter::<u32>("trigger-id");
 
         play_animation(&sprite_name, "idle", 1000, Direction::East, true);
 
@@ -59,6 +61,7 @@ impl PowerupScript {
             self_entity_id,
             power,
             state_variable,
+            trigger_id,
         }
     }
 }
@@ -71,6 +74,13 @@ impl GuestGameEntity for PowerupScript {
         grant_player_power(&self.power);
         set_game_data_kv_int(&self.state_variable, 1);
         request_timer_callback(0, 100);
+
+        if let Some(val) = self.trigger_id {
+            publish_event(Event {
+                topic: 1,
+                data: EventData::Trigger(val),
+            });
+        }
     }
 
     fn attacked(&self) -> () {}

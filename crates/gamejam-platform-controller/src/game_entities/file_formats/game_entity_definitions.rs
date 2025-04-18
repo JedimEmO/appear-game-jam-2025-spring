@@ -17,6 +17,7 @@ pub struct GameEntityDefinition {
     /// Path to the script file for this entity
     pub script_path: Option<String>,
     pub script_params: Option<Vec<String>>,
+    pub z: Option<f32>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
