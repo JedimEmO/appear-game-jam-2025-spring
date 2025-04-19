@@ -1,12 +1,12 @@
-use crate::player_systems::player_components::{Player, PlayerStats, PlayerStatsMutable};
+use crate::player_systems::player_components::{Player, PlayerStats, PlayerStatsMutable, PowerupPogo, PowerupRoll};
 use bevy::prelude::{Query, With, Without};
 use crate::combat::combat_components::{Health, Stamina};
 
 pub fn player_health_sync_system(
     player_stats: Query<&PlayerStatsMutable, Without<Player>>,
-    player_hp: Query<(&Stamina, &Health), With<Player>>,
+    player_hp: Query<(&Stamina, &Health, Option<&PowerupPogo>, Option<&PowerupRoll>), With<Player>>,
 ) {
-    let Ok((stamina, health)) = player_hp.get_single() else {
+    let Ok((stamina, health, pogo, roll)) = player_hp.get_single() else {
         return;
     };
 
@@ -24,4 +24,6 @@ pub fn player_health_sync_system(
     stats.stamina.current.set(stamina.0.current);
     stats.stamina.max.set(stamina.0.max);
     stats.stamina.newly_consumed.set(stamina.0.newly_consumed);
+    stats.has_pogo.set(pogo.is_some());
+    stats.has_rolling.set(roll.is_some());
 }

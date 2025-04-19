@@ -117,6 +117,8 @@ impl Default for PlayerStats {
 pub struct PlayerStatsMutable {
     pub health: StatBarMutables,
     pub stamina: StatBarMutables,
+    pub has_pogo: Mutable<bool>,
+    pub has_rolling: Mutable<bool>,
 }
 
 #[derive(Default, Clone)]

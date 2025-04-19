@@ -459,8 +459,8 @@ frame_count = 1
 
 [sprites.ui_healthbar]
 sprite_sheet_file_name = "ui/healthbar.png"
-image_width = 256
-image_height = 99
+image_width = 96
+image_height = 48
 
 [sprites.ui_healthbar.animations.idle]
 row = 0
@@ -480,9 +480,37 @@ frame_count = 1
 
 
 
+[sprites.ui_powerup_bg]
+sprite_sheet_file_name = "ui/powerup_bg.png"
+image_width = 96
+image_height = 48
+
+[sprites.ui_powerup_bg.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.ui_pogo_icon]
+sprite_sheet_file_name = "ui/pogo_icon.png"
+image_width = 32
+image_height = 32
+
+[sprites.ui_pogo_icon.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
 
 
 
+[sprites.ui_roll_icon]
+sprite_sheet_file_name = "ui/rolling_icon.png"
+image_width = 32
+image_height = 32
+
+[sprites.ui_roll_icon.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
 
 
 
