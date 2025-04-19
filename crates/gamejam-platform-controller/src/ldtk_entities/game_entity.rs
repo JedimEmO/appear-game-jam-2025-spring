@@ -52,12 +52,10 @@ pub fn game_entity_try_from_entity_instance(
 
     let script = script.map(|(path, script_params, z)| {
         let mut script_params = script_params.unwrap_or(vec![]);
+
         script_params.append(
             &mut get_ldtk_string_array_field("script_params", &entity_instance).unwrap_or(vec![]),
         );
-
-        info!("params: {script_params:?}");
-        info!("transform: {transform:?}");
 
         transform.translation.z = z.unwrap_or(transform.translation.z);
         
@@ -65,7 +63,7 @@ pub fn game_entity_try_from_entity_instance(
             entity,
             &path,
             &engine,
-            &asset_server,
+            asset_server.as_ref(),
             game_data,
             wasm_scripts.as_mut(),
             Some(script_params),

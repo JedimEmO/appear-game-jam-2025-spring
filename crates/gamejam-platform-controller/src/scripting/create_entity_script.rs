@@ -16,7 +16,7 @@ pub fn create_entity_script(
     entity: Entity,
     script_path: &str,
     engine: &Res<WasmEngine>,
-    asset_server: &Res<AssetServer>,
+    asset_server: &AssetServer,
     game_data: &Res<GameData>,
     wasm_scripts: &mut Assets<WasmScriptModuleBytes>,
     script_params: Option<Vec<String>>,

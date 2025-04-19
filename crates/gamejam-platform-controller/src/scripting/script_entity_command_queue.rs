@@ -1,31 +1,42 @@
 use crate::audio::audio_components::{AudioEffect, AudioMusic};
 use crate::combat::attackable::Attackable;
 use crate::combat::combat_components::ScheduledAttack;
+use crate::combat::projectiles::Projectile;
 use crate::combat::Enemy;
+use crate::game_entities::file_formats::game_entity_definitions::{
+    GameEntityDefinitionFile, GameEntityDefinitionFileHandle,
+};
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};
 use crate::player_systems::player_components::{Player, PowerupPogo, PowerupRoll};
-use crate::scripting::scripted_game_entity::{EntityScript, ScriptEvent};
+use crate::scripting::create_entity_script::create_entity_script;
+use crate::scripting::scripted_game_entity::{EntityScript, GameData, ScriptEvent};
 use crate::timing::timer_system::add_timer_to_entity;
 use crate::timing::timing_component::{TimerComponent, TimerData};
+use crate::GameStates;
 use avian2d::collision::{Collider, CollisionLayers};
-use avian2d::prelude::RigidBody;
-use bevy::asset::AssetServer;
+use avian2d::prelude::{LinearVelocity, RigidBody};
+use bevy::asset::{AssetServer, Assets};
 use bevy::audio::{AudioPlayer, PlaybackSettings};
 use bevy::ecs::reflect::ReflectCommandExt;
 use bevy::hierarchy::BuildChildren;
 use bevy::log::{error, info};
-use bevy::prelude::{Commands, Component, Entity, EventWriter, NextState, Query, Res, ResMut, With};
+use bevy::math::Vec2;
+use bevy::prelude::{
+    Commands, Component, Entity, EventWriter, NextState, Query, Res, ResMut, Transform,
+    Vec3Swizzles, With,
+};
 use bevy::time::{Timer, TimerMode};
 use bevy_ecs_ldtk::LevelSelection;
+use bevy_wasmer_scripting::scripted_entity::WasmEngine;
+use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
 use gamejam_bevy_components::Interactable;
 use scripted_game_entity::gamejam::game::game_host;
 use scripted_game_entity::gamejam::game::game_host::InsertableComponents;
 use scripted_game_entity::gamejam::game::game_host::*;
-use std::ops::DerefMut;
+use std::ops::{Add, DerefMut};
 use std::time::Duration;
-use crate::GameStates;
 
 #[derive(Component)]
 pub struct TickingEntity(pub Option<f32>);
@@ -51,22 +62,36 @@ pub enum EntityScriptCommand {
     PlayMusic(String),
     PlaySound(String),
     GrantPlayerPower(String),
+    SpawnProjectile(Vec2, Vec2, String, Vec<String>),
 }
 
 pub fn scripted_entity_command_queue_system(
     mut commands: Commands,
     sprites: Res<SpriteCollection>,
     asset_server: Res<AssetServer>,
+    entity_db: Res<Assets<GameEntityDefinitionFile>>,
+    entity_db_handle: Res<GameEntityDefinitionFileHandle>,
+    wasm_engine: Res<WasmEngine>,
+    game_data: Res<GameData>,
+    mut wasm_scripts: ResMut<Assets<WasmScriptModuleBytes>>,
     mut level_select: ResMut<LevelSelection>,
     mut event_writer: EventWriter<ScriptEvent>,
     mut input_event_writer: EventWriter<EntityInput>,
     mut next_state: ResMut<NextState<GameStates>>,
-    mut query: Query<(Entity, &mut EntityScript, &mut TimerComponent)>,
+    mut query: Query<(
+        Entity,
+        &mut EntityScript,
+        &mut TimerComponent,
+        Option<&Transform>,
+    )>,
     player: Query<Entity, With<Player>>,
 ) {
     let player_entity = player.single();
+    let entity_db = entity_db
+        .get(&entity_db_handle.0)
+        .expect("missing entity db file");
 
-    for (entity, mut queue, mut timer) in query.iter_mut() {
+    for (entity, mut queue, mut timer, transform) in query.iter_mut() {
         for cmd in queue.store.data_mut().host.queued_commands.drain(..) {
             apply_command(
                 player_entity,
@@ -80,6 +105,11 @@ pub fn scripted_entity_command_queue_system(
                 &mut input_event_writer,
                 next_state.as_mut(),
                 timer.deref_mut(),
+                entity_db,
+                &wasm_engine,
+                &game_data,
+                &mut wasm_scripts,
+                &transform,
             );
         }
     }
@@ -97,6 +127,11 @@ fn apply_command(
     input_event_writer: &mut EventWriter<EntityInput>,
     next_state: &mut NextState<GameStates>,
     timer_component: &mut TimerComponent,
+    entity_db: &GameEntityDefinitionFile,
+    wasm_engine: &Res<WasmEngine>,
+    game_data: &Res<GameData>,
+    wasm_scripts: &mut ResMut<Assets<WasmScriptModuleBytes>>,
+    transform: &Option<&Transform>,
 ) {
     let mut entity = commands.entity(entity_id);
 
@@ -140,7 +175,7 @@ fn apply_command(
             direction,
             repeat,
         } => {
-            entity.insert(
+            entity.try_insert(
                 sprites
                     .create_sprite_animation_bundle(
                         &sprite_name,
@@ -228,5 +263,39 @@ fn apply_command(
                 info!("Attempting to grant invalid power {power}")
             }
         },
+        EntityScriptCommand::SpawnProjectile(velocity, offset, prototype, mut script_params) => {
+            let Some(transform) = transform else {
+                return;
+            };
+
+            let prototype = entity_db.entities.get(&prototype).unwrap();
+            let mut transform = **transform;
+            transform.translation = transform.translation.add(&offset.extend(2.));
+
+            let mut projectile_entity = commands.spawn((
+                Projectile::default(),
+                LinearVelocity(Vec2::new(velocity.x, velocity.y)),
+                transform,
+                TimerComponent::default()
+            ));
+
+            let mut args = prototype.script_params.clone().unwrap_or_default();
+            args.append(&mut script_params);
+
+            let script = create_entity_script(
+                projectile_entity.id(),
+                prototype.script_path.as_ref().unwrap(),
+                &wasm_engine,
+                asset_server,
+                game_data,
+                wasm_scripts.as_mut(),
+                Some(args),
+                transform.translation.xy(),
+            );
+
+            info!("spawned projectile: at {transform:?}");
+
+            projectile_entity.insert(script);
+        }
     }
 }

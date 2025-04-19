@@ -2,6 +2,7 @@ pub mod attackable;
 pub mod combat_components;
 pub mod enemy;
 mod hit_points;
+pub mod projectiles;
 pub mod scheduled_attack_system;
 pub mod stats_system;
 
@@ -9,6 +10,7 @@ use crate::combat::attackable::{Attackable, AttackablePlugin};
 use crate::combat::enemy::spawn_enemy_observer;
 use crate::combat::hit_points::hit_points_system;
 use crate::combat::scheduled_attack_system::scheduled_attack_system;
+use crate::combat::stats_system::stats_system;
 use crate::movement_systems::movement_components::FacingDirection;
 use crate::movement_systems::movement_components::MovementData;
 use crate::player_const_rules::{COLLISION_MARGIN, FALL_GRAVITY, X_DAMPENING_FACTOR};
@@ -17,7 +19,7 @@ use crate::player_systems::player_components::MovementDampeningFactor;
 use crate::GameStates;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::combat::stats_system::stats_system;
+use crate::combat::projectiles::projectile_collision_system;
 
 pub struct EnemyPlugin;
 
@@ -26,7 +28,12 @@ impl Plugin for EnemyPlugin {
         app.add_plugins(AttackablePlugin)
             .add_systems(
                 FixedUpdate,
-                (scheduled_attack_system, hit_points_system, stats_system)
+                (
+                    scheduled_attack_system,
+                    hit_points_system,
+                    stats_system,
+                    projectile_collision_system,
+                )
                     .run_if(in_state(GameStates::GameLoop)),
             )
             .add_observer(spawn_enemy_observer);

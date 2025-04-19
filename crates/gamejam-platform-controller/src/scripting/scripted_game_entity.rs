@@ -3,6 +3,7 @@ use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::movement_systems::movement_components::{FacingDirection, Input};
 use crate::player_systems::player_components::Player;
 use crate::scripting::script_entity_command_queue::{EntityScriptCommand, TickingEntity};
+use crate::scripting::scripted_game_entity::game_host::Vector;
 use bevy::log::info;
 use bevy::math::Vec2;
 use bevy::prelude::{
@@ -254,6 +255,21 @@ impl Host for GameEntityHost {
     fn grant_player_power(&mut self, power: String) {
         self.queued_commands
             .push(EntityScriptCommand::GrantPlayerPower(power));
+    }
+    fn spawn_projectile(
+        &mut self,
+        velocity: Vector,
+        offset: Vector,
+        projectile_prototype: String,
+        script_params: Vec<String>,
+    ) {
+        self.queued_commands
+            .push(EntityScriptCommand::SpawnProjectile(
+                Vec2::new(velocity.x, velocity.y),
+                Vec2::new(offset.x, offset.y),
+                projectile_prototype,
+                script_params,
+            ))
     }
 }
 

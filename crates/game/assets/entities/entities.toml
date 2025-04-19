@@ -118,6 +118,30 @@ z = 2.0
 
 # Enemies
 
+[entities.egg_spitter]
+id = "egg_spitter"
+tags = ["enemy", "egg_spitter"]
+script_path = "scripts/egg_spitter.wasm"
+script_params = [
+    "sprite-name=egg_spitter",
+    "attack-sound=audio/monsters/bite1.wav",
+    "idle-animation=idle",
+    "attack-animation=attack",
+]
+z = 2.0
+
+[entities.egg_projectile]
+id = "egg_projectile"
+tags = ["enemy", "egg_projectile"]
+script_path = "scripts/egg_projectile.wasm"
+script_params = [
+    "sprite-name=egg_projectile",
+    "idle-animation=idle",
+    "explode-animation=splat",
+    "explode-sound=audio/monsters/bite1.wav",
+]
+z = 2.0
+
 
 [entities.enemy-what]
 id = "enemy-what"

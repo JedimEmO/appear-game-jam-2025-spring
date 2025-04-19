@@ -34,6 +34,11 @@ interface game-host {
     data: event-data
   }
 
+  record vector {
+    x: f32,
+    y: f32
+  }
+
   enum direction {
     west, east
   }
@@ -78,4 +83,5 @@ interface game-host {
   send-input: func(input: input);
   schedule-attack: func(delay: u32, damage: u32, force: f32, point: tuple<f32, f32>, vector: tuple<f32, f32>);
   grant-player-power: func(power-name: string);
+  spawn-projectile: func(velocity: vector, offset: vector, projectile-prototype-name: string, script-params: list<string>);
 }

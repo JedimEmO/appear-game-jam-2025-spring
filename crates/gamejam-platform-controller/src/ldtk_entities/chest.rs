@@ -1,3 +1,5 @@
+use crate::audio::audio_components::AudioEffect;
+use crate::combat::combat_components::Health;
 use crate::graphics::animation_system::{SpriteAnimation, SpriteAnimationCompleted};
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::get_ldtk_enum_field;
@@ -75,6 +77,7 @@ pub fn spawn_chest_system(
 pub fn chest_opening_added_observer(
     trigger: Trigger<OnAdd, Interacted>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     assets: Res<SpriteCollection>,
     query: Query<Entity, With<Chest>>,
 ) {
@@ -104,14 +107,21 @@ pub fn chest_opening_added_observer(
                 )
                 .unwrap(),
         );
+
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("audio/door_open.ogg")),
+        AudioEffect,
+        PlaybackSettings::ONCE,
+    ));
 }
 
 pub fn chest_animation_completed_observer(
     trigger: Trigger<OnAdd, SpriteAnimationCompleted>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     assets: Res<SpriteCollection>,
     query: Query<Entity, With<Chest>>,
-    mut player_health: Query<&mut PlayerStats, With<Player>>,
+    mut player_health: Query<&mut Health, With<Player>>,
 ) {
     let Some(mut entity) = commands.get_entity(trigger.entity()) else {
         return;
@@ -122,7 +132,7 @@ pub fn chest_animation_completed_observer(
     };
 
     let mut player_stats = player_health.single_mut();
-    player_stats.max_health += 2;
+    player_stats.0.current += 50;
 
     entity
         .remove::<Sprite>()
@@ -140,4 +150,10 @@ pub fn chest_animation_completed_observer(
                 )
                 .unwrap(),
         );
+
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("audio/tada.ogg")),
+        AudioEffect,
+        PlaybackSettings::ONCE,
+    ));
 }

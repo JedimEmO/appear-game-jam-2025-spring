@@ -1,8 +1,9 @@
 use crate::scripting::scripted_game_entity::EntityScript;
-use bevy::prelude::*;
-use std::time::Duration;
 #[allow(unused_imports)]
 use avian2d::prelude::RigidBody;
+use bevy::prelude::*;
+use std::time::Duration;
+use avian2d::collision::Collider;
 
 #[derive(Component, Default, Debug, Reflect)]
 pub struct SpriteAnimation {
@@ -30,7 +31,7 @@ fn path() {
             Attackable::type_path(),
             Interactable::type_path(),
             InteractableHintComponent::type_path(),
-            RigidBody::type_path(),
+            RigidBody::type_path()
         ],
         vec![""]
     );

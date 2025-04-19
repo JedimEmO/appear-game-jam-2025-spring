@@ -15,6 +15,14 @@ path = "src/enemy_biped.rs"
 name = "enemy_springer"
 path = "src/springer.rs"
 
+[[bin]]
+name = "egg_spitter"
+path = "src/egg_spitter.rs"
+
+[[bin]]
+name = "egg_projectile"
+path = "src/egg_projectile.rs"
+
 [dependencies]
 game-entity-component = { path = "../game-entity-component" }
 glam.workspace = true
