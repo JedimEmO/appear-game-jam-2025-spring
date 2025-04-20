@@ -1,24 +1,23 @@
-use crate::combat::{Enemy};
+use crate::combat::combat_components::Health;
+use crate::combat::Enemy;
 use crate::graphics::sprite_collection::SpriteCollection;
 use avian2d::collision::Collider;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use std::time::Duration;
-use crate::combat::combat_components::Health;
 
 pub fn spawn_enemy_observer(
     trigger: Trigger<OnAdd, Enemy>,
     mut commands: Commands,
     assets: Res<SpriteCollection>,
-    mut query: Query<(Entity, &mut Transform, &EntityInstance), Added<Enemy>>,
+    mut query: Query<(Entity, &mut Transform, &EntityInstance, &Enemy), Added<Enemy>>,
 ) {
-    for (entity, mut transform, _entity_instance) in query.iter_mut() {
+    for (entity, mut transform, _entity_instance, enemy) in query.iter_mut() {
         if entity == trigger.entity() {
             transform.translation.z = 1.;
 
             commands.entity(entity).insert((
-                Collider::circle(15.),
-                Health::new(20),
+                Health::new(enemy.max_hp),
                 assets
                     .create_sprite_animation_bundle(
                         "what_sprite",
@@ -30,6 +29,8 @@ pub fn spawn_enemy_observer(
                     )
                     .unwrap(),
             ));
+
+            commands.entity(entity).insert_if_new(Collider::circle(15.));
         }
     }
 }

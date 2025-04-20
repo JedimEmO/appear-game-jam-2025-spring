@@ -13,7 +13,7 @@ use simple_2d_camera::PixelCameraTracked;
 
 #[derive(Component)]
 #[require(
-    Transform(|| Transform::from_xyz(32., 0., 4.)),
+    Transform(|| Transform::from_xyz(32., 0., 6.)),
     RigidBody(|| RigidBody::Dynamic),
     Collider(|| Collider::rectangle(7., 30.)),
     CollisionMargin(|| CollisionMargin::from(COLLISION_MARGIN)),

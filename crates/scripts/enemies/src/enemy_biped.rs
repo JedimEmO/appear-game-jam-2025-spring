@@ -22,7 +22,7 @@ impl Guest for EntityWorld {
         set_ticking(true, Some(500.));
 
         insert_components(&[
-            InsertableComponents::Enemy,
+            InsertableComponents::Enemy(game_entity_component::gamejam::game::game_host::Enemy { max_hp: 30 }),
             InsertableComponents::Collider(Collider {
                 width: 32.,
                 height: 64.,

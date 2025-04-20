@@ -210,9 +210,11 @@ struct TerminalBundle {
 fn spawn_thing_system(
     mut commands: Commands,
     assets: Res<SpriteCollection>,
-    query: Query<Entity, Added<Thing>>,
+    mut query: Query<(Entity, &mut Transform), Added<Thing>>,
 ) {
-    for entity in query.iter() {
+    for (entity, mut transform) in query.iter_mut() {
+        transform.translation.z = 2.;
+
         commands.entity(entity).insert(
             assets
                 .create_sprite_animation_bundle(

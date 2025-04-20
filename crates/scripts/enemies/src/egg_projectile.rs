@@ -47,7 +47,7 @@ impl EggProjectileScript {
                 explode_sound: attack_sound.clone(),
             },
         };
-
+        insert_components(&[InsertableComponents::Attackable, InsertableComponents::Health(1)]);
         out.enter_state(EggState::Idle);
 
         out
@@ -74,7 +74,7 @@ impl TryFrom<&ScriptParams> for AnimationInfo {
 
 #[derive(Copy, Clone)]
 enum EggState {
-    Idle
+    Idle,
 }
 
 impl EggProjectileScript {
@@ -88,7 +88,7 @@ impl EggProjectileScript {
                 500,
                 Direction::East,
                 true,
-            )
+            ),
         }
     }
 }
@@ -100,14 +100,19 @@ impl GuestGameEntity for EggProjectileScript {
 
     fn attacked(&self) -> () {}
 
-    fn animation_finished(&self, animation_name: String) -> () {
-    }
+    fn animation_finished(&self, animation_name: String) -> () {}
 
     fn receive_event(&self, evt: Event) -> () {}
 
     fn receive_entity_event(&self, evt: EntityEvent) -> () {
         remove_component("avian2d::dynamics::rigid_body::RigidBody");
-        play_animation(&self.animation_info.sprite_name, &self.animation_info.explode_animation, 300, Direction::East, true);
+        play_animation(
+            &self.animation_info.sprite_name,
+            &self.animation_info.explode_animation,
+            300,
+            Direction::East,
+            true,
+        );
         request_timer_callback(0, 300);
     }
 

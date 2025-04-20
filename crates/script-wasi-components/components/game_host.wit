@@ -17,10 +17,16 @@ interface game-host {
     dynamic
   }
 
+  record enemy {
+    max-hp: u32
+  }
+
   variant insertable-components {
     attackable,
+    health(u32),
+    boss,
     collider(collider),
-    enemy,
+    enemy(enemy),
     interactable(interactable),
     rigid-body(rigid-body-type),
   }

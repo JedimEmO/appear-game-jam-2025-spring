@@ -11,7 +11,7 @@ script_params = [
 id = "house_1"
 tags = ["house"]
 script_path = "scripts/test_entity_script.wasm"
-z = 2.0
+z = 1.0
 
 [entities.house_1.idle_animation]
 sprite_name = "house_1"
@@ -26,7 +26,7 @@ duration_millis = 1000
 [entities.lamp_post]
 id = "lamp_post"
 tags = ["decorative"]
-z = 2.0
+z = 1.0
 
 [entities.lamp_post.idle_animation]
 sprite_name = "lamp_post"
@@ -42,20 +42,20 @@ duration_millis = 700
 id = "lever"
 tags = ["lever", "interactable"]
 script_path = "scripts/lever_script.wasm"
-z = 2.0
+z = 1.0
 
 [entities.door]
 id = "door"
 tags = ["lever", "interactable"]
 script_path = "scripts/door_script.wasm"
-z = 2.0
+z = 1.0
 
 [entities.platform_1]
 id = "platform_1"
 tags = ["platform"]
 script_path = "scripts/platform_script.wasm"
 script_params = ["sprite-name=platform_1"]
-z = 2.0
+z = 1.0
 
 # Rubble
 [entities.rubble-sign-up-diag]
@@ -63,35 +63,35 @@ id = "rubble-sign-up-diag"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=sign_diag_up", "death-duration=200", "death-sound=audio/wood-small.wav"]
-z = 2.0
+z = 1.0
 
 [entities.rubble-sign]
 id = "rubble-sign"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=sign", "death-duration=200", "death-sound=audio/wood-small.wav"]
-z = 2.0
+z = 1.0
 
 [entities.rubble-terminal]
 id = "rubble-terminal"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=terminal", "invulnerable=true"]
-z = 2.0
+z = 1.0
 
 [entities.rubble-reeds]
 id = "rubble-reeds"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=reeds", "death-duration=200", "death-sound=audio/cloth.wav"]
-z = 2.0
+z = 1.0
 
 [entities.rubble-box-1]
 id = "rubble-box-1"
 tags = ["rubble"]
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=rubble_box_1", "death-duration=200", "death-sound=audio/wood-small.wav"]
-z = 2.0
+z = 1.0
 
 [entities.rubble-rock-wall]
 id = "rubble-rock-wall"
@@ -104,7 +104,7 @@ script_params = [
     "collider-size=32,16",
     "death-sound=audio/stones_01.ogg"
 ]
-z = 2.0
+z = 1.0
 
 [entities.fireplace]
 id = "firepalce"
@@ -114,7 +114,7 @@ script_params = [
     "sprite-name=fireplace",
     "invulnerable=true"
 ]
-z = 2.0
+z = 1.0
 
 # Enemies
 
@@ -128,7 +128,7 @@ script_params = [
     "idle-animation=idle",
     "attack-animation=attack",
 ]
-z = 2.0
+z = 1.0
 
 [entities.egg_projectile]
 id = "egg_projectile"
@@ -140,7 +140,7 @@ script_params = [
     "explode-animation=splat",
     "explode-sound=audio/monsters/bite1.wav",
 ]
-z = 2.0
+z = 1.0
 
 
 [entities.enemy-what]
@@ -178,6 +178,15 @@ script_params = [
 ]
 
 
+
+[entities.enemy-easter-bunny]
+id = "enemy-easter-bunny"
+tags = ["enemy", "easter-bunny"]
+script_path = "scripts/enemy_bunny.wasm"
+script_params = [
+]
+
+
 [entities.enemy-springer]
 id = "enemy-springer"
 tags = ["enemy", "springer"]
@@ -203,11 +212,11 @@ id = "pedestal"
 tags = []
 script_path = "scripts/rubble_script.wasm"
 script_params = ["sprite-name=pedestal", "invulnerable=true"]
-z = 2.0
+z = 1.0
 
 [entities.pedestal_pickup]
 id = "pedestal_pickup"
 tags = []
 script_path = "scripts/powerup_script.wasm"
 script_params = ["sprite-name=pedestal_pickup", "invulnerable=true"]
-z = 3.0
+z = 1.0

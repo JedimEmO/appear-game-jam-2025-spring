@@ -292,6 +292,64 @@ frame_count = 1
 
 
 
+
+
+
+
+
+
+# Enemies
+
+[sprites.easter_bunny]
+sprite_sheet_file_name = "sprites/enemies/bunny.png"
+image_width = 128
+image_height = 128
+
+[sprites.easter_bunny.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+[sprites.easter_bunny.animations.throw]
+row = 1
+frame_start_index = 0
+frame_count = 4
+
+[sprites.easter_bunny.animations.airborne]
+row = 2
+frame_start_index = 0
+frame_count = 2
+
+[sprites.easter_bunny.animations.attack]
+row = 3
+frame_start_index = 0
+frame_count = 5
+
+[sprites.easter_bunny.animations.walk]
+row = 4
+frame_start_index = 0
+frame_count = 4
+
+[sprites.easter_bunny.animations.windup]
+row = 5
+frame_start_index = 0
+frame_count = 2
+
+[sprites.easter_bunny.animations.woundup]
+row = 5
+frame_start_index = 1
+frame_count = 1
+
+[sprites.easter_bunny.animations.dying]
+row = 6
+frame_start_index = 0
+frame_count = 5
+
+[sprites.easter_bunny.animations.dead]
+row = 6
+frame_start_index = 4
+frame_count = 1
+
 # Neutrals
 
 
@@ -550,6 +608,9 @@ frame_count = 1
 
 
 
+
+
+
 # Scenery
 
 # UI
@@ -583,3 +644,7 @@ frame_count = 3
 row = 1
 frame_start_index = 0
 frame_count = 4
+
+
+
+

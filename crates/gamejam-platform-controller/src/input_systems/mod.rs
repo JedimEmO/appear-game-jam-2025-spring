@@ -16,5 +16,6 @@ pub enum PlayerInputAction {
     Attack(AttackDirection),
     Interact,
     ReloadLevel,
-    Roll(FacingDirection)
+    Roll(FacingDirection),
+    GoToBoss
 }

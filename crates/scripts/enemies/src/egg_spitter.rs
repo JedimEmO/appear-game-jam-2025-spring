@@ -116,7 +116,7 @@ impl GuestGameEntity for EggSpitterEntity {
 
     fn timer_callback(&self, timer: u32) -> () {
         if timer == 0 {
-            spawn_projectile(Vector { x: 0.0, y: -120. }, Vector { x: 0.0, y: -9. }, "egg_projectile", &[]);
+            spawn_projectile(Vector { x: 0.0, y: -120. }, Vector { x: 0.0, y: -12. }, "egg_projectile", &[]);
         }
 
         request_timer_callback(0, SPIT_INTERVAL);

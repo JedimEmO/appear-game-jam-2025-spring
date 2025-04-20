@@ -4,18 +4,25 @@ use crate::graphics::sprite_collection::SpriteCollection;
 use crate::input_systems::PlayerInputAction;
 use crate::ldtk_entities::interactable::{InteractableInRange, Interacted};
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input, Rolling};
-use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY, JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_SPEED, MAX_Y_SPEED, PLAYER_ATTACK_DELAY_SECONDS, PLAYER_ROLL_DURATION};
-use crate::player_systems::player_components::{Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData, Pogoing, PowerupPogo, PowerupRoll};
-use avian2d::math::AdjustPrecision;
+use crate::player_const_rules::{
+    JUMP_SPEED, MAX_JUMP_ACCELERATION_TIME, MAX_Y_SPEED, PLAYER_ATTACK_DELAY_SECONDS,
+    PLAYER_ROLL_DURATION,
+};
+use crate::player_systems::player_components::{
+    Attacking, Grounded, JumpState, Moving, Player, PlayerActionTracker, PlayerMovementData,
+    Pogoing, PowerupPogo, PowerupRoll,
+};
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{LevelIid, Respawn};
+use bevy_ecs_ldtk::{LevelIid, LevelSelection, Respawn};
 use std::time::Duration;
+use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 
 pub fn player_control_system(
     mut commands: Commands,
     time: Res<Time>,
     sprites: Res<SpriteCollection>,
+    mut level_select: ResMut<LevelSelection>,
     mut player_input_reader: EventReader<PlayerInputAction>,
     mut movement_event_writer: EventWriter<EntityInput>,
     mut player_velocity: Query<
@@ -31,7 +38,7 @@ pub fn player_control_system(
             &mut Stamina,
             Option<&Rolling>,
             &FacingDirection,
-            Option<&PowerupRoll>
+            Option<&PowerupRoll>,
         ),
         With<Player>,
     >,
@@ -50,7 +57,7 @@ pub fn player_control_system(
         mut stamina,
         rolling,
         facing_direction,
-        powerup_roll
+        powerup_roll,
     ) in player_velocity.iter_mut()
     {
         linear_velocity.y = linear_velocity.y.clamp(-MAX_Y_SPEED, MAX_Y_SPEED);
@@ -82,8 +89,8 @@ pub fn player_control_system(
 
         let mut still_moving = false;
 
-        for movement_action in player_input_reader.read() {
-            match movement_action {
+        for input_action in player_input_reader.read() {
+            match input_action {
                 PlayerInputAction::Horizontal(dir) => {
                     still_moving = true;
 
@@ -132,7 +139,6 @@ pub fn player_control_system(
                     }
                 }
                 PlayerInputAction::Attack(direction) => {
-
                     let now = time.elapsed_secs_f64();
 
                     if now - player_actions.last_attack_at.unwrap_or(0.)
@@ -193,6 +199,16 @@ pub fn player_control_system(
                     });
 
                     return;
+                }
+                &PlayerInputAction::GoToBoss => {
+                    commands.entity(entity).insert((
+                        PowerupRoll,
+                        PowerupPogo,
+                        RequestedPlayerSpawn {
+                            spawn_name: "entry".to_string(),
+                        },
+                    ));
+                    *level_select = LevelSelection::index(2);
                 }
             }
         }

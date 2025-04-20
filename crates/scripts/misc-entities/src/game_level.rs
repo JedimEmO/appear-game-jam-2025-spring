@@ -36,7 +36,7 @@ impl GameLevelScript {
         let game_state = get_game_data_kv_int("global-game-music-started").unwrap_or(0);
         
         if let Some(music) = params.get_parameter::<String>("music-file") {
-            if game_state == 0 {
+            if game_state == 0 || params.get_parameter::<bool>("force-music").unwrap_or(false)  {
                 play_music(&music);
                 set_game_data_kv_int("global-game-music-started", 1);
             }

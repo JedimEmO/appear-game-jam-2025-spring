@@ -63,7 +63,7 @@ impl SimpleEnemyScript {
         let hit_sound = params.get_parameter::<String>("hit-sound").unwrap();
 
         insert_components(&[
-            InsertableComponents::Enemy,
+            InsertableComponents::Enemy(game_entity_component::gamejam::game::game_host::Enemy { max_hp: 20 }),
             InsertableComponents::Collider(Collider {
                 width: 32.,
                 height: 32.,

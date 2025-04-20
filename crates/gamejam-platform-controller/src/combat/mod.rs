@@ -8,7 +8,8 @@ pub mod stats_system;
 
 use crate::combat::attackable::{Attackable, AttackablePlugin};
 use crate::combat::enemy::spawn_enemy_observer;
-use crate::combat::hit_points::hit_points_system;
+use crate::combat::hit_points::{boss_health_system, hit_points_system};
+use crate::combat::projectiles::projectile_collision_system;
 use crate::combat::scheduled_attack_system::scheduled_attack_system;
 use crate::combat::stats_system::stats_system;
 use crate::movement_systems::movement_components::FacingDirection;
@@ -19,13 +20,14 @@ use crate::player_systems::player_components::MovementDampeningFactor;
 use crate::GameStates;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::combat::projectiles::projectile_collision_system;
+use crate::combat::combat_components::BossHealth;
 
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(AttackablePlugin)
+            .insert_resource(BossHealth::default())
             .add_systems(
                 FixedUpdate,
                 (
@@ -33,6 +35,7 @@ impl Plugin for EnemyPlugin {
                     hit_points_system,
                     stats_system,
                     projectile_collision_system,
+                    boss_health_system
                 )
                     .run_if(in_state(GameStates::GameLoop)),
             )
@@ -46,7 +49,7 @@ pub struct Dying;
 #[derive(Component)]
 pub struct Sleeping;
 
-#[derive(Component, Default)]
+#[derive(Component)]
 #[require(
     Attackable,
     RigidBody(|| RigidBody::Dynamic),
@@ -61,4 +64,12 @@ pub struct Sleeping;
     FacingDirection,
     MovementData(|| MovementData::default_enemy()),
 )]
-pub struct Enemy;
+pub struct Enemy {
+    pub max_hp: u32,
+}
+
+impl Default for Enemy {
+    fn default() -> Self {
+        Self { max_hp: 20 }
+    }
+}

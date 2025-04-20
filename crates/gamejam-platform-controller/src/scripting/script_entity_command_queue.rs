@@ -1,6 +1,6 @@
 use crate::audio::audio_components::{AudioEffect, AudioMusic};
 use crate::combat::attackable::Attackable;
-use crate::combat::combat_components::ScheduledAttack;
+use crate::combat::combat_components::{Boss, Health, ScheduledAttack};
 use crate::combat::projectiles::Projectile;
 use crate::combat::Enemy;
 use crate::game_entities::file_formats::game_entity_definitions::{
@@ -149,6 +149,9 @@ fn apply_command(
             InsertableComponents::Attackable => {
                 entity.insert(Attackable);
             }
+            InsertableComponents::Health(health) => {
+                entity.insert(Health::new(health));
+            }
             InsertableComponents::Collider(c) => {
                 entity.insert(Collider::rectangle(c.width, c.height));
 
@@ -164,8 +167,13 @@ fn apply_command(
 
                 entity.insert(body_type);
             }
-            InsertableComponents::Enemy => {
-                entity.insert(Enemy::default());
+            InsertableComponents::Enemy(enemy) => {
+                entity.insert(Enemy {
+                    max_hp: enemy.max_hp,
+                });
+            },
+            InsertableComponents::Boss => {
+                entity.insert(Boss);
             }
         },
         EntityScriptCommand::PlayAnimation {
@@ -270,10 +278,10 @@ fn apply_command(
 
             let prototype = entity_db.entities.get(&prototype).unwrap();
             let mut transform = **transform;
-            transform.translation = transform.translation.add(&offset.extend(2.));
+            transform.translation = transform.translation.add(&offset.extend(6.));
 
             let mut projectile_entity = commands.spawn((
-                Projectile::default(),
+                Projectile { collided: false, spawner_entity: Some(entity_id) },
                 LinearVelocity(Vec2::new(velocity.x, velocity.y)),
                 transform,
                 TimerComponent::default()
@@ -292,8 +300,6 @@ fn apply_command(
                 Some(args),
                 transform.translation.xy(),
             );
-
-            info!("spawned projectile: at {transform:?}");
 
             projectile_entity.insert(script);
         }

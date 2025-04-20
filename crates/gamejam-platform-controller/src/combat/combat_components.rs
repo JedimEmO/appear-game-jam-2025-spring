@@ -1,7 +1,9 @@
 use bevy::math::Vec2;
-use bevy::prelude::{Component, Entity};
+use bevy::prelude::{Component, Entity, Resource};
 use bevy::time::{Timer, TimerMode};
 use std::time::Duration;
+use haalka::prelude::Mutable;
+use crate::player_systems::player_components::StatBarMutables;
 
 #[derive(Component, Debug)]
 pub struct ScheduledAttack {
@@ -15,6 +17,12 @@ pub struct ScheduledAttack {
 
 #[derive(Component)]
 pub struct Invulnerable;
+
+#[derive(Component)]
+pub struct Boss;
+
+#[derive(Resource, Default)]
+pub struct BossHealth(pub StatBarMutables, pub Mutable<bool>);
 
 #[derive(Debug)]
 pub struct Stat {

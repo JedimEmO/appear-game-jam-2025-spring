@@ -56,4 +56,8 @@ pub fn keyboard_input_system(
     if key_input.just_released(KeyCode::Space) {
         event_sender.send(PlayerInputAction::JumpAbort);
     }
+    
+    if key_input.just_pressed(KeyCode::F2) {
+        event_sender.send(PlayerInputAction::GoToBoss);
+    }
 }

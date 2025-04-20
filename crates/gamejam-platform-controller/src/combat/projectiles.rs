@@ -15,6 +15,7 @@ use bevy::prelude::*;
 )]
 pub struct Projectile {
     pub collided: bool,
+    pub spawner_entity: Option<Entity>
 }
 
 pub fn projectile_collision_system(
@@ -45,6 +46,10 @@ pub fn projectile_collision_system(
     {
         if player_invulnerable.is_none() && !projectile.collided {
             for collides in colliding_entities.0.iter() {
+                if Some(collides) == projectile.spawner_entity.as_ref() {
+                    continue;
+                }
+                
                 if *collides == player_entity {
                     projectile.collided = true;
 
@@ -52,7 +57,7 @@ pub fn projectile_collision_system(
                         damage: 10,
                         origin: transform.translation.xy(),
                         vector: player_transform.translation.xy() - transform.translation.xy(),
-                        force: 4.0,
+                        force: 7.0,
                     });
                 }
 
