@@ -13,6 +13,14 @@ tags = ["house"]
 script_path = "scripts/test_entity_script.wasm"
 z = 1.0
 
+
+[entities.bonfire]
+id = "bonfire"
+tags = ["bonfire"]
+script_path = "scripts/bonfire_script.wasm"
+z = 1.0
+
+
 [entities.house_1.idle_animation]
 sprite_name = "house_1"
 animation_name = "idle"

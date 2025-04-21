@@ -31,6 +31,14 @@ path = "src/game_level.rs"
 name = "powerup_script"
 path = "src/powerup.rs"
 
+[[bin]]
+name = "bonfire_script"
+path = "src/bonfire.rs"
+
+[[bin]]
+name = "easteregg_script"
+path = "src/easteregg.rs"
+
 [dependencies]
 game-entity-component = { path = "../game-entity-component" }
 script-utils = { path = "../script-utils" }

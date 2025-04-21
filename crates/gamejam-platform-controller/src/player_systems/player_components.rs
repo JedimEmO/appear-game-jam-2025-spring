@@ -1,3 +1,4 @@
+use crate::player_systems::bonfire::Bonfire;
 use crate::timing::timing_component::TimerComponent;
 use crate::combat::combat_components::Health;
 use crate::combat::combat_components::Stamina;
@@ -8,14 +9,14 @@ use crate::player_const_rules::*;
 use crate::AttackDirection;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use haalka::prelude::{Mutable, MutableVec};
+use haalka::prelude::{Mutable};
 use simple_2d_camera::PixelCameraTracked;
 
 #[derive(Component)]
 #[require(
     Transform(|| Transform::from_xyz(32., 0., 6.)),
     RigidBody(|| RigidBody::Dynamic),
-    Collider(|| Collider::rectangle(7., 30.)),
+    Collider(|| Collider::rectangle(9., 30.)),
     CollisionMargin(|| CollisionMargin::from(COLLISION_MARGIN)),
     CollisionLayers(|| CollisionLayers::new(0b00001, 0b00101)),
     ExternalForce(|| ExternalForce::default().with_persistence(false)),
@@ -34,7 +35,8 @@ use simple_2d_camera::PixelCameraTracked;
     MovementData(|| MovementData::default_player()),
     Attackable,
     Stamina(|| Stamina::default_player()),
-    TimerComponent
+    TimerComponent,
+    Bonfire
 )]
 pub struct Player;
 

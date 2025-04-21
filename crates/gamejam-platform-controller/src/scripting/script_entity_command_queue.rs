@@ -9,6 +9,7 @@ use crate::game_entities::file_formats::game_entity_definitions::{
 use crate::graphics::sprite_collection::SpriteCollection;
 use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
 use crate::movement_systems::movement_components::{EntityInput, FacingDirection, Input};
+use crate::player_systems::bonfire::Bonfire;
 use crate::player_systems::player_components::{Player, PowerupPogo, PowerupRoll};
 use crate::scripting::create_entity_script::create_entity_script;
 use crate::scripting::scripted_game_entity::{EntityScript, GameData, ScriptEvent};
@@ -63,6 +64,10 @@ pub enum EntityScriptCommand {
     PlaySound(String),
     GrantPlayerPower(String),
     SpawnProjectile(Vec2, Vec2, String, Vec<String>),
+    SetBonfire {
+        level_index: u32,
+        spawn_name: String,
+    },
 }
 
 pub fn scripted_entity_command_queue_system(
@@ -84,9 +89,9 @@ pub fn scripted_entity_command_queue_system(
         &mut TimerComponent,
         Option<&Transform>,
     )>,
-    player: Query<Entity, With<Player>>,
+    mut player: Query<(Entity, &mut Health), With<Player>>,
 ) {
-    let player_entity = player.single();
+    let mut player_entity = player.single_mut();
     let entity_db = entity_db
         .get(&entity_db_handle.0)
         .expect("missing entity db file");
@@ -94,7 +99,7 @@ pub fn scripted_entity_command_queue_system(
     for (entity, mut queue, mut timer, transform) in query.iter_mut() {
         for cmd in queue.store.data_mut().host.queued_commands.drain(..) {
             apply_command(
-                player_entity,
+                (player_entity.0, player_entity.1.as_mut()),
                 entity,
                 cmd,
                 asset_server.as_ref(),
@@ -116,7 +121,7 @@ pub fn scripted_entity_command_queue_system(
 }
 
 fn apply_command(
-    player_entity: Entity,
+    player_entity: (Entity, &mut Health),
     entity_id: Entity,
     cmd: EntityScriptCommand,
     asset_server: &AssetServer,
@@ -171,7 +176,7 @@ fn apply_command(
                 entity.insert(Enemy {
                     max_hp: enemy.max_hp,
                 });
-            },
+            }
             InsertableComponents::Boss => {
                 entity.insert(Boss);
             }
@@ -217,7 +222,7 @@ fn apply_command(
         }
         EntityScriptCommand::LevelTransition(level_index, spawn_name) => {
             commands
-                .entity(player_entity)
+                .entity(player_entity.0)
                 .insert(RequestedPlayerSpawn { spawn_name });
 
             **level_select = LevelSelection::index(level_index as usize);
@@ -262,10 +267,10 @@ fn apply_command(
         }
         EntityScriptCommand::GrantPlayerPower(power) => match power.as_str() {
             "roll" => {
-                commands.entity(player_entity).insert(PowerupRoll);
+                commands.entity(player_entity.0).insert(PowerupRoll);
             }
             "pogo" => {
-                commands.entity(player_entity).insert(PowerupPogo);
+                commands.entity(player_entity.0).insert(PowerupPogo);
             }
             power => {
                 info!("Attempting to grant invalid power {power}")
@@ -281,10 +286,13 @@ fn apply_command(
             transform.translation = transform.translation.add(&offset.extend(6.));
 
             let mut projectile_entity = commands.spawn((
-                Projectile { collided: false, spawner_entity: Some(entity_id) },
+                Projectile {
+                    collided: false,
+                    spawner_entity: Some(entity_id),
+                },
                 LinearVelocity(Vec2::new(velocity.x, velocity.y)),
                 transform,
-                TimerComponent::default()
+                TimerComponent::default(),
             ));
 
             let mut args = prototype.script_params.clone().unwrap_or_default();
@@ -302,6 +310,22 @@ fn apply_command(
             );
 
             projectile_entity.insert(script);
+        }
+        EntityScriptCommand::SetBonfire {
+            level_index,
+            spawn_name,
+        } => {
+            commands.entity(player_entity.0).insert((
+                Bonfire {
+                    level_index,
+                    spawn_name: spawn_name.clone(),
+                },
+                RequestedPlayerSpawn { spawn_name },
+            ));
+
+            player_entity.1 .0.current = player_entity.1 .0.max;
+            **level_select = LevelSelection::index(level_index as usize);
+            next_state.set(GameStates::LoadLevel)
         }
     }
 }

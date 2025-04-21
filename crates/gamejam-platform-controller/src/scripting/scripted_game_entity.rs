@@ -271,6 +271,13 @@ impl Host for GameEntityHost {
                 script_params,
             ))
     }
+    fn set_bonfire(&mut self, level_index: u32, spawn_name: String) {
+        self.queued_commands.push(EntityScriptCommand::SetBonfire { level_index, spawn_name })
+    }
+
+    fn win(&mut self) {
+        panic!("WINNING FAILED");
+    }
 }
 
 pub fn scripted_entity_uniform_system(

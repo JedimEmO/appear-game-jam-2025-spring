@@ -30,6 +30,7 @@ impl MenuEntry {
                 "Additional samples by Ove Melaa (Omsofware@hotmail.com) -2013 Ove Melaa: ".to_string(),
                 "\"Approaching the Green Grass\" written and produced by Ove Melaa (Omsofware@hotmail.com) ".to_string(),
                 "\"Earth is All we have\" written and produced by Ove Melaa (Omsofware@hotmail.com) ".to_string(),
+                "\"Gloomey\" written and produced by Ove Melaa (Omsofware@hotmail.com) ".to_string(),
             ]),
             MenuEntry::BackToMain,
         ]

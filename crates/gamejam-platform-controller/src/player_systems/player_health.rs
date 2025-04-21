@@ -1,12 +1,19 @@
-use crate::player_systems::player_components::{Player, PlayerStats, PlayerStatsMutable, PowerupPogo, PowerupRoll};
-use bevy::prelude::{Query, With, Without};
+use crate::player_systems::player_components::{Player, PlayerStatsMutable, PowerupPogo, PowerupRoll};
+use bevy::prelude::{Commands, Entity, NextState, Query, ResMut, With, Without};
+use bevy_ecs_ldtk::LevelSelection;
 use crate::combat::combat_components::{Health, Stamina};
+use crate::GameStates;
+use crate::ldtk_entities::player_spawn::RequestedPlayerSpawn;
+use crate::player_systems::bonfire::Bonfire;
 
 pub fn player_health_sync_system(
+    mut commands: Commands,
+    mut level_select: ResMut<LevelSelection>,
+    mut next_state: ResMut<NextState<GameStates>>,
     player_stats: Query<&PlayerStatsMutable, Without<Player>>,
-    player_hp: Query<(&Stamina, &Health, Option<&PowerupPogo>, Option<&PowerupRoll>), With<Player>>,
+    mut player_hp: Query<(Entity, &Stamina, &mut Health, Option<&PowerupPogo>, Option<&PowerupRoll>, &Bonfire), With<Player>>,
 ) {
-    let Ok((stamina, health, pogo, roll)) = player_hp.get_single() else {
+    let Ok((player, stamina, mut health, pogo, roll, bonfire)) = player_hp.get_single_mut() else {
         return;
     };
 
@@ -15,7 +22,11 @@ pub fn player_health_sync_system(
     };
 
     if health.0.current == 0 && health.0.newly_consumed == 0 {
-        panic!("Game over man. Game over!");
+        health.0.current = health.0.max;
+        commands.entity(player).insert(RequestedPlayerSpawn { spawn_name: bonfire.spawn_name.clone() });
+        *level_select = LevelSelection::index(bonfire.level_index as usize);
+        
+        next_state.set(GameStates::LoadLevel);
     }
 
     stats.health.current.set(health.0.current);

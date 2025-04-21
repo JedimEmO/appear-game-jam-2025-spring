@@ -373,7 +373,8 @@ impl GuestGameEntity for EasterBunnyBossEntity {
         }
     }
 
-    fn receive_event(&self, evt: Event) -> () {}
+    fn receive_event(&self, evt: Event) -> () {
+    }
 
     fn receive_entity_event(&self, evt: EntityEvent) -> () {
         match evt {
@@ -381,6 +382,12 @@ impl GuestGameEntity for EasterBunnyBossEntity {
                 set_ticking(false, None);
                 self.is_dead.set(true);
                 self.enter_state(BunnyStates::Dying);
+
+                set_game_data_kv_int("door-bunny-dead", 1);
+                publish_event(Event {
+                    topic: 1,
+                    data: EventData::Trigger(3),
+                });
             }
         }
     }

@@ -133,6 +133,7 @@ pub fn chest_animation_completed_observer(
 
     let mut player_stats = player_health.single_mut();
     player_stats.0.current += 50;
+    player_stats.0.current = player_stats.0.current.min(player_stats.0.max);
 
     entity
         .remove::<Sprite>()

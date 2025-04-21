@@ -7,6 +7,25 @@ row = 0
 frame_start_index = 0
 frame_count = 4
 
+[sprites.easteregg]
+sprite_sheet_file_name = "sprites/scenery/easteregg.png"
+image_width = 32
+image_height = 32
+[sprites.easteregg.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 1
+
+[sprites.bonfire]
+sprite_sheet_file_name = "sprites/scenery/bonfire.png"
+image_width = 32
+image_height = 32
+[sprites.bonfire.animations.idle]
+row = 0
+frame_start_index = 0
+frame_count = 4
+
+
 [sprites.player]
 sprite_sheet_file_name = "sprites/guy.png"
 image_width = 32

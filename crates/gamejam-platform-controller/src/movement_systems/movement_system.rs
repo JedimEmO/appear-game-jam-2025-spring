@@ -1,16 +1,16 @@
 use crate::combat::combat_components::Invulnerable;
 use crate::movement_systems::movement_components::{
-    ApplyTimedLinearVelocity, EntityInput, FacingDirection, IgnoreDampening, Input, MovementData,
+    ApplyTimedLinearVelocity, EntityInput, FacingDirection, Input, MovementData,
     Rolling,
 };
 use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY};
-use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player, PowerupPogo, PowerupRoll};
+use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player};
 use crate::timing::timer_system::{add_timed_component_to_entity, add_timer_to_entity};
 use crate::timing::timing_component::{TimerComponent, TimerData};
 use avian2d::prelude::{Collider, GravityScale, LinearVelocity};
 use bevy::math::vec2;
 use bevy::prelude::{
-    Commands, Entity, EventReader, OnRemove, Query, RemovedComponents, Res, Time, Timer, Trigger,
+    Commands, Entity, EventReader, OnRemove, Query, Res, Time, Timer, Trigger,
     With,
 };
 use bevy::time::TimerMode;
