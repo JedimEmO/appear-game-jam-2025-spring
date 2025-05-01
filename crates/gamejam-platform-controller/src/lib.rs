@@ -77,10 +77,6 @@ impl Plugin for PlatformerPlugin {
             //shaders and stuff
             .add_plugins(Material2dPlugin::<FogMaterial>::default())
             // other stuff
-            .insert_resource(
-                FramepaceSettings::default().with_limiter(Limiter::from_framerate(60.)),
-            )
-            .add_plugins(bevy_framepace::FramepacePlugin)
             .init_state::<GameStates>()
             .insert_resource(LdtkSettings {
                 level_background: LevelBackground::Nonexistent,

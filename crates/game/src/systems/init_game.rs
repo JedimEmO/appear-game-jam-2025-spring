@@ -1,6 +1,7 @@
 use avian2d::prelude::*;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
+use bevy::tasks::futures_lite::StreamExt;
 use bevy::utils::HashSet;
 use bevy_ecs_ldtk::prelude::*;
 #[cfg(feature = "bevy-inspector-egui")]
@@ -73,6 +74,24 @@ fn wall_spawn_system(
             max_pos.1 = coords.y;
         }
     }
+
+    let wall_copy = wall_tiles.clone();
+    let neighbours =  [
+        GridCoords::new(-1, 0),
+        GridCoords::new(1, 0),
+        GridCoords::new(0, -1),
+        GridCoords::new(0, 1),
+    ];
+
+    wall_tiles.retain(|tile| {
+        for neighbour in neighbours.iter() {
+            if !wall_copy.contains(&(*neighbour + **tile)) {
+                return true;
+            }
+        }
+
+        false
+    });
 
     if wall_tiles.is_empty() {
         return;

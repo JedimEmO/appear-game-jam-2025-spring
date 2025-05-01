@@ -3,7 +3,7 @@ use crate::movement_systems::movement_components::{
     ApplyTimedLinearVelocity, EntityInput, FacingDirection, Input, MovementData,
     Rolling,
 };
-use crate::player_const_rules::{ACCELERATION, FALL_GRAVITY};
+use crate::player_const_rules::{SPEED, FALL_GRAVITY};
 use crate::player_systems::player_components::{Grounded, JumpState, Moving, Player};
 use crate::timing::timer_system::{add_timed_component_to_entity, add_timer_to_entity};
 use crate::timing::timing_component::{TimerComponent, TimerData};
@@ -56,14 +56,7 @@ pub fn movement_system(
             Input::Move(delta) => {
                 moving_enemies.insert(entity);
 
-                let reverse_factor = if linear_velocity.x.signum() != delta.x.signum() {
-                    FALL_GRAVITY
-                } else {
-                    1.
-                };
-
-                linear_velocity.x += delta.x * ACCELERATION * delta_t * reverse_factor;
-                linear_velocity.y += delta.y * ACCELERATION * delta_t * reverse_factor;
+                linear_velocity.x = delta.x * SPEED;
 
                 linear_velocity.x = linear_velocity
                     .x

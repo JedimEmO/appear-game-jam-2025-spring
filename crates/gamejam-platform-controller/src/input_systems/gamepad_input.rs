@@ -65,12 +65,10 @@ pub fn gamepad_input_system(
 
     left_stick.y = 0.;
 
-    if left_stick.length() > 0.3 {
+    if left_stick.length() > 0.25 {
         if left_stick.length() > 0.95 {
             left_stick.x *= 2.
         };
-
-        info!("left stick x: {}", left_stick.x);
 
         event_sender.send(PlayerInputAction::Horizontal(left_stick));
     }
