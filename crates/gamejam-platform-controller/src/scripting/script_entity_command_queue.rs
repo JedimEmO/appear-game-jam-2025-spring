@@ -12,7 +12,7 @@ use crate::movement_systems::movement_components::{EntityInput, FacingDirection,
 use crate::player_systems::bonfire::Bonfire;
 use crate::player_systems::player_components::{Player, PowerupPogo, PowerupRoll};
 use crate::scripting::create_entity_script::create_entity_script;
-use crate::scripting::scripted_game_entity::{EntityScript, GameData, ScriptEvent};
+use crate::scripting::scripted_game_entity::{EntityScript, GameData, GameEntityHostLinker, ScriptEvent};
 use crate::timing::timer_system::add_timer_to_entity;
 use crate::timing::timing_component::{TimerComponent, TimerData};
 use crate::GameStates;
@@ -77,6 +77,7 @@ pub fn scripted_entity_command_queue_system(
     entity_db: Res<Assets<GameEntityDefinitionFile>>,
     entity_db_handle: Res<GameEntityDefinitionFileHandle>,
     wasm_engine: Res<WasmEngine>,
+    mut linker: ResMut<GameEntityHostLinker>,
     game_data: Res<GameData>,
     mut wasm_scripts: ResMut<Assets<WasmScriptModuleBytes>>,
     mut level_select: ResMut<LevelSelection>,
@@ -112,6 +113,7 @@ pub fn scripted_entity_command_queue_system(
                 timer.deref_mut(),
                 entity_db,
                 &wasm_engine,
+                linker.as_mut(),
                 &game_data,
                 &mut wasm_scripts,
                 &transform,
@@ -134,6 +136,7 @@ fn apply_command(
     timer_component: &mut TimerComponent,
     entity_db: &GameEntityDefinitionFile,
     wasm_engine: &Res<WasmEngine>,
+    linker: &mut GameEntityHostLinker,
     game_data: &Res<GameData>,
     wasm_scripts: &mut ResMut<Assets<WasmScriptModuleBytes>>,
     transform: &Option<&Transform>,
@@ -302,6 +305,7 @@ fn apply_command(
                 projectile_entity.id(),
                 prototype.script_path.as_ref().unwrap(),
                 &wasm_engine,
+                linker,
                 asset_server,
                 game_data,
                 wasm_scripts.as_mut(),

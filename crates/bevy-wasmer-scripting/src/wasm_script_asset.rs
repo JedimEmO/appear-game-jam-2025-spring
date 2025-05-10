@@ -8,6 +8,7 @@ use std::error::Error;
 pub struct WasmScriptModuleBytes {
     pub wasm_module_bytes: Vec<u8>,
     pub aot_component_bytes: Option<Vec<u8>>,
+    pub aot_component: Option< wasmtime::component::Component>,
 }
 
 #[derive(Default)]
@@ -30,6 +31,7 @@ impl AssetLoader for WasmScriptModuleBytesLoader {
         Ok(WasmScriptModuleBytes {
             wasm_module_bytes,
             aot_component_bytes: None,
+            aot_component: None,
         })
     }
 

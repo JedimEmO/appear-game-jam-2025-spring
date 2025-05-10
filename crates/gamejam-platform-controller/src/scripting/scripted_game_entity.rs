@@ -11,16 +11,17 @@ use bevy::prelude::{
     Trigger, With,
 };
 use bevy::time::TimerMode;
+use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use scripted_game_entity::exports::gamejam::game::entity_resource::EntityEvent;
-use scripted_game_entity::gamejam::game::game_host::Direction;
 use scripted_game_entity::gamejam::game::game_host::{self, EntityUniform};
+use scripted_game_entity::gamejam::game::game_host::{add_to_linker, Direction};
 use scripted_game_entity::gamejam::game::game_host::{Host, InsertableComponents};
 use scripted_game_entity::GameEntityWorld;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use wasmtime::component::ResourceAny;
-use wasmtime::{AsContextMut, Store};
+use wasmtime::component::{Linker, ResourceAny};
+use wasmtime::{AsContextMut, Engine, Store};
 
 #[derive(Default)]
 pub struct GameState {
@@ -52,6 +53,15 @@ pub struct GameEntityHost {
 
 pub struct GameEntityState {
     pub host: GameEntityHost,
+}
+#[derive(Resource)]
+pub struct GameEntityHostLinker(pub Linker<GameEntityState>);
+
+pub fn setup_game_entity_script(mut commands: Commands, engine: Res<WasmEngine>) {
+    let mut linker = Linker::<GameEntityState>::new(&engine.0);
+    add_to_linker(&mut linker, |state: &mut GameEntityState| &mut state.host).unwrap();
+
+    commands.insert_resource(GameEntityHostLinker(linker));
 }
 
 impl EntityScript {
@@ -272,7 +282,10 @@ impl Host for GameEntityHost {
             ))
     }
     fn set_bonfire(&mut self, level_index: u32, spawn_name: String) {
-        self.queued_commands.push(EntityScriptCommand::SetBonfire { level_index, spawn_name })
+        self.queued_commands.push(EntityScriptCommand::SetBonfire {
+            level_index,
+            spawn_name,
+        })
     }
 
     fn win(&mut self) {

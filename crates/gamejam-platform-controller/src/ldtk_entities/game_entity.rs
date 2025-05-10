@@ -3,12 +3,12 @@ use crate::game_entities::file_formats::game_entity_definitions::{
 };
 use crate::ldtk_entities::{get_ldtk_string_array_field, get_ldtk_string_field};
 use crate::scripting::create_entity_script::create_entity_script;
-use crate::scripting::scripted_game_entity::GameData;
+use crate::scripting::scripted_game_entity::{GameData, GameEntityHostLinker};
+use crate::timing::timing_component::TimerComponent;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::EntityInstance;
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
 use bevy_wasmer_scripting::wasm_script_asset::WasmScriptModuleBytes;
-use crate::timing::timing_component::TimerComponent;
 
 pub fn game_entity_try_from_entity_instance(
     entity: Entity,
@@ -16,6 +16,7 @@ pub fn game_entity_try_from_entity_instance(
     entity_db_handle: &Res<GameEntityDefinitionFileHandle>,
     entity_instance: &EntityInstance,
     engine: &Res<WasmEngine>,
+    linker: &mut GameEntityHostLinker,
     game_data: &Res<GameData>,
     asset_server: &Res<AssetServer>,
     wasm_scripts: &mut ResMut<Assets<WasmScriptModuleBytes>>,
@@ -46,7 +47,7 @@ pub fn game_entity_try_from_entity_instance(
         _ => Some((
             get_ldtk_string_field("script_file", &entity_instance).expect("missing script file"),
             None,
-            None
+            None,
         )),
     };
 
@@ -58,11 +59,12 @@ pub fn game_entity_try_from_entity_instance(
         );
 
         transform.translation.z = z.unwrap_or(transform.translation.z);
-        
+
         create_entity_script(
             entity,
             &path,
             &engine,
+            linker,
             asset_server.as_ref(),
             game_data,
             wasm_scripts.as_mut(),
@@ -73,7 +75,10 @@ pub fn game_entity_try_from_entity_instance(
 
     transform.scale = Vec3::splat(1.);
 
-    Some(((transform, GameEntity {}, TimerComponent::default()), script))
+    Some((
+        (transform, GameEntity {}, TimerComponent::default()),
+        script,
+    ))
 }
 
 /// General purpose game entity

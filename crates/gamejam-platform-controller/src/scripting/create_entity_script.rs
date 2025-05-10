@@ -1,5 +1,5 @@
 use crate::scripting::scripted_game_entity::{
-    EntityScript, GameData, GameEntityHost, GameEntityState,
+    EntityScript, GameData, GameEntityHost, GameEntityHostLinker, GameEntityState,
 };
 use bevy::prelude::*;
 use bevy_wasmer_scripting::scripted_entity::WasmEngine;
@@ -16,6 +16,7 @@ pub fn create_entity_script(
     entity: Entity,
     script_path: &str,
     engine: &Res<WasmEngine>,
+    linker: &mut GameEntityHostLinker,
     asset_server: &AssetServer,
     game_data: &Res<GameData>,
     wasm_scripts: &mut Assets<WasmScriptModuleBytes>,
@@ -33,7 +34,9 @@ pub fn create_entity_script(
             .unwrap()
     });
 
-    let component = wasmtime::component::Component::from_binary(&engine.0, bytes).unwrap();
+    let component = script.aot_component.get_or_insert_with(|| {
+        wasmtime::component::Component::from_binary(&engine.0, bytes).unwrap()
+    });
 
     let mut store = Store::new(
         &engine.0,
@@ -58,9 +61,7 @@ pub fn create_entity_script(
         },
     );
 
-    let mut linker = Linker::<GameEntityState>::new(&engine.0);
-
-    add_to_linker(&mut linker, |state: &mut GameEntityState| &mut state.host).unwrap();
+    let mut linker = &mut linker.0;
 
     let settings = StartupSettings {
         params: script_params,
