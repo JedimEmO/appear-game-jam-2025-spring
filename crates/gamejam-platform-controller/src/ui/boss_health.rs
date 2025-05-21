@@ -7,7 +7,7 @@ use bevy::ui::Val;
 use haalka::align::{Align, Alignable};
 use haalka::element::Element;
 use haalka::prelude::{Row, Sizeable};
-use crate::ui::stat_bar::stat_bar;
+use crate::ui::stat_bar::boss_stat_bar;
 
 pub fn boss_health_bar(health: &BossHealth) -> impl Element {
     let health_stat = health.0.clone();
@@ -15,12 +15,13 @@ pub fn boss_health_bar(health: &BossHealth) -> impl Element {
         .align_content(Align::center())
         .item_signal(health.1.signal().dedupe().map(move |v| {
             if v {
-                Some(stat_bar(
+                Some(boss_stat_bar(
                     health_stat.clone(),
                     200,
                     Val::Px(32.),
                     Color::Srgba(tailwind::RED_600),
                     Color::Srgba(tailwind::AMBER_300),
+                    Color::Srgba(tailwind::GRAY_800),
                     |_| {}
                 ))
             } else {
