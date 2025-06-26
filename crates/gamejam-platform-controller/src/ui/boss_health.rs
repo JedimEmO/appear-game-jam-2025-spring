@@ -17,11 +17,12 @@ pub fn boss_health_bar(health: &BossHealth) -> impl Element {
             if v {
                 Some(boss_stat_bar(
                     health_stat.clone(),
-                    200,
-                    Val::Px(32.),
+                    600,
+                    Val::Px(64.),
                     Color::Srgba(tailwind::RED_600),
                     Color::Srgba(tailwind::AMBER_300),
                     Color::Srgba(tailwind::GRAY_800),
+                    10.0, // border radius
                     |_| {}
                 ))
             } else {

@@ -67,6 +67,7 @@ pub fn boss_stat_bar(
     main_color: Color,
     used_color: Color,
     background_color: Color,
+    border_radius: f32,
     f: impl FnOnce(Mut<Node>) + Send + 'static,
 ) -> Stack<Node> {
     let stamina_bar_width_broadcast = map_ref! {
@@ -85,12 +86,15 @@ pub fn boss_stat_bar(
     }
     .broadcast();
 
-    // Background with fixed width
+    use bevy::ui::BorderRadius;
+    
+    // Background with fixed width and border radius
     let background = El::<Node>::new()
         .width(Val::Px(bar_width as f32))
         .height(bar_height)
-        .background_color(BackgroundColor(background_color));
-
+        .background_color(BackgroundColor(background_color))
+        .border_radius(BorderRadius::all(Val::Px(border_radius)));
+    
     let newly_used_bar = El::<Node>::new()
         .width_signal(
             newly_used_stamina_bar_broadcast
@@ -98,8 +102,9 @@ pub fn boss_stat_bar(
                 .map(|width| Val::Px(width as f32)),
         )
         .height(bar_height)
-        .background_color(BackgroundColor(used_color));
-
+        .background_color(BackgroundColor(used_color))
+        .border_radius(BorderRadius::all(Val::Px(border_radius)));
+    
     let bar = El::<Node>::new()
         .width_signal(
             stamina_bar_width_broadcast
@@ -107,7 +112,8 @@ pub fn boss_stat_bar(
                 .map(|v| Val::Px(v as f32)),
         )
         .height(bar_height)
-        .background_color(BackgroundColor(main_color));
+        .background_color(BackgroundColor(main_color))
+        .border_radius(BorderRadius::all(Val::Px(border_radius)));
 
     // Create a row for the health bars
     let health_bars = Row::<Node>::new()
